@@ -1,0 +1,28 @@
+{
+  "name": "browser-rpg",
+  "version": "0.0.1",
+  "description": "An attempt to create a browser-based RPG",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.15.2",
+    "mongojs": "^2.4.0",
+    "socket.io": "^1.7.3",
+    "underscore": "^1.8.3",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wtaylor45/browser-rpg.git"
+  },
+  "author": "Will Taylor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wtaylor45/browser-rpg/issues"
+  },
+  "homepage": "https://github.com/wtaylor45/browser-rpg#readme"
+}
