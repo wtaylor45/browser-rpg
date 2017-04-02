@@ -16,6 +16,9 @@
   <script src="client/js/inject.js"></script>
 </head>
 <body>
+
+  <canvas id="canvas" width="800" height="500"></canvas>
+
   <script>
   // Initialize socket.io connection
   var socket = io();
@@ -24,6 +27,8 @@
   window.onload = function(){
     var game = new Game();
     game.start()
+
+    game.addPlayer(0, 0, 0)
   }
   </script>
 </body>

@@ -2,14 +2,20 @@
  * @author Will Taylor
  * Created on: 4/2/17
  */
-console.log('added')
+
+var stage = new createjs.Stage('canvas');
+
 /**
  * The client instance of the game
+ *
+ * Handles the stage as well
  */
 class Game{
   constructor(){
     // Has the game started yet on the client side?
     this.started = false;
+
+    this.players = [];
 
     // This instance's camera
     //this.camera = new Camera();
@@ -27,10 +33,22 @@ class Game{
     }, 1000/60);
   }
 
+  addPlayer(id, x, y){
+    this.players[id] = new Player('client/assets/god.png')
+  }
+
   /**
    * The logic to run every loop
    */
   update(){
-    console.log('loopy');
+    stage.removeAllChildren();
+
+    // Updates go here
+    for(var i in this.players){
+      var player = this.players[i];
+      player.update();
+    }
+
+    stage.update();
   }
 }
