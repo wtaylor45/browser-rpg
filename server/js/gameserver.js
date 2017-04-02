@@ -31,9 +31,18 @@ function GameServer(){
   this.init = function(){
     this.started = true;
 
+    var self = this;
+
     setInterval(function(){
-      console.log('loopy')
+      self.tick();
     }, 1000/60)
+  }
+
+  /**
+   * Logic that happens once every loop
+   */
+  this.tick = function(){
+    // TODO: Write tick function
   }
 
   /**
