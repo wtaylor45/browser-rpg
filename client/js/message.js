@@ -11,8 +11,6 @@
  */
 
 class Message{
-  this.message;
-
   constructor(type, data){
     this.message = {
       'type': type,
@@ -27,6 +25,6 @@ class Message{
 
 Message.MessageType = {
   LOGIN: 1,
-  LOGOUT: 0,
+  LOGOUT: 2,
   MOVE: 3
 }
