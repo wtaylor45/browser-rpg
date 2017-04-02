@@ -56,6 +56,7 @@ function GameServer(){
     console.log('Client', client.id, 'connected.');
 
     this.players[client.id] = new Player(client.id);
+    client.emit('connected', client.id);
     console.log('Added a player for this client.')
   }
 

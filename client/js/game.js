@@ -62,17 +62,21 @@ class Game{
     stage.removeAllChildren();
 
     // Updates go here
-    if(this.player){
-      this.player.update(dt);
-    }
-
     for(var i in this.mail){
       var pack = this.mail[i];
       switch(pack.type){
         case 'p':
           if(pack.data.id != this.player.id)
             this.draw(pack.data.x, pack.data.y, pack.data.sprite);
+          else{
+            this.player.x = pack.data.x;
+            this.player.y = pack.data.y;
+          }
       }
+    }
+
+    if(this.player){
+      this.player.update(dt);
     }
 
     stage.update();

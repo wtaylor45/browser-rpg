@@ -11,8 +11,9 @@ class Player{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(path){
+  constructor(id, path){
     this.sprite = new Sprite(path)
+    this.id = id;
 
     // The world coordinates of the player
     this.worldX = 0;

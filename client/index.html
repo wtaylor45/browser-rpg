@@ -24,12 +24,12 @@
   var socket = io();
   var game;
   // Wait for all scripts to load first
-  window.onload = function(){
+  socket.on('connected', function(id){
     game = new Game();
     game.start()
 
-    game.setPlayer(new Player('client/assets/god.png'))
-  }
+    game.setPlayer(new Player(id, 'client/assets/players/sprite_000a.png'))
+  })
   </script>
 </body>
 </html>
