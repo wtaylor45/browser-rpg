@@ -15,7 +15,7 @@ class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    this.player = false;
+    this.player = -1;
 
     this.mail = {};
 
@@ -44,6 +44,11 @@ class Game{
     }, 1000/60);
   }
 
+  /**
+   * Set this games player (the client's player)
+   *
+   * @param {Object} player The player object that belongs to this client
+   */
   setPlayer(player){
     this.player = player;
   }
@@ -65,16 +70,18 @@ class Game{
       var pack = this.mail[i];
       switch(pack.type){
         case 'p':
-          this.draw(pack.data.x, pack.data.y);
+          if(pack.data.id != this.player.id)
+            this.draw(pack.data.x, pack.data.y, pack.data.sprite);
       }
     }
 
     stage.update();
   }
 
-  draw(x, y){
-    var shape = new createjs.Shape();
-    shape.graphics.beginStroke('#aaa').drawRect(x, y, 32, 32);
-    stage.addChild(shape)
+  draw(x, y, sprite){
+    var bitmap = Sprite.getPlayerSprite(sprite)
+    bitmap.x = x;
+    bitmap.y = y;
+    stage.addChild(bitmap)
   }
 }

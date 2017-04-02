@@ -26,7 +26,9 @@ function Player(id){
   this.pack = function(){
     var send = {
       x: this.x,
-      y: this.y
+      y: this.y,
+      sprite: 0,
+      id: this.id
     }
 
     return send;
