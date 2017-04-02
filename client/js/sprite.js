@@ -39,3 +39,16 @@ class Sprite{
     this.screenY = y;
   }
 }
+
+Sprite.PlayerSprites = {
+  0: 'sprite_000a.png'
+}
+
+/**
+ * Get the bitmap image for the value of the player sprite model
+ * @param  {number} val The player sprite #
+ * @return {Object} The sprite bitmap object
+ */
+Sprite.getPlayerSprite = function(val){
+  return new createjs.Bitmap('client/assets/players/'+Sprite.PlayerSprites[val]);
+}
