@@ -15,7 +15,7 @@ class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    this.players = [];
+    this.player = false;
 
     // This instance's camera
     //this.camera = new Camera();
@@ -27,26 +27,36 @@ class Game{
   start(){
     this.started = true;
 
+    // ∆t variables
+    var lastTime = new Date().getTime();
+    var curTime, dt;
+
     var self = this;
     setInterval(function(){
-      self.update();
+      // ∆t calculation
+      curTime = new Date().getTime();
+      dt = (curTime - lastTime)/100;
+      lastTime = curTime;
+
+      self.update(dt);
     }, 1000/60);
   }
 
-  addPlayer(id, x, y){
-    this.players[id] = new Player('client/assets/god.png')
+  setPlayer(player){
+    this.player = player;
   }
 
   /**
    * The logic to run every loop
+   *
+   * @param {number} dt Delta time, time since last loop
    */
-  update(){
+  update(dt){
     stage.removeAllChildren();
 
     // Updates go here
-    for(var i in this.players){
-      var player = this.players[i];
-      player.update();
+    if(this.player){
+      this.player.update(dt);
     }
 
     stage.update();
