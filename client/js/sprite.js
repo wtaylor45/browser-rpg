@@ -23,6 +23,8 @@ class Sprite{
    * Draw the sprite at its screen x and y
    */
   draw(){
+    this.image.x = this.screenX;
+    this.image.y = this.screenY;
     stage.addChild(this.image);
   }
 
