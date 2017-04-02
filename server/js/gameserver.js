@@ -9,9 +9,10 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
+var Mailman = require('./mailman.js')
 
 // Export the GameServer module
-module.exports = GameServer; 
+module.exports = GameServer;
 
 /**
  * Game server that handles all the game logic, distributing messages, etc.
@@ -20,13 +21,29 @@ function GameServer(){
   // Initialization
   this.players = {};
 
+  this.mailman = new Mailman();
+
+  this.started = false;
+
+  /**
+   * Initialize the server, start the loop
+   */
+  this.init = function(){
+    this.started = true;
+
+    setInterval(function(){
+      console.log('loopy')
+    }, 1000/60)
+  }
+
   /**
    * Handle the connection from the given client
    * @param  {Object} client The client that has connected
    */
   this.onConnection = function(client){
     // TODO: Handle the connection
-    console.log('Client connected.');
+    if(!this.started) this.init();
+    console.log('Client', client.id, 'connected.');
   }
 
   /**
@@ -36,7 +53,7 @@ function GameServer(){
    */
   this.onDisconnect = function(client){
     // TODO: Logout if the player is logged in
-    console.log('Client disconnected.');
+    console.log('Client', client.id, 'disconnected.');
   }
 
   /**
