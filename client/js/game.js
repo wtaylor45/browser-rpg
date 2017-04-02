@@ -37,7 +37,7 @@ class Game{
       curTime = new Date().getTime();
       dt = (curTime - lastTime)/100;
       lastTime = curTime;
-
+      
       self.update(dt);
     }, 1000/60);
   }

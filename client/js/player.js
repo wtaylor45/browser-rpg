@@ -24,6 +24,9 @@ class Player{
   }
 
   update(dt){
+    var lastX = this.worldX;
+    var lastY = this.worldY;
+
     if(sprint) this.speed = this.MAX_SPEED;
     else this.speed = 10;
 
@@ -42,6 +45,11 @@ class Player{
 
     this.sprite.setScreenPosition(this.worldX, this.worldY);
     this.sprite.draw();
+
+    if(lastX != this.worldX || lastY != this.worldY){
+      var message = new Message(Message.MessageType.MOVE, {x: this.worldX, y: this.worldY, dt: dt})
+      message.send();
+    }
   }
 }
 

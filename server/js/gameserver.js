@@ -9,7 +9,8 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
-var Mailman = require('./mailman.js')
+var Mailman = require('./mailman.js');
+var Player = require('./player.js');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -53,6 +54,9 @@ function GameServer(){
     // TODO: Handle the connection
     if(!this.started) this.init();
     console.log('Client', client.id, 'connected.');
+
+    this.players[client.id] = new Player(client.id);
+    console.log('Added a player for this client.')
   }
 
   /**
@@ -71,7 +75,15 @@ function GameServer(){
    * @param {Object} message  The message that was sent by the client
    */
   this.onMessage = function(client, message){
-    // TODO: Decide on a default message format
-    // TODO: Implement message handling
+    // First, check if this client has a player
+    var player = this.players[client.id];
+
+    // Check the message type, distribute accordingly
+    switch(message.type){
+      case 'move':
+        if(player){
+          player.checkMove(message.data.x, message.data.y, message.data.dt)
+        }
+    }
   }
 }
