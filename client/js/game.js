@@ -17,6 +17,8 @@ class Game{
 
     this.player = false;
 
+    this.mail = {};
+
     // This instance's camera
     //this.camera = new Camera();
   }
@@ -37,7 +39,7 @@ class Game{
       curTime = new Date().getTime();
       dt = (curTime - lastTime)/100;
       lastTime = curTime;
-      
+
       self.update(dt);
     }, 1000/60);
   }
@@ -59,6 +61,20 @@ class Game{
       this.player.update(dt);
     }
 
+    for(var i in this.mail){
+      var pack = this.mail[i];
+      switch(pack.type){
+        case 'p':
+          this.draw(pack.data.x, pack.data.y);
+      }
+    }
+
     stage.update();
+  }
+
+  draw(x, y){
+    var shape = new createjs.Shape();
+    shape.graphics.beginStroke('#aaa').drawRect(x, y, 32, 32);
+    stage.addChild(shape)
   }
 }

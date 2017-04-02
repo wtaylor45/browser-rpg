@@ -22,7 +22,7 @@ function GameServer(){
   // Initialization
   this.players = {};
 
-  this.mailman = new Mailman();
+  this.mailman = new Mailman(this);
 
   this.started = false;
 
@@ -43,7 +43,7 @@ function GameServer(){
    * Logic that happens once every loop
    */
   this.tick = function(){
-    // TODO: Write tick function
+    this.mailman.collectAndSendMail();
   }
 
   /**
@@ -66,6 +66,8 @@ function GameServer(){
    */
   this.onDisconnect = function(client){
     // TODO: Logout if the player is logged in
+    delete global.SOCKET_LIST[client.id];
+    delete this.players[client.id];
     console.log('Client', client.id, 'disconnected.');
   }
 

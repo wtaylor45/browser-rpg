@@ -22,10 +22,10 @@
   <script>
   // Initialize socket.io connection
   var socket = io();
-
+  var game;
   // Wait for all scripts to load first
   window.onload = function(){
-    var game = new Game();
+    game = new Game();
     game.start()
 
     game.setPlayer(new Player('client/assets/god.png'))

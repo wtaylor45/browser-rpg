@@ -22,4 +22,13 @@ function Player(id){
       this.y = y;
     }
   }
+
+  this.pack = function(){
+    var send = {
+      x: this.x,
+      y: this.y
+    }
+
+    return send;
+  }
 }
