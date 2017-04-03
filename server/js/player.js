@@ -14,12 +14,52 @@ function Player(id){
   this.height = 64;
 
   this.maxSpeed = 15;
+  this.speed = 10;
 
-  this.checkMove = function(x, y, dt){
-    var threshold = this.maxSpeed * dt;
-    if(Math.abs(this.x - x) < threshold+.01 && Math.abs(this.y - y) < threshold+0.1){
-      this.x = x;
-      this.y = y;
+  this.currentSeq = -1;
+
+  this.cmds = [];
+
+  this.keyLeft = false;
+  this.keyRight = false;
+  this.keyUp = false;
+  this.keyDown = false;
+
+  this.queueCmd = function(input, state, seq){
+    this.cmds.push({'input': input, 'state': state, 'seq': seq})
+  }
+
+  this.runCmd = function(){
+    cmd = this.cmds[0];
+    if(cmd){
+      this.currentSeq = cmd.seq;
+
+      var input = cmd.input;
+      var state = cmd.state;
+
+      if(input == 'up') this.keyUp = state;
+      if(input == 'down') this.keyDown = state;
+      if(input == 'left') this.keyLeft = state;
+      if(input == 'right') this.keyRight = state;
+
+      this.cmds.splice(0,1);
+    }
+  }
+
+  this.update = function(dt){
+    this.runCmd();
+
+    if(this.keyUp){
+      this.y -= this.speed * dt;
+    }
+    if(this.keyDown){
+      this.y += this.speed * dt;
+    }
+    if(this.keyLeft){
+      this.x -= this.speed * dt;
+    }
+    if(this.keyRight){
+      this.x += this.speed * dt;
     }
   }
 
@@ -27,8 +67,8 @@ function Player(id){
     var send = {
       x: this.x,
       y: this.y,
-      sprite: 0,
-      id: this.id
+      seq: this.currentSeq,
+      sprite: 0
     }
 
     return send;

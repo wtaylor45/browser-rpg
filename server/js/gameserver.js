@@ -32,18 +32,36 @@ function GameServer(){
   this.init = function(){
     this.started = true;
 
+    // ∆t variables
+    var lastTime = new Date().getTime();
+    var curTime, dt;
+
     var self = this;
 
     setInterval(function(){
-      self.tick();
-    }, 1000/60)
+      // ∆t calculation
+      curTime = new Date().getTime();
+      dt = (curTime - lastTime)/100;
+      lastTime = curTime;
+
+      self.tick(dt);
+    }, 200)
   }
 
   /**
    * Logic that happens once every loop
    */
-  this.tick = function(){
-    this.mailman.collectAndSendMail();
+  this.tick = function(dt){
+    // The mailbag to send out to each client
+    var mail = {players: {}}
+
+    for(var i in this.players){
+      var player = this.players[i];
+      player.update(dt);
+      mail.players[player.id] = player.pack();
+    }
+
+    this.mailman.sendMail(mail);
   }
 
   /**
@@ -80,12 +98,11 @@ function GameServer(){
   this.onMessage = function(client, message){
     // First, check if this client has a player
     var player = this.players[client.id];
-
     // Check the message type, distribute accordingly
     switch(message.type){
       case 'move':
         if(player){
-          player.checkMove(message.data.x, message.data.y, message.data.dt)
+          player.queueCmd(message.data.inputId, message.data.state, message.data.seq)
         }
     }
   }

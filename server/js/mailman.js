@@ -12,15 +12,11 @@ function Mailman(server){
   /**
    * Collect all the updates from players, npcs, etc. and send off to each mailbox
    */
-  this.collectAndSendMail = function(){
-    var mail = []
+  this.collectMail = function(object){
+    // TODO: Find a use for this :(
+  }
 
-    // Collect mail
-    for(var i in this.server.players){
-      var player = this.server.players[i];
-      mail.push({'type': 'p', 'data': player.pack()});
-    }
-
+  this.sendMail = function(mail){
     // Send mail
     for(var i in this.server.players){
       var socket = global.SOCKET_LIST[i];
