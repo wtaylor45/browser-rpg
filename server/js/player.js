@@ -43,6 +43,7 @@ function Player(id){
   this.update = function(dt){
     if(this.inputs.length > 0)
       this.applyInput(this.inputs[0]);
+    console.log("hm",this.inputs.length);
   }
 
   this.pack = function(){
@@ -50,6 +51,7 @@ function Player(id){
       x: this.x,
       y: this.y,
       last_input: this.last_input,
+      id: this.id,
       sprite: 0
     }
 

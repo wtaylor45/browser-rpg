@@ -34,7 +34,6 @@ class Player{
   setPos(x, y){
     this.worldX = x;
     this.worldY = y;
-    console.log(x, y)
   }
 
   applyInput(input){

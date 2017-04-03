@@ -114,6 +114,6 @@ function GameServer(){
   }
 
   this.validateInput = function(input){
-    return !(Math.abs(input.press_time) > this.delay)
+    return (Math.abs(input.press_time) <= 1/60)
   }
 }
