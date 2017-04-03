@@ -26,6 +26,9 @@ function GameServer(){
 
   this.started = false;
 
+  this.FPS = 60;
+  this.delay = 1/this.FPS;
+
   /**
    * Initialize the server, start the loop
    */
@@ -45,7 +48,7 @@ function GameServer(){
       lastTime = curTime;
 
       self.tick(dt);
-    }, 200)
+    }, 1000/this.FPS)
   }
 
   /**
@@ -102,8 +105,15 @@ function GameServer(){
     switch(message.type){
       case 'move':
         if(player){
-          player.queueCmd(message.data.inputId, message.data.state, message.data.seq)
+          var input = message.data;
+          if(true){
+            player.queueInput(input);
+          }
         }
     }
+  }
+
+  this.validateInput = function(input){
+    return !(Math.abs(input.press_time) > this.delay)
   }
 }

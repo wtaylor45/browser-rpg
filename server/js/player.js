@@ -16,58 +16,40 @@ function Player(id){
   this.maxSpeed = 15;
   this.speed = 10;
 
-  this.currentSeq = -1;
-
-  this.cmds = [];
+  this.inputs = [];
+  this.last_input = false;
 
   this.keyLeft = false;
   this.keyRight = false;
   this.keyUp = false;
   this.keyDown = false;
 
-  this.queueCmd = function(input, state, seq){
-    this.cmds.push({'input': input, 'state': state, 'seq': seq})
+  this.queueInput = function(input){
+    this.inputs.push(input);
   }
 
-  this.runCmd = function(){
-    cmd = this.cmds[0];
-    if(cmd){
-      this.currentSeq = cmd.seq;
-
-      var input = cmd.input;
-      var state = cmd.state;
-
-      if(input == 'up') this.keyUp = state;
-      if(input == 'down') this.keyDown = state;
-      if(input == 'left') this.keyLeft = state;
-      if(input == 'right') this.keyRight = state;
-
-      this.cmds.splice(0,1);
+  this.applyInput = function(input){
+    if(input.input == 'up' || input.input == 'down'){
+      this.y += this.speed * input.press_time;
     }
+    else if(input.input == 'left' || input.input == 'right'){
+      this.x += this.speed * input.press_time;
+    }
+
+    this.last_input = input.seq;
+    this.inputs.splice(0,1);
   }
 
   this.update = function(dt){
-    this.runCmd();
-
-    if(this.keyUp){
-      this.y -= this.speed * dt;
-    }
-    if(this.keyDown){
-      this.y += this.speed * dt;
-    }
-    if(this.keyLeft){
-      this.x -= this.speed * dt;
-    }
-    if(this.keyRight){
-      this.x += this.speed * dt;
-    }
+    if(this.inputs.length > 0)
+      this.applyInput(this.inputs[0]);
   }
 
   this.pack = function(){
     var send = {
       x: this.x,
       y: this.y,
-      seq: this.currentSeq,
+      last_input: this.last_input,
       sprite: 0
     }
 

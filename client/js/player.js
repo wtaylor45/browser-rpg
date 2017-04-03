@@ -1,6 +1,9 @@
 /**
  * @author Will Taylor
  * Created on: 4/2/17
+ *
+ * Client-side prediction based on Gabriel Gambetta's article on the matter
+ * http://www.gabrielgambetta.com/fpm2.html
  */
 
 /**
@@ -23,12 +26,28 @@ class Player{
     this.MAX_SPEED = 15;
     this.speed = 10;
 
-    this.controller = new CharacterController(this);
+    // Variables for client-side prediction
+    this.pending_inputs = []
+    this.input_seq = 0;
   }
 
   setPos(x, y){
     this.worldX = x;
     this.worldY = y;
+    console.log(x, y)
+  }
+
+  applyInput(input){
+    var x = this.worldX;
+    var y = this.worldY;
+    if(input.input == 'up' || input.input == 'down'){
+      y += this.speed * input.press_time;
+    }
+    else if(input.input == 'left' || input.input == 'right'){
+      x += this.speed * input.press_time;
+    }
+
+    this.setPos(x, y);
   }
 
   /**
@@ -40,99 +59,31 @@ class Player{
     /*if(sprint) this.speed = this.MAX_SPEED;
     else this.speed = 10;*/
 
-    var command = this.controller.nextInput();
+    // Check which command was issued, package it
+    var input;
+    if(up){
+      input = {press_time: -dt, input: 'up'}
+    }
+    else if(down){
+      input = {press_time: dt, input: 'down'}
+    }
 
-    if(command){
-      // Check which command was issued
-      switch(command){
-        case 'up':
-          // Create a new state, add it to the queue to be verified
-          var state = new PredictedState(this.worldX, this.worldY, dt);
-          game.states.addState(state);
-          break;
-        case 'down':
-          break;
-      }
+    if(input){
+      // Send the input package to the server
+      input.seq = this.input_seq++;
+      var message = new Message(Message.MessageType.MOVE, input)
+      message.send();
+
+      // Apply the package to the client now
+      this.applyInput(input);
+
+      // Save input to validated later
+      this.pending_inputs.push(input);
     }
   }
 
   draw(){
     this.sprite.setScreenPosition(this.worldX, this.worldY);
     this.sprite.draw();
-  }
-}
-
-class CharacterController{
-  constructor(player){
-    this.player = player;
-
-    this.commandQueue = [];
-  }
-
-  nextInput(){
-    return this.commandQueue.shift();
-  }
-
-  queueCommand(command){
-    commandQueue.push(command);
-  }
-}
-
-CharacterController.Commands = {
-  UP: 'up',
-  DOWN: 'down',
-  LEFT: 'left',
-  RIGHT: 'right'
-}
-
-function checkKeyDown(game){
-  document.onkeydown = function(event){
-    if(event.keyCode === 68){    //d
-      right = true;
-    }
-    else if(event.keyCode === 83){   //s
-      down = true;
-    }
-    else if(event.keyCode === 65){ //a
-      left = true;
-    }
-    else if(event.keyCode === 87){ // w
-      up = true;
-    }
-    else if(event.keyCode == 16){
-      sprint = true;
-    }
-  }
-
-  document.onkeyup = function(event){
-    var message = -1;
-
-    if(event.keyCode === 68){    //d
-      right = false;
-      var seq = game.states.addState(new PredictedState(this.worldX, this.worldY));
-      message = new Message(Message.MessageType.MOVE, {inputId:'right',state:false, seq})
-    }
-    else if(event.keyCode === 83){   //s
-      down = false;
-      var seq = game.states.addState(new PredictedState(this.worldX, this.worldY));
-      message = new Message(Message.MessageType.MOVE, {inputId:'down',state:false, seq})
-    }
-    else if(event.keyCode === 65){ //a
-      left = false;
-      var seq = game.states.addState(new PredictedState(this.worldX, this.worldY));
-      message = new Message(Message.MessageType.MOVE, {inputId:'left',state:false, seq})
-    }
-    else if(event.keyCode === 87){ // w
-      up = false;
-      var seq = game.states.addState(new PredictedState(this.worldX, this.worldY));
-      message = new Message(Message.MessageType.MOVE, {inputId:'down',state:false, seq})
-    }
-    else if(event.keyCode == 16){
-      sprint = false;
-      var seq = game.states.addState(new PredictedState(this.worldX, this.worldY));
-      message = new Message(Message.MessageType.MOVE, {inputId:'shift',state:false, seq})
-    }
-
-    if(message) message.send();
   }
 }

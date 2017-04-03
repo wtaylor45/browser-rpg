@@ -15,27 +15,30 @@ class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    this.player = -1;
+    // Who is the client's player?
+    this.player = false;
 
-    //
-    this.states = new StateList(10);
+    // Recieve messages from server to be processed here
+    this.mailbox = [];
 
-    // This instance's camera
-    //this.camera = new Camera();
+    this.FPS = 60;
   }
 
   /**
    * Start the game and its loop
    */
   start(){
+    // Make sure there is a player
+    if(!this.player) return false;
+
     this.started = true;
-    checkKeyDown(game);
+    Game.keyHandler(this);
 
     // ∆t variables
     var lastTime = new Date().getTime();
     var curTime, dt;
 
-    // Keep track of state time
+    // Keep track of loop iteration
     var iter = 0;
 
     var self = this;
@@ -49,10 +52,10 @@ class Game{
       self.update(dt);
 
       // Render every other
-      if(iter % 2 == 0) self.render();
+      self.render();
 
       iter++;
-    }, 200);
+    }, 1000/this.FPS);
   }
 
   /**
@@ -64,22 +67,53 @@ class Game{
     this.player = player;
   }
 
+  readServerMessages(){
+    // Read every message one at a time
+    for(var i in this.mailbox){
+      var mail = this.mailbox[i];
+
+      // First, go through each player
+      for(var j in mail.players){
+        var server_player = mail.players[j];
+
+        // Check if the player is this client's player
+        if(server_player.id == game.player.id){
+          // Update the player's position to where they are according to server
+          // This is in essence a correction
+          game.player.setPos(server_player.x, server_player.y);
+
+          // Preform reconciliation
+          for(var k in game.player.pending_inputs){
+            var input = game.player.pending_inputs[i];
+
+            // Check if this input has already been processed client side
+            if(input.seq <= server_player.last_input){
+              // This input has been processed by the server
+              // Therefore there is no need to reapply it
+              game.player.pending_inputs.splice(k,1);
+            }
+            else{
+              // This input has not been processed by the server yet
+              // Reapply it
+              game.player.applyInput(input);
+            }
+          }
+        }
+        else{
+          // TODO: Update other entities
+        }
+      }
+    }
+  }
+
   /**
    * The logic to run every loop
    *
    * @param {number} dt Delta time, time since last loop
    */
   update(dt){
-    if(this.serverStates.list.length > 0){
-      var serverState = this.serverStates.list[0]
-      var prediction = this.states.list[serverState.seq];
-      if(prediction){
-        if(serverState.seq == prediction.seq)
-          prediction.validateAndApply(serverState);
-      }
-    }
-
-    this.player.update(time, dt);
+    this.readServerMessages();
+    this.player.update(dt);
   }
 
   render(){
@@ -98,116 +132,51 @@ class Game{
   }
 }
 
-/**
- * Holds a list of at most n predicted states
- */
-class StateList{
-  /**
-   * Creates a state list
-   *
-   * @param {number} size How many max states to hold
-   */
-  constructor(size){
-    this.MAX_SIZE = size;
+// Input handling
+var up = down = left = right = false;
 
-    this.size = 0;
-
-    this.list = [];
-  }
-
-  /**
-   * Adds a state to the end of the state list, removing the oldest state if
-   * size of the list is > size
-   *
-   * @param {Object} state  The state to add
-   * @return {number} The sequence number of the request
-   */
-  addState(state){
-    state.seq = this.size-1;
-    if(this.size < this.MAX_SIZE){
-      this.list.push(state);
-      this.size++;
+Game.keyHandler = function(game){
+  document.onkeydown = function(event){
+    if(event.keyCode === 68){    //d
+      right = true;
     }
-    else{
-      this.list.splice(0,1);
-      this.list.push(state);
+    else if(event.keyCode === 83){   //s
+      down = true;
     }
-
-    return state.seq;
+    else if(event.keyCode === 65){ //a
+      left = true;
+    }
+    else if(event.keyCode === 87){ // w
+      up = true;
+    }
+    else if(event.keyCode == 16){
+      sprint = true;
+    }
   }
 
-  /**
-   * Removes the oldest state in the list
-   */
-  removeOldest(){
-    this.size--;
-    this.list.splice(0,1);
-  }
-}
-
-class State{
-  constructor(x, y, t){
-    this.x = x;
-    this.y = y;
-    this.t = t;
-  }
-
-  applyState(){
-    game.player.setPos(this.x, this.y);
+  document.onkeyup = function(event){
+    if(event.keyCode === 68){    //d
+      right = false;
+    }
+    else if(event.keyCode === 83){   //s
+      down = false;
+    }
+    else if(event.keyCode === 65){ //a
+      left = false;
+    }
+    else if(event.keyCode === 87){ // w
+      up = false;
+    }
+    else if(event.keyCode == 16){
+      sprint = false;
+    }
   }
 }
 
 /**
- * Keeps track of a game state to handle client-side prediction
- */
-class PredictedState extends State{
-  constructor(x, y, t){
-    super(x, y, t);
-    this.applyState();
-  }
-
-  /**
-   * Validate the predicted state against the given server state and apply it
-   *
-   * @param {Object} serverState  The server state to validate against
-   */
-  validateAndApply(serverState){
-    var serverX = serverState.x;
-    var serverY = serverState.y;
-    console.log(serverX, this.x)
-    if(Math.abs(this.x - serverX) < 0.001 && Math.abs(this.y - serverY) < 0.001){
-      // Apply this state
-      this.applyState();
-      console.log('Accepted state');
-    }else{
-      // Discard this state, apply server state.
-      console.log('Rejecting state');
-      serverState.applyState();
-    }
-
-    game.states.removeOldest();
-    game.serverStates.removeOldest();
-  }
-
-  /**
-   * Apply this predicted state to the player
-   */
-  applyState(){
-    game.player.setPos(this.x, this.y);
-  }
-}
-
-/**
- * Get state information from the server
+ * Get updates information from the server
  */
 socket.on('update', function(mail){
   // Only accept mail if game is created
-  if(game){
-    // Start by getting ouy player's state
-    var players = mail.players;
-    var player = mail.players[game.player.id];
-
-    if(player && player.seq >= 0)
-      game.serverStates.addState(new State(player.x, player.y, player.seq));
-  }
+  game.mailbox.push(mail);
 });

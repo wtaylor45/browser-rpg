@@ -26,9 +26,10 @@
   // Wait for all scripts to load first
   socket.on('connected', function(id){
     game = new Game();
-    game.start()
 
     game.setPlayer(new Player(id, 'client/assets/players/sprite_000a.png'))
+
+    game.start();
   })
   </script>
 </body>
