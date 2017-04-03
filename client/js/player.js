@@ -11,8 +11,9 @@ class Player{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(path){
+  constructor(id, path){
     this.sprite = new Sprite(path)
+    this.id = id;
 
     // The world coordinates of the player
     this.worldX = 0;
@@ -24,6 +25,9 @@ class Player{
   }
 
   update(dt){
+    var lastX = this.worldX;
+    var lastY = this.worldY;
+
     if(sprint) this.speed = this.MAX_SPEED;
     else this.speed = 10;
 
@@ -42,6 +46,11 @@ class Player{
 
     this.sprite.setScreenPosition(this.worldX, this.worldY);
     this.sprite.draw();
+
+    if(lastX != this.worldX || lastY != this.worldY){
+      var message = new Message(Message.MessageType.MOVE, {x: this.worldX, y: this.worldY, dt: dt})
+      message.send();
+    }
   }
 }
 

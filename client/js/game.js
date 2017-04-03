@@ -15,7 +15,9 @@ class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    this.player = false;
+    this.player = -1;
+
+    this.mail = {};
 
     // This instance's camera
     //this.camera = new Camera();
@@ -42,6 +44,11 @@ class Game{
     }, 1000/60);
   }
 
+  /**
+   * Set this games player (the client's player)
+   *
+   * @param {Object} player The player object that belongs to this client
+   */
   setPlayer(player){
     this.player = player;
   }
@@ -55,10 +62,30 @@ class Game{
     stage.removeAllChildren();
 
     // Updates go here
+    for(var i in this.mail){
+      var pack = this.mail[i];
+      switch(pack.type){
+        case 'p':
+          if(pack.data.id != this.player.id)
+            this.draw(pack.data.x, pack.data.y, pack.data.sprite);
+          else{
+            this.player.x = pack.data.x;
+            this.player.y = pack.data.y;
+          }
+      }
+    }
+
     if(this.player){
       this.player.update(dt);
     }
 
     stage.update();
+  }
+
+  draw(x, y, sprite){
+    var bitmap = Sprite.getPlayerSprite(sprite)
+    bitmap.x = x;
+    bitmap.y = y;
+    stage.addChild(bitmap)
   }
 }

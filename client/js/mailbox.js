@@ -3,4 +3,7 @@
  * Contains functionality of recieving updates from the server
  */
 
-// TODO: Create mailbox
+ socket.on('update', function(mail){
+   if(game)
+     game.mail = mail;
+ });

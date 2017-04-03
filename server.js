@@ -48,6 +48,6 @@ io.sockets.on('connection', function(socket){
 
   // Handle messages from client
   socket.on('message', function(message){
-    gameserver.onMessage(message);
+    gameserver.onMessage(socket, message);
   });
 });
