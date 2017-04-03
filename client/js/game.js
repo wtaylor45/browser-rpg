@@ -103,6 +103,9 @@ class Game{
           // TODO: Update other entities
         }
       }
+
+      // Remove mail
+      this.mailbox.splice(i,1);
     }
   }
 

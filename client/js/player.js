@@ -40,6 +40,7 @@ class Player{
   applyInput(input){
     var x = this.worldX;
     var y = this.worldY;
+
     if(input.input == 'up' || input.input == 'down'){
       y += this.speed * input.press_time;
     }
@@ -56,30 +57,42 @@ class Player{
    * @param {number} dt Delta time: time passed since last update
    */
   update(dt){
-    /*if(sprint) this.speed = this.MAX_SPEED;
-    else this.speed = 10;*/
-
-    // Check which command was issued, package it
-    var input;
+    // Check which commands were issued, package it
     if(up){
-      input = {press_time: -dt, input: 'up'}
+      var input = {press_time: -dt, input: 'up'}
+      this.packInputAndSend(input);
     }
     else if(down){
-      input = {press_time: dt, input: 'down'}
+      var input = {press_time: dt, input: 'down'}
+      this.packInputAndSend(input);
     }
-
-    if(input){
-      // Send the input package to the server
-      input.seq = this.input_seq++;
-      var message = new Message(Message.MessageType.MOVE, input)
-      message.send();
-
-      // Apply the package to the client now
-      this.applyInput(input);
-
-      // Save input to validated later
-      this.pending_inputs.push(input);
+    if(left){
+      var input = {press_time: -dt, input: 'left'}
+      this.packInputAndSend(input);
     }
+    else if(right){
+      var input = {press_time: dt, input: 'right'}
+      this.packInputAndSend(input);
+    }
+  }
+
+  /**
+   * Marks a given input package with a sequence number and sends it to server.
+   * Also will apply and queue the input as a pending input
+   *
+   * @param {Object} input  The input to package, send, and apply
+   */
+  packInputAndSend(input){
+    // Send the input package to the server
+    input.seq = this.input_seq++;
+    var message = new Message(Message.MessageType.MOVE, input)
+    message.send();
+
+    // Apply the package to the client now
+    this.applyInput(input);
+
+    // Save input to validated later
+    this.pending_inputs.push(input);
   }
 
   draw(){
