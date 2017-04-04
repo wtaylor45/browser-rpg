@@ -37,8 +37,10 @@ function Player(id){
   }
 
   this.update = function(dt){
-    if(this.inputs.length > 0)
-      this.applyInput(this.inputs[0]);
+    for(var i in this.inputs){
+      this.applyInput(this.inputs[i]);
+      this.inputs.splice(i,1);
+    }
   }
 
   this.pack = function(){
