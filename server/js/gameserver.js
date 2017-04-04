@@ -48,7 +48,7 @@ function GameServer(){
       lastTime = curTime;
 
       self.tick(dt);
-    }, 1000/this.FPS)
+    }, 1000/this.FPS);
   }
 
   /**

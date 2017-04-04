@@ -75,6 +75,12 @@ class Game{
   }
 
   readServerMessages(dt){
+    // New list of entities to keep track of
+    // 
+    // Purpose of this is to automatically remove any entities
+    // who do not need to be drawn anymore for whatever reason
+    var entities = {};
+
     // Read every message one at a time
     for(var i in this.mailbox){
       var mail = this.mailbox[i];
@@ -117,12 +123,17 @@ class Game{
               Entity.EntityType.PLAYER);
           }
 
-          var entity = this.entities[server_player.id];
+          // Add this entity to the updated entities list
+          entities[server_player.id] = this.entities[server_player.id];
+
+          var entity = entities[server_player.id];
 
           // Update entity's position
           entity.setPos(server_player.x, server_player.y);
         }
       }
+
+      this.entities = entities;
 
       // Remove mail
       this.mailbox.splice(i,1);
