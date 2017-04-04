@@ -81,7 +81,7 @@ class Game{
           // Update the player's position to where they are according to server
           // This is in essence a correction
           game.player.setPos(server_player.x, server_player.y);
-          console.log('Player pos set')
+
           // Preform reconciliation
           for(var k in game.player.pending_inputs){
             var input = game.player.pending_inputs[i];

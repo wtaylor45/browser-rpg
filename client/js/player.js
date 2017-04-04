@@ -40,12 +40,8 @@ class Player{
     var x = this.worldX;
     var y = this.worldY;
 
-    if(input.input == 'up' || input.input == 'down'){
-      y += this.speed * input.press_time;
-    }
-    else if(input.input == 'left' || input.input == 'right'){
-      x += this.speed * input.press_time;
-    }
+    x += input.vector[0]*input.press_time*this.speed;
+    y += input.vector[1]*input.press_time*this.speed;
 
     this.setPos(x, y);
   }
@@ -57,22 +53,39 @@ class Player{
    */
   update(dt){
     // Check which commands were issued, package it
+    var input;
+    var movement_vector = [0,0];
     if(up){
-      var input = {press_time: -dt, input: 'up'}
-      this.packInputAndSend(input);
+      movement_vector[1]--;
+      input = {press_time: dt, vector: movement_vector}
     }
     else if(down){
-      var input = {press_time: dt, input: 'down'}
-      this.packInputAndSend(input);
+      movement_vector[1]++;
+      input = {press_time: dt, vector: movement_vector}
     }
     if(left){
-      var input = {press_time: -dt, input: 'left'}
-      this.packInputAndSend(input);
+      movement_vector[0]--;
+      input = {press_time: dt, vector: movement_vector}
     }
     else if(right){
-      var input = {press_time: dt, input: 'right'}
-      this.packInputAndSend(input);
+      movement_vector[0]++;
+      input = {press_time: dt, vector: movement_vector}
     }
+
+    if(input){
+      // Send the input package to the server
+      input.seq = this.input_seq++;
+      var message = new Message(Message.MessageType.MOVE, input)
+      message.send();
+
+      // Apply the package to the client now
+      this.applyInput(input);
+
+      // Save input to validated later
+      this.pending_inputs.push(input);
+    }
+
+    console.log(this.pending_inputs.length)
   }
 
   /**
@@ -82,16 +95,7 @@ class Player{
    * @param {Object} input  The input to package, send, and apply
    */
   packInputAndSend(input){
-    // Send the input package to the server
-    input.seq = this.input_seq++;
-    var message = new Message(Message.MessageType.MOVE, input)
-    message.send();
 
-    // Apply the package to the client now
-    this.applyInput(input);
-
-    // Save input to validated later
-    this.pending_inputs.push(input);
   }
 
   draw(){
