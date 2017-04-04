@@ -25,6 +25,9 @@ class Game{
     // Recieve messages from server to be processed here
     this.mailbox = [];
 
+    // List of all entities to be drawn
+    this.entities = {}
+
     this.FPS = 60;
   }
 
@@ -72,6 +75,12 @@ class Game{
   }
 
   readServerMessages(dt){
+    // New list of entities to keep track of
+    // 
+    // Purpose of this is to automatically remove any entities
+    // who do not need to be drawn anymore for whatever reason
+    var entities = {};
+
     // Read every message one at a time
     for(var i in this.mailbox){
       var mail = this.mailbox[i];
@@ -105,9 +114,26 @@ class Game{
           }
         }
         else{
-          // TODO: Update other entities
+          // Other player
+
+          // We haven't seen this entity before
+          // Create a new entity for it
+          if(!this.entities[server_player.id]){
+            this.entities[server_player.id] = new Entity(server_player.sprite,
+              Entity.EntityType.PLAYER);
+          }
+
+          // Add this entity to the updated entities list
+          entities[server_player.id] = this.entities[server_player.id];
+
+          var entity = entities[server_player.id];
+
+          // Update entity's position
+          entity.setPos(server_player.x, server_player.y);
         }
       }
+
+      this.entities = entities;
 
       // Remove mail
       this.mailbox.splice(i,1);
@@ -131,6 +157,10 @@ class Game{
     stage.removeAllChildren();
 
     this.player.draw();
+
+    for(var i in this.entities){
+      this.entities[i].draw();
+    }
 
     stage.update();
   }
