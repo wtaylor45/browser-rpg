@@ -32,6 +32,10 @@ class Player extends Entity{
   applyInput(input){
     this.x += input.vector[0]*input.press_time*this.speed;
     this.y += input.vector[1]*input.press_time*this.speed;
+
+    if(input.vector[1] == 1){
+      this.setAnimation(Sprite.Animations.DOWN)
+    }
   }
 
   /**
@@ -59,6 +63,10 @@ class Player extends Entity{
       movement_vector[0]++;
       input = {press_time: dt, vector: movement_vector}
     }
+
+    // If player is not moving
+    // TODO: Change this so that other animations can run
+    if(!right && !down && !left && !up) this.current_animation = -1
 
     if(input){
       // Send the input package to the server

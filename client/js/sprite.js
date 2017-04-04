@@ -9,7 +9,7 @@
  * Intended usage is for entities like player, mobs, etc to extend this class
  */
 class Sprite{
-  constructor(sprite, frame_width, frame_height, frames){
+  constructor(sprite, animate, frame_width, frame_height, frames, loop){
     // The path and bitmap of the sprite
     this.image = sprite;
 
@@ -21,14 +21,22 @@ class Sprite{
     this.x = 0;
     this.y = 0;
 
-    this.current_frame = 0;
-    this.frame_width = frame_width || 32;
-    this.frame_height = frame_height || 64;
-    this.frames = frames || 4;
+    this.animate = animate || false;
 
-    this.frame_duration = 10;
+    if(animate){
+      this.current_frame = 0;
+      this.frame_width = frame_width || 32;
+      this.frame_height = frame_height || 64;
+      this.frames = frames || 4;
 
-    this.current_tick = 0;
+      this.frame_duration = 10;
+
+      this.current_tick = 0;
+
+      this.loop = loop || false;
+
+      this.current_animation = -1;
+    }
 
   }
 
@@ -39,19 +47,55 @@ class Sprite{
     this.getScreenPosition();
     this.image.x = this.screenX;
     this.image.y = this.screenY;
-    if(this.current_tick % this.frame_duration == 0){
-      this.image.sourceRect = new createjs.Rectangle(
-        this.current_frame * this.frame_width,
-        0,
-        this.frame_width,
-        this.frame_height
-      )
-      if(this.current_frame >= this.frames-1)this.current_frame = 0;
-      else this.current_frame++;
+
+    if(this.current_animation >= 0){
+      this.animation();
     }
+    else{
+      this.setFrame(1)
+    }
+
     stage.addChild(this.image);
+  }
+
+  animation(){
+    if(this.current_tick % this.frame_duration == 0){
+
+      var frame_index = this.getNextFrameIndex();
+      this.setFrame(frame_index);
+    }
+
+    if(this.current_frame >= this.frames){
+      this.current_animation = -1;
+      return;
+    }
 
     this.current_tick++;
+  }
+
+  setFrame(frame){
+    this.image.sourceRect = new createjs.Rectangle(
+      frame * this.frame_width,
+      0,
+      this.frame_width,
+      this.frame_height
+    )
+  }
+
+  setAnimation(animation){
+    if(this.current_animation != animation){
+      this.current_animation = animation;
+      this.current_tick = 0;
+      this.current_frame = 0
+    }
+  }
+
+  getNextFrameIndex(){
+    var frame = this.current_frame + this.current_animation*this.frames;
+    this.current_frame++;
+    if(this.current_frame == this.frames && this.loop) this.current_frame = 0;
+
+    return frame;
   }
 
   /**
@@ -69,6 +113,13 @@ class Sprite{
 Sprite.PlayerSprites = {
   0: 'sprite_000a.png',
   1: 'sprite_000b.png'
+}
+
+Sprite.Animations = {
+  UP: 1,
+  DOWN: 0,
+  LEFT: 2,
+  RIGHT: 3
 }
 
 /**

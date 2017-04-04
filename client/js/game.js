@@ -76,7 +76,7 @@ class Game{
 
   readServerMessages(dt){
     // New list of entities to keep track of
-    // 
+    //
     // Purpose of this is to automatically remove any entities
     // who do not need to be drawn anymore for whatever reason
     var entities = {};

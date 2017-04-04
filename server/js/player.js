@@ -49,7 +49,7 @@ function Player(id){
       y: this.y,
       last_input: this.last_input,
       id: this.id,
-      sprite: 0
+      sprite: 1
     }
 
     return send;
