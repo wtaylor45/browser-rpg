@@ -9,20 +9,24 @@
  * Intended usage is for entities like player, mobs, etc to extend this class
  */
 class Sprite{
-  constructor(path){
+  constructor(sprite){
     // The path and bitmap of the sprite
-    this.path = path;
-    this.image = new createjs.Bitmap(this.path);
+    this.image = sprite;
 
     // X and Y screen coordinates
     this.screenX = 0;
     this.screenY = 0;
+
+    // World x and y
+    this.x = 0;
+    this.y = 0;
   }
 
   /**
    * Draw the sprite at its screen x and y
    */
   draw(){
+    this.getScreenPosition();
     this.image.x = this.screenX;
     this.image.y = this.screenY;
     stage.addChild(this.image);
@@ -34,9 +38,9 @@ class Sprite{
    * @param {number} x  The x screen coordinate to set to
    * @param {number} y  The y screen coordinate to set to
    */
-  setScreenPosition(x, y){
-    this.screenX = x;
-    this.screenY = y;
+  getScreenPosition(){
+    this.screenX = this.x;
+    this.screenY = this.y;
   }
 }
 

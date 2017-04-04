@@ -25,6 +25,9 @@ class Game{
     // Recieve messages from server to be processed here
     this.mailbox = [];
 
+    // List of all entities to be drawn
+    this.entities = {}
+
     this.FPS = 60;
   }
 
@@ -105,7 +108,19 @@ class Game{
           }
         }
         else{
-          // TODO: Update other entities
+          // Other player
+
+          // We haven't seen this entity before
+          // Create a new entity for it
+          if(!this.entities[server_player.id]){
+            this.entities[server_player.id] = new Entity(server_player.sprite,
+              Entity.EntityType.PLAYER);
+          }
+
+          var entity = this.entities[server_player.id];
+
+          // Update entity's position
+          entity.setPos(server_player.x, server_player.y);
         }
       }
 
@@ -131,6 +146,10 @@ class Game{
     stage.removeAllChildren();
 
     this.player.draw();
+
+    for(var i in this.entities){
+      this.entities[i].draw();
+    }
 
     stage.update();
   }

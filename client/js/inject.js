@@ -1,4 +1,4 @@
-var depend = ['game.js', 'sprite.js', 'player.js', 'mailbox.js', 'message.js'];
+var depend = ['game.js', 'sprite.js', 'entity.js','player.js', 'mailbox.js', 'message.js'];
 
 for(var i in depend){
   var src = document.createElement('script');

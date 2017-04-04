@@ -9,18 +9,16 @@
 /**
  * Player class, keeps track of player position, movement, etc.
  */
-class Player{
+class Player extends Entity{
   /**
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(id, path){
-    this.sprite = new Sprite(path)
-    this.id = id;
+  constructor(id, sprite){
+    // Create the player's entity
+    super(sprite, Entity.EntityType.PLAYER);
 
-    // The world coordinates of the player
-    this.worldX = 0;
-    this.worldY = 0;
+    this.id = id;
 
     // Player movement variables
     this.MAX_SPEED = 15;
@@ -31,19 +29,9 @@ class Player{
     this.input_seq = 0;
   }
 
-  setPos(x, y){
-    this.worldX = x;
-    this.worldY = y;
-  }
-
   applyInput(input){
-    var x = this.worldX;
-    var y = this.worldY;
-
-    x += input.vector[0]*input.press_time*this.speed;
-    y += input.vector[1]*input.press_time*this.speed;
-
-    this.setPos(x, y);
+    this.x += input.vector[0]*input.press_time*this.speed;
+    this.y += input.vector[1]*input.press_time*this.speed;
   }
 
   /**
@@ -84,20 +72,5 @@ class Player{
       // Save input to validated later
       this.pending_inputs.push(input);
     }
-  }
-
-  /**
-   * Marks a given input package with a sequence number and sends it to server.
-   * Also will apply and queue the input as a pending input
-   *
-   * @param {Object} input  The input to package, send, and apply
-   */
-  packInputAndSend(input){
-
-  }
-
-  draw(){
-    this.sprite.setScreenPosition(this.worldX, this.worldY);
-    this.sprite.draw();
   }
 }
