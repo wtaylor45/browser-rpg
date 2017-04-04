@@ -1,9 +1,13 @@
 /**
  * @author Will Taylor
  * Created on: 4/2/17
+ *
+ * Client-side prediction based on Gabriel Gambetta's article on the matter
+ * http://www.gabrielgambetta.com/fpm2.html
  */
 
 var stage = new createjs.Stage('canvas');
+var player_status = document.getElementById("player_status");
 
 /**
  * The client instance of the game
@@ -67,7 +71,7 @@ class Game{
     this.player = player;
   }
 
-  readServerMessages(){
+  readServerMessages(dt){
     // Read every message one at a time
     for(var i in this.mailbox){
       var mail = this.mailbox[i];
@@ -83,9 +87,9 @@ class Game{
           game.player.setPos(server_player.x, server_player.y);
 
           // Preform reconciliation
-          for(var k in game.player.pending_inputs){
-            var input = game.player.pending_inputs[i];
-
+          var k = 0;
+          while (k < game.player.pending_inputs.length){
+            var input = game.player.pending_inputs[k];
             // Check if this input has already been processed client side
             if(input.seq <= server_player.last_input){
               // This input has been processed by the server
@@ -96,6 +100,7 @@ class Game{
               // This input has not been processed by the server yet
               // Reapply it
               game.player.applyInput(input);
+              k++;
             }
           }
         }
@@ -115,8 +120,11 @@ class Game{
    * @param {number} dt Delta time, time since last loop
    */
   update(dt){
-    this.readServerMessages();
+    this.readServerMessages(dt);
     this.player.update(dt);
+
+    var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
+    player_status.textContent = info;
   }
 
   render(){

@@ -33,13 +33,13 @@ function Player(id){
     this.y += input.vector[1]*input.press_time*this.speed;
 
     this.last_input = input.seq;
-    this.inputs.splice(0,1);
   }
 
   this.update = function(dt){
-    for(var i in this.inputs){
+    var i = 0;
+    while(i<this.inputs.length){
       this.applyInput(this.inputs[i]);
-      this.inputs.splice(i,1);
+      this.inputs.splice(i,1)
     }
   }
 

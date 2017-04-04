@@ -84,8 +84,6 @@ class Player{
       // Save input to validated later
       this.pending_inputs.push(input);
     }
-
-    console.log(this.pending_inputs.length)
   }
 
   /**
