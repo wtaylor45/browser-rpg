@@ -29,12 +29,8 @@ function Player(id){
   }
 
   this.applyInput = function(input){
-    if(input.input == 'up' || input.input == 'down'){
-      this.y += this.speed * input.press_time;
-    }
-    else if(input.input == 'left' || input.input == 'right'){
-      this.x += this.speed * input.press_time;
-    }
+    this.x += input.vector[0]*input.press_time*this.speed;
+    this.y += input.vector[1]*input.press_time*this.speed;
 
     this.last_input = input.seq;
     this.inputs.splice(0,1);
@@ -43,7 +39,6 @@ function Player(id){
   this.update = function(dt){
     if(this.inputs.length > 0)
       this.applyInput(this.inputs[0]);
-    console.log("hm",this.inputs.length);
   }
 
   this.pack = function(){
