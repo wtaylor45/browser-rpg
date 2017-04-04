@@ -19,7 +19,7 @@ class Entity extends Sprite{
         super(Sprite.getPlayerSprite(sprite));
         break;
     }
-    
+
     this.type = type;
   }
 

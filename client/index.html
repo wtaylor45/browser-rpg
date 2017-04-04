@@ -27,7 +27,7 @@
   socket.on('connected', function(id){
     game = new Game();
 
-    game.setPlayer(new Player(id, 0))
+    game.setPlayer(new Player(id, 1))
 
     game.start();
   })
