@@ -176,6 +176,7 @@ class Game{
 // Input handling
 var up = down = left = right = false;
 var attack1 = false;
+var allowed = true;
 
 Game.keyHandler = function(game){
   document.onkeydown = function(event){
@@ -192,7 +193,9 @@ Game.keyHandler = function(game){
       up = true;
     }
     else if(event.keyCode == 49){
+      if(!allowed) return;
       attack1 = true;
+      allowed = false;
     }
   }
 
@@ -208,6 +211,11 @@ Game.keyHandler = function(game){
     }
     else if(event.keyCode === 87){ // w
       up = false;
+    }
+    else if(event.keyCode == 49){
+      // TODO: Make cool down dependant in actor class
+      attack1 = false;
+      allowed = true;
     }
   }
 }

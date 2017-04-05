@@ -29,10 +29,17 @@ class Player extends Entity{
     this.input_seq = 0;
   }
 
+  /**
+   * Apply the given input to the character
+   *
+   * @param {Object} input  The input to be applied
+   */
   applyInput(input){
+    // Update the player x and y based on the movement vector
     this.x += input.vector[0]*input.press_time*this.speed;
     this.y += input.vector[1]*input.press_time*this.speed;
 
+    // Update the direction the player is facing
     if(input.vector[1] == 1){
       this.direction = Player.Direction.DOWN;
     }
@@ -45,6 +52,7 @@ class Player extends Entity{
       this.direction = Player.Direction.RIGHT;
     }
 
+    // Start the animation
     this.startAnimation(Player.Actions.MOVE)
   }
 
@@ -56,8 +64,14 @@ class Player extends Entity{
   update(dt){
     // Check which commands were issued, package it
     var input;
+
+    // The vector defining which direction we are moving in
     var movement_vector = [0,0];
+
+    // The type of input
     var inputType;
+
+    // Check which input is down, act accordingly
     if(up){
       movement_vector[1]--;
       input = {press_time: dt, vector: movement_vector}
@@ -79,10 +93,11 @@ class Player extends Entity{
       inputType = Message.MessageType.MOVE;
     }
     else if(attack1){
+      // TODO: make cooldown dependant
+      attack1 = false;
       input = {press_time: dt}
       inputType = Message.MessageType.ATTACK;
       this.startAnimation(Player.Actions.ATTACK)
-      attack1 = false;
     }
 
     // If player is not moving
