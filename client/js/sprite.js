@@ -220,5 +220,6 @@ class Animation{
    */
   end(){
     this.running = false;
+    this.sprite.current_animation = -1
   }
 }

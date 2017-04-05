@@ -127,7 +127,7 @@ class Game{
           var entity = entities[server_player.id];
 
           // Update entity's position
-          entity.setPos(server_player.x, server_player.y);
+          entity.update(server_player)
         }
       }
 
