@@ -28,6 +28,29 @@ class Entity extends Sprite{
     this.x = x;
     this.y = y;
   }
+
+  update(pack){
+    this.setPos(pack.x, pack.y);
+    this.direction = pack.direction;
+
+    if(pack.last_action >= 0){
+      this.startAnimation(this.getAnimation(pack.last_action));
+    }
+    else{
+      if(this.current_animation.running && this.current_animation.loop)
+        this.current_animation.running = false;
+    }
+  }
+
+  getAnimation(animation){
+    switch(animation){
+      case 0:
+        return Player.Actions.MOVE;
+      case 1:
+        return Player.Actions.ATTACK;
+    }
+
+  }
 }
 
 Entity.EntityType = {

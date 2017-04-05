@@ -136,6 +136,6 @@ Player.Direction = {
 }
 
 Player.Actions = {
-  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10},
+  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10, loop: true},
   ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
 }

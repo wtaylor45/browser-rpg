@@ -107,9 +107,13 @@ function GameServer(){
         if(player){
           var input = message.data;
           if(true){
-            player.queueInput(input);
+            player.queueInput(message.type, input);
           }
         }
+        break;
+      case 'atk':
+        player.queueInput(message.type, message.data)
+        break;
     }
   }
 
