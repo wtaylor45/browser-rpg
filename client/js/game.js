@@ -40,6 +40,7 @@ class Game{
 
     this.started = true;
     Game.keyHandler(this);
+    this.render();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -58,9 +59,6 @@ class Game{
       // Update every loop
       self.update(dt);
 
-      // Render every other
-      self.render();
-
       iter++;
     }, 1000/this.FPS);
   }
@@ -76,7 +74,7 @@ class Game{
 
   readServerMessages(dt){
     // New list of entities to keep track of
-    // 
+    //
     // Purpose of this is to automatically remove any entities
     // who do not need to be drawn anymore for whatever reason
     var entities = {};
@@ -163,6 +161,8 @@ class Game{
     }
 
     stage.update();
+
+    window.requestAnimationFrame(this.render.bind(this));
   }
 
   draw(x, y, sprite){
@@ -175,6 +175,8 @@ class Game{
 
 // Input handling
 var up = down = left = right = false;
+var attack1 = false;
+var allowed = true;
 
 Game.keyHandler = function(game){
   document.onkeydown = function(event){
@@ -190,8 +192,10 @@ Game.keyHandler = function(game){
     else if(event.keyCode === 87){ // w
       up = true;
     }
-    else if(event.keyCode == 16){
-      sprint = true;
+    else if(event.keyCode == 49){
+      if(!allowed) return;
+      attack1 = true;
+      allowed = false;
     }
   }
 
@@ -208,8 +212,10 @@ Game.keyHandler = function(game){
     else if(event.keyCode === 87){ // w
       up = false;
     }
-    else if(event.keyCode == 16){
-      sprint = false;
+    else if(event.keyCode == 49){
+      // TODO: Make cool down dependant in actor class
+      attack1 = false;
+      allowed = true;
     }
   }
 }

@@ -16,10 +16,10 @@ class Entity extends Sprite{
   constructor(sprite, type){
     switch(type){
       case 0:
-        super(Sprite.getPlayerSprite(sprite));
+        super(Sprite.getPlayerSprite(sprite), true);
         break;
     }
-    
+
     this.type = type;
   }
 
