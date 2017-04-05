@@ -34,8 +34,18 @@ class Player extends Entity{
     this.y += input.vector[1]*input.press_time*this.speed;
 
     if(input.vector[1] == 1){
-      this.setAnimation(Sprite.Animations.DOWN)
+      this.direction = Player.Direction.DOWN;
     }
+    else if(input.vector[1] == -1){
+      this.direction = Player.Direction.UP;
+    }else if(input.vector[0] == 1){
+      this.direction = Player.Direction.LEFT;
+    }
+    else if(input.vector[0] == -1){
+      this.direction = Player.Direction.RIGHT;
+    }
+
+    this.startAnimation(Player.Actions.MOVE)
   }
 
   /**
@@ -47,38 +57,70 @@ class Player extends Entity{
     // Check which commands were issued, package it
     var input;
     var movement_vector = [0,0];
+    var inputType;
     if(up){
       movement_vector[1]--;
       input = {press_time: dt, vector: movement_vector}
+      inputType = Message.MessageType.MOVE;
     }
     else if(down){
       movement_vector[1]++;
       input = {press_time: dt, vector: movement_vector}
+      inputType = Message.MessageType.MOVE;
     }
     if(left){
       movement_vector[0]--;
       input = {press_time: dt, vector: movement_vector}
+      inputType = Message.MessageType.MOVE;
     }
     else if(right){
       movement_vector[0]++;
       input = {press_time: dt, vector: movement_vector}
+      inputType = Message.MessageType.MOVE;
+    }
+    else if(attack1){
+      input = {press_time: dt}
+      inputType = Message.MessageType.ATTACK;
+      this.startAnimation(Player.Actions.ATTACK)
+      attack1 = false;
     }
 
     // If player is not moving
     // TODO: Change this so that other animations can run
-    if(!right && !down && !left && !up) this.current_animation = -1
+
 
     if(input){
       // Send the input package to the server
       input.seq = this.input_seq++;
-      var message = new Message(Message.MessageType.MOVE, input)
+      var message = new Message(inputType, input)
       message.send();
 
-      // Apply the package to the client now
-      this.applyInput(input);
+      if(inputType == Message.MessageType.MOVE){
+        // Apply the package to the client now
+        this.applyInput(input);
 
-      // Save input to validated later
-      this.pending_inputs.push(input);
+        // Save input to validated later
+        this.pending_inputs.push(input);
+      }
+    }
+
+    if(!right && !down && !left && !up){
+      if(this.current_animation.type == 'move'){
+        if(this.current_animation.running)
+          this.current_animation.end();
+      }
     }
   }
+}
+
+Player.Direction = {
+  UP: 1,
+  DOWN: 0,
+  LEFT: 2,
+  RIGHT: 3
+}
+
+Player.Actions = {
+  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10},
+  ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
 }

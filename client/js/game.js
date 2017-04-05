@@ -40,6 +40,7 @@ class Game{
 
     this.started = true;
     Game.keyHandler(this);
+    this.render();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -57,9 +58,6 @@ class Game{
 
       // Update every loop
       self.update(dt);
-
-      // Render every other
-      self.render();
 
       iter++;
     }, 1000/this.FPS);
@@ -163,6 +161,8 @@ class Game{
     }
 
     stage.update();
+
+    window.requestAnimationFrame(this.render.bind(this));
   }
 
   draw(x, y, sprite){
@@ -175,6 +175,7 @@ class Game{
 
 // Input handling
 var up = down = left = right = false;
+var attack1 = false;
 
 Game.keyHandler = function(game){
   document.onkeydown = function(event){
@@ -190,8 +191,8 @@ Game.keyHandler = function(game){
     else if(event.keyCode === 87){ // w
       up = true;
     }
-    else if(event.keyCode == 16){
-      sprint = true;
+    else if(event.keyCode == 49){
+      attack1 = true;
     }
   }
 
@@ -207,9 +208,6 @@ Game.keyHandler = function(game){
     }
     else if(event.keyCode === 87){ // w
       up = false;
-    }
-    else if(event.keyCode == 16){
-      sprint = false;
     }
   }
 }

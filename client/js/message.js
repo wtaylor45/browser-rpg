@@ -26,5 +26,6 @@ class Message{
 Message.MessageType = {
   LOGIN: 'lgin',
   LOGOUT: 'lgout',
-  MOVE: 'move'
+  MOVE: 'move',
+  ATTACK: 'atk'
 }

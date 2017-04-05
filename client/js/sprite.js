@@ -23,11 +23,12 @@ class Sprite{
 
     this.animate = animate || false;
 
+    this.direction = Player.Direction.DOWN;
+
     if(animate){
-      this.current_frame = 0;
+      this.animations = [];
       this.frame_width = frame_width || 32;
       this.frame_height = frame_height || 64;
-      this.frames = frames || 4;
 
       this.frame_duration = 10;
 
@@ -48,54 +49,36 @@ class Sprite{
     this.image.x = this.screenX;
     this.image.y = this.screenY;
 
-    if(this.current_animation >= 0){
-      this.animation();
+    if(this.current_animation.running){
+      this.current_animation.run();
     }
     else{
-      this.setFrame(1)
+      // Draw idle
+      this.setIdle();
     }
 
     stage.addChild(this.image);
   }
 
-  animation(){
-    if(this.current_tick % this.frame_duration == 0){
-
-      var frame_index = this.getNextFrameIndex();
-      this.setFrame(frame_index);
-    }
-
-    if(this.current_frame >= this.frames){
-      this.current_animation = -1;
-      return;
-    }
-
-    this.current_tick++;
-  }
-
-  setFrame(frame){
+  setIdle(){
     this.image.sourceRect = new createjs.Rectangle(
-      frame * this.frame_width,
       0,
+      this.direction*this.frame_height,
       this.frame_width,
       this.frame_height
     )
   }
 
-  setAnimation(animation){
-    if(this.current_animation != animation){
-      this.current_animation = animation;
-      this.current_tick = 0;
-      this.current_frame = 0
+  startAnimation(animation){
+    if(this.current_animation.type != animation.type
+      || !this.current_animation.running){
+      this.current_animation = new Animation(this, animation);
+      this.current_animation.startAnimation();
+      this.current_animation.running = true;
     }
-  }
-
-  getNextFrameIndex(){
-    var frame = this.current_frame + this.current_animation*this.frames;
-    this.current_frame++;
-    if(this.current_frame == this.frames && this.loop) this.current_frame = 0;
-
-    return frame;
+    else if(this.current_animation.type == 'move'){
+      this.current_animation.row = this.direction;
+    }
   }
 
   /**
@@ -116,10 +99,11 @@ Sprite.PlayerSprites = {
 }
 
 Sprite.Animations = {
-  UP: 1,
-  DOWN: 0,
+  UP: 0,
+  DOWN: 1,
   LEFT: 2,
-  RIGHT: 3
+  RIGHT: 3,
+  PUNCH: 4
 }
 
 /**
@@ -129,4 +113,71 @@ Sprite.Animations = {
  */
 Sprite.getPlayerSprite = function(val){
   return new createjs.Bitmap('client/assets/players/'+Sprite.PlayerSprites[val]);
+}
+
+
+class Animation{
+  constructor(sprite, options){
+    this.running = false;
+
+    this.sprite = sprite;
+
+    this.type = options.type;
+
+    this.row = options.row + this.sprite.direction
+
+    // in ms
+    this.duration = options.frame_length;
+
+    this.num_frames = options.num_frames || 4;
+
+    this.frame_width = this.sprite.frame_width;
+    this.frame_height = this.sprite.frame_height;
+
+    this.loop = options.loop || false;
+
+    this.current_frame = 0;
+    this.currentTick = 0;
+  }
+
+  startAnimation(){
+    this.running = true;
+
+    this.current_tick = 0;
+    this.current_frame = 1;
+    this.run();
+  }
+
+  run(){
+    if(this.running){
+      var rect;
+
+      if(this.current_tick % this.duration == 0){
+        if(this.current_frame >= this.num_frames){
+          this.current_frame = 0;
+        }
+
+        var frame = this.current_frame*this.frame_width;
+
+        // Crop the spritesheet to the correct frame
+        this.sprite.image.sourceRect = new createjs.Rectangle(
+          frame,
+          this.row*this.frame_height,
+          this.frame_width,
+          this.frame_height
+        )
+
+        if(this.current_frame == 0) this.end();
+
+        this.current_frame++;
+      }
+
+      this.current_tick++;
+    }
+  }
+
+  end(){
+    console.log('ending')
+    this.running = false;
+  }
 }
