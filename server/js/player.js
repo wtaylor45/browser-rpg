@@ -3,8 +3,37 @@
  * Contains all server-side information about the player
  */
 
-module.exports = Player;
+var cls = require('./lib/class'),
+    Types = require('../../shared/js/types'),
+    Character = require('./character');
 
+module.exports = Player = Character.extend({
+  init: function(connection, server){
+    this.server = server;
+    this.connection = connection;
+
+    this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
+
+    this.inGame = false;
+
+    // List of NPCs that are aggressive to the player
+    this.enemies = {};
+
+    // Listen for and handle messages from this player's client
+    this.connection.on('message', function(message){
+      if(message.type == Types.Messages.MOVE){
+        console.log('moved')
+      }
+    });
+
+    // When the player disconnects
+    this.connection.on('disconnect', function(){
+      console.log('Disconnected')
+    })
+  }
+});
+
+/*
 function Player(id){
   this.id = id;
   this.x = 0;
@@ -108,3 +137,4 @@ Player.Direction = {
   LEFT: 2,
   RIGHT: 3
 }
+*/

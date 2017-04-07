@@ -10,6 +10,7 @@ var db = mongojs('browserpg', ['account', 'counters']);
 // Require needed node modules
 var _ = require('underscore');
 var Mailman = require('./mailman.js');
+var Entity = require('./entity')
 var Player = require('./player.js');
 
 // Export the GameServer module
@@ -21,8 +22,11 @@ module.exports = GameServer;
 function GameServer(){
   // Initialization
   this.players = {};
+  this.entities = {};
 
-  this.mailman = new Mailman(this);
+  this.outgoingMessages = {};
+
+  this.population = 0;
 
   this.started = false;
 
@@ -34,6 +38,8 @@ function GameServer(){
    */
   this.init = function(){
     this.started = true;
+
+    new Entity();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -55,16 +61,7 @@ function GameServer(){
    * Logic that happens once every loop
    */
   this.tick = function(dt){
-    // The mailbag to send out to each client
-    var mail = {players: {}}
 
-    for(var i in this.players){
-      var player = this.players[i];
-      player.update(dt);
-      mail.players[player.id] = player.pack();
-    }
-
-    this.mailman.sendMail(mail);
   }
 
   /**
@@ -76,9 +73,8 @@ function GameServer(){
     if(!this.started) this.init();
     console.log('Client', client.id, 'connected.');
 
-    this.players[client.id] = new Player(client.id);
+    this.players[client.id] = new Player(client, this);
     client.emit('connected', client.id);
-    console.log('Added a player for this client.')
   }
 
   /**
@@ -91,30 +87,6 @@ function GameServer(){
     delete global.SOCKET_LIST[client.id];
     delete this.players[client.id];
     console.log('Client', client.id, 'disconnected.');
-  }
-
-  /**
-   * Handle the message sent by the given client
-   * @param {Object} client The client that has sent the message
-   * @param {Object} message  The message that was sent by the client
-   */
-  this.onMessage = function(client, message){
-    // First, check if this client has a player
-    var player = this.players[client.id];
-    // Check the message type, distribute accordingly
-    switch(message.type){
-      case 'move':
-        if(player){
-          var input = message.data;
-          if(true){
-            player.queueInput(message.type, input);
-          }
-        }
-        break;
-      case 'atk':
-        player.queueInput(message.type, message.data)
-        break;
-    }
   }
 
   this.validateInput = function(input){

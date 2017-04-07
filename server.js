@@ -45,9 +45,4 @@ io.sockets.on('connection', function(socket){
   socket.on('disconnect', function(){
     gameserver.onDisconnect(socket);
   });
-
-  // Handle messages from client
-  socket.on('message', function(message){
-    gameserver.onMessage(socket, message);
-  });
 });

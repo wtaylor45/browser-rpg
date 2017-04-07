@@ -4,13 +4,15 @@
   "description": "An attempt to create a browser-based RPG",
   "main": "server.js",
   "dependencies": {
+    
+  },
+  "devDependencies": {
     "express": "^4.15.2",
     "mongojs": "^2.4.0",
     "socket.io": "^1.7.3",
     "underscore": "^1.8.3",
     "uuid": "^3.0.1"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "test",
     "start": "node server.js"

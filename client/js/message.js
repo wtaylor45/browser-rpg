@@ -10,22 +10,15 @@
  * }
  */
 
-class Message{
+module.exports = Message = class Message{
   constructor(type, data){
     this.message = {
-      'type': type,
-      'data': data
+      type: type,
+      data: data
     }
   }
 
   send(){
-    socket.emit('message', this.message);
+    Message.socket.emit('message', this.message);
   }
-}
-
-Message.MessageType = {
-  LOGIN: 'lgin',
-  LOGOUT: 'lgout',
-  MOVE: 'move',
-  ATTACK: 'atk'
 }

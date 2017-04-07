@@ -34,7 +34,7 @@ class Sprite{
       this.frame_height = frame_height || 64;
 
       // The current animation (does not signify playing or not)
-      this.current_animation = -1;
+      this.current_animation = null;
     }
 
   }
@@ -49,7 +49,7 @@ class Sprite{
     this.image.y = this.screenY;
 
     // Check if an animation is running
-    if(this.current_animation.running){
+    if(this.current_animation && this.current_animation.running){
       // Run the next iteration of the animation
       this.current_animation.run();
     }

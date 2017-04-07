@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -230,3 +231,241 @@ socket.on('update', function(mail){
   game.mailbox.push(mail);
 });
 */
+
+},{"./input":2}],2:[function(require,module,exports){
+/**
+ * @author Will Taylor
+ * Created on: 4/7/17
+ */
+
+var Types = require('../../shared/js/types')
+
+module.exports = Input = {};
+
+var STATE = null;
+var DOWN = 1;
+var UP = 0;
+
+Input.onKeyEvent = function(keyCode, val){
+  var state = Input.getState();
+
+  switch(keyCode){
+    case 87:  // up
+      state.vector.y = -1 * val;
+      break;
+    case 83:
+      state.vector.y = val
+      break;
+  }
+}
+
+Input.getMovementVector = function(){
+  return Input.getState().vector;
+}
+
+Input.baseState = function(){
+  return {
+    vector: {x: 0, y: 0}
+  }
+}
+
+Input.getState = function(){
+  return STATE;
+}
+
+Input.reset = function(){
+  STATE = Input.baseState;
+}
+
+Input.init = function(){
+  STATE = Input.baseState();
+
+  $(document).keydown(function(event){
+    Input.onKeyEvent(event.keyCode, DOWN);
+  });
+
+  $(document).keyup(function(event){
+    Input.onKeyEvent(event.keyCode, UP);
+  });
+}
+
+},{"../../shared/js/types":6}],3:[function(require,module,exports){
+/**
+ * @author Will Taylor
+ *
+ * Message Format:
+ * {
+ *   'type': [type],
+ *   'data': {
+ *     [data]
+ *   }
+ * }
+ */
+
+module.exports = Message = class Message{
+  constructor(type, data){
+    this.message = {
+      type: type,
+      data: data
+    }
+  }
+
+  send(){
+    Message.socket.emit('message', this.message);
+  }
+}
+
+},{}],4:[function(require,module,exports){
+/**
+ * @author Will Taylor
+ * Created on: 4/2/17
+ *
+ * Client-side prediction based on Gabriel Gambetta's article on the matter
+ * http://www.gabrielgambetta.com/fpm2.html
+ */
+
+var Game = require('./game'),
+    Message = require('./message');
+
+/**
+ * Player class, keeps track of player position, movement, etc.
+ */
+module.exports = Player = class Player{
+  /**
+   * Create a new player
+   * @param {String} path File path of the sprite to be drawn
+   */
+  constructor(id, sprite){
+    // Create the player's entity
+    //this.sprite = new Sprite(Sprite.getPlayerSprite(sprite), false);
+    this.id = id;
+
+    // Player movement variables
+    this.MAX_SPEED = 15;
+    this.speed = 10;
+
+    // Variables for client-side prediction
+    this.pending_inputs = []
+    this.input_seq = 0;
+  }
+
+  /**
+   * Apply the given input to the character
+   *
+   * @param {Object} input  The input to be applied
+   */
+  applyInput(input){
+    // Update the player x and y based on the movement vector
+    this.x += input.vector[0]*input.press_time*this.speed;
+    this.y += input.vector[1]*input.press_time*this.speed;
+  }
+
+  /**
+   * Update logic for the players
+   *
+   * @param {number} dt Delta time: time passed since last update
+   */
+  update(dt){
+    // Check which commands were issued, package it
+    var input;
+
+    // The vector defining which direction we are moving in
+    var movementVector = Input.getMovementVector();
+
+    // The type of input
+    var inputType;
+
+    // If there is movement vector will not be [0,0]
+    if(movementVector.x != 0 || movementVector.y != 0){
+      input = {pressTime: dt, vector: movementVector}
+    }
+
+    if(input){
+      // Send the input package to the server
+      input.seq = this.input_seq++;
+
+      var message = new Message(Types.Messages.MOVE, input);
+      message.send();
+
+      this.applyInput(input);
+
+      // Save input to validated later
+      this.pending_inputs.push(input);
+    }
+  }
+
+  draw(){
+    //this.sprite.draw();
+  }
+}
+
+Player.Direction = {
+  UP: 1,
+  DOWN: 0,
+  LEFT: 2,
+  RIGHT: 3
+}
+
+Player.Actions = {
+  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10, loop: true},
+  ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
+}
+
+},{"./game":1,"./message":3}],5:[function(require,module,exports){
+"use strict"
+
+var Game = require('./js/game'),
+    Player = require('./js/player'),
+    Message = require('./js/message');
+
+var socket = io();
+var game;
+
+Message.socket = socket;
+
+socket.on('connected', function(id){
+  game = new Game();
+
+  game.setPlayer(new Player(id, 0));
+  game.start();
+});
+
+},{"./js/game":1,"./js/message":3,"./js/player":4}],6:[function(require,module,exports){
+/**
+ * @author Will Taylor
+ * Created on: 4/6/17
+ *
+ * Heavily based on Mozilla's BrowserQuest
+ */
+
+/**
+ * Enumeration of enumerations.
+ * Contains details such as message types, directions, etc.
+ * @type {Object}
+ */
+Types = {
+  Messages: {
+    LOGIN: 0,
+    LOGOUT: 1,
+    MOVE: 2,
+    SPAWN: 3,
+    ATTACK: 4
+  },
+
+  Entities: {
+    PLAYER: 0
+  },
+
+  Directions: {
+    UP: 0,
+    DOWN: 1,
+    LEFT: 2,
+    RIGHT: 3
+  }
+}
+
+if(!(typeof exports === 'undefined')){
+  module.exports = Types;
+}
+
+},{}]},{},[5]);
