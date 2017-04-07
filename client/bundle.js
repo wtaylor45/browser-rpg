@@ -1,6 +1,44 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * @author Will Taylor
+ * Created on: 4/7/17
+ */
+
+ var Game = require('./game'),
+     Player = require('./player'),
+     Socket = require('./socket');
+
+ var game;
+
+module.exports = App = class App{
+  constructor(){
+    this.game = false;
+    this.ready = false;
+
+    this.setGame(new Game());
+
+    Socket.on('connected', this.onConnected.bind(this));
+  }
+
+  setGame(game){
+    this.game = game;
+  }
+
+  start(){
+    if(!this.game.started && this.game.player){
+      this.game.start();
+    }
+  }
+
+  onConnected(id){
+    this.game.setPlayer(new Player(id, 0));
+    this.start();
+  }
+}
+
+},{"./game":2,"./player":5,"./socket":6}],2:[function(require,module,exports){
+/**
+ * @author Will Taylor
  * Created on: 4/2/17
  *
  * Client-side prediction based on Gabriel Gambetta's article on the matter
@@ -232,7 +270,7 @@ socket.on('update', function(mail){
 });
 */
 
-},{"./input":2}],2:[function(require,module,exports){
+},{"./input":3}],3:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -289,7 +327,7 @@ Input.init = function(){
   });
 }
 
-},{"../../shared/js/types":6}],3:[function(require,module,exports){
+},{"../../shared/js/types":8}],4:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -302,6 +340,8 @@ Input.init = function(){
  * }
  */
 
+var Socket = require('./socket');
+
 module.exports = Message = class Message{
   constructor(type, data){
     this.message = {
@@ -311,11 +351,11 @@ module.exports = Message = class Message{
   }
 
   send(){
-    Message.socket.emit('message', this.message);
+    Socket.emit('message', this.message);
   }
 }
 
-},{}],4:[function(require,module,exports){
+},{"./socket":6}],5:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -411,26 +451,36 @@ Player.Actions = {
   ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
 }
 
-},{"./game":1,"./message":3}],5:[function(require,module,exports){
-"use strict"
+},{"./game":2,"./message":4}],6:[function(require,module,exports){
+/**
+ * @author Will Taylor
+ * Created on: 4/7/17
+ */
 
-var Game = require('./js/game'),
-    Player = require('./js/player'),
-    Message = require('./js/message');
+module.exports = Socket = {};
 
 var socket = io();
-var game;
 
-Message.socket = socket;
+Socket.emit = function(type, data){
+  socket.emit(type, data);
+}
 
-socket.on('connected', function(id){
-  game = new Game();
+Socket.on = function(evnt, callback){
+  socket.on(evnt, function(data){
+    callback(data);
+  });
+}
 
-  game.setPlayer(new Player(id, 0));
-  game.start();
+},{}],7:[function(require,module,exports){
+"use strict"
+
+var App = require('./js/app');
+
+$(document).ready(function(){
+  var app = new App();
 });
 
-},{"./js/game":1,"./js/message":3,"./js/player":4}],6:[function(require,module,exports){
+},{"./js/app":1}],8:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -468,4 +518,4 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}]},{},[5]);
+},{}]},{},[7]);

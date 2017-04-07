@@ -80,15 +80,3 @@ module.exports = Player = class Player{
     //this.sprite.draw();
   }
 }
-
-Player.Direction = {
-  UP: 1,
-  DOWN: 0,
-  LEFT: 2,
-  RIGHT: 3
-}
-
-Player.Actions = {
-  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10, loop: true},
-  ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
-}

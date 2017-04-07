@@ -10,6 +10,8 @@
  * }
  */
 
+var Socket = require('./socket');
+
 module.exports = Message = class Message{
   constructor(type, data){
     this.message = {
@@ -19,6 +21,6 @@ module.exports = Message = class Message{
   }
 
   send(){
-    Message.socket.emit('message', this.message);
+    Socket.emit('message', this.message);
   }
 }
