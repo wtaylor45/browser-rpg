@@ -47,6 +47,7 @@ module.exports = App = class App{
 
 var Input = require('./input'),
     Stage = require('./stage'),
+    Types = require('../../shared/js/types'),
     Socket = require('./socket');
 
 /**
@@ -73,8 +74,8 @@ module.exports = Game = class Game{
 
     this.FPS = 60;
 
-    Socket.on('message', function(){
-      console.log('message')
+    new Socket.on('message', function(message){
+      self.mailbox.push(message);
     });
   }
 
@@ -118,71 +119,35 @@ module.exports = Game = class Game{
    */
   setPlayer(player){
     this.player = player;
-    console.log(this.player)
   }
 
   readServerMessages(dt){
-    // New list of entities to keep track of
-    //
-    // Purpose of this is to automatically remove any entities
-    // who do not need to be drawn anymore for whatever reason
-    var entities = {};
-
     // Read every message one at a time
-    for(var i in this.mailbox){
-      var mail = this.mailbox[i];
-
-      // First, go through each player
-      for(var j in mail.players){
-        var server_player = mail.players[j];
-
-        // Check if the player is this client's player
-        if(server_player.id == game.player.id){
-          // Update the player's position to where they are according to server
-          // This is in essence a correction
-          game.player.setPos(server_player.x, server_player.y);
-
+    for(var i=0;i<this.mailbox.length;i++){
+      var message = this.mailbox[i];
+      if(message.type == Types.Messages.MOVE){
+        if(message.id == this.player.id){
+          this.player.setPos(message.x, message.y);
           // Preform reconciliation
           var k = 0;
-          while (k < game.player.pending_inputs.length){
-            var input = game.player.pending_inputs[k];
+          while (k < this.player.pending_inputs.length){
+            var input = this.player.pending_inputs[k];
+            console.log(input.seq, message.lastProcessedInput)
             // Check if this input has already been processed client side
-            if(input.seq <= server_player.last_input){
+            if(input.seq <= message.lastProcessedInput){
               // This input has been processed by the server
               // Therefore there is no need to reapply it
-              game.player.pending_inputs.splice(k,1);
+              this.player.pending_inputs.splice(k,1);
             }
             else{
               // This input has not been processed by the server yet
               // Reapply it
-              game.player.applyInput(input);
+              this.player.applyInput(input);
               k++;
             }
           }
         }
-        else{
-          // Other player
-
-          // We haven't seen this entity before
-          // Create a new entity for it
-          if(!this.entities[server_player.id]){
-            this.entities[server_player.id] = new Entity(server_player.sprite,
-              Entity.EntityType.PLAYER);
-          }
-
-          // Add this entity to the updated entities list
-          entities[server_player.id] = this.entities[server_player.id];
-
-          var entity = entities[server_player.id];
-
-          // Update entity's position
-          entity.update(server_player)
-        }
       }
-
-      this.entities = entities;
-
-      // Remove mail
       this.mailbox.splice(i,1);
     }
   }
@@ -193,7 +158,7 @@ module.exports = Game = class Game{
    * @param {number} dt Delta time, time since last loop
    */
   update(dt){
-    //this.readServerMessages(dt);\
+    this.readServerMessages(dt);
     this.player.update(dt);
 
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
@@ -277,7 +242,7 @@ socket.on('update', function(mail){
 });
 */
 
-},{"./input":3,"./socket":6,"./stage":7}],3:[function(require,module,exports){
+},{"../../shared/js/types":9,"./input":3,"./socket":6,"./stage":7}],3:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -411,6 +376,11 @@ module.exports = Player = class Player{
     this.y += input.vector.y*input.pressTime*this.speed;
   }
 
+  setPos(x, y){
+    this.x = x;
+    this.y = y;
+  }
+
   /**
    * Update logic for the players
    *
@@ -460,8 +430,7 @@ module.exports = Player = class Player{
  * Created on: 4/7/17
  */
 
-module.exports = Socket = {};
-
+module.exports = Socket = class Socket{};
 var socket = io();
 
 Socket.emit = function(type, data){

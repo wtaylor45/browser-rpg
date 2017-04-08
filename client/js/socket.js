@@ -3,8 +3,7 @@
  * Created on: 4/7/17
  */
 
-module.exports = Socket = {};
-
+module.exports = Socket = class Socket{};
 var socket = io();
 
 Socket.emit = function(type, data){

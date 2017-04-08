@@ -46,6 +46,11 @@ module.exports = Player = class Player{
     this.y += input.vector.y*input.pressTime*this.speed;
   }
 
+  setPos(x, y){
+    this.x = x;
+    this.y = y;
+  }
+
   /**
    * Update logic for the players
    *

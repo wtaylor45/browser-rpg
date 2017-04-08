@@ -73,14 +73,25 @@ function GameServer(){
    * Logic that happens once every loop
    */
   this.tick = function(dt){
+    this.updatePlayers();
+    //this.updateEntities();
     this.sendPlayerMessages();
+  }
+
+  this.updatePlayers = function(){
+    for(var i in this.players){
+      var player = this.players[i];
+      player.update();
+    }
   }
 
   this.sendPlayerMessages = function(){
     for(var i in this.outgoingMessages){
       var connection = this.getConnection(i);
-      for(var j in this.outgoingMessages[i])
-      connection.emit('message', this.outgoingMessages[i][j]);
+      for(var j=0;j<this.outgoingMessages[i].length;j++){
+        var message = this.outgoingMessages[i].shift();
+        connection.emit('message', message);
+      }
     }
   }
 

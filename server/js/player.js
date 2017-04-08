@@ -23,6 +23,8 @@ module.exports = Player = Character.extend({
 
     this.speed = 10;
 
+    this.lastProcessedInput = 0;
+
     // List of NPCs that are aggressive to the player
     this.enemies = {};
 
@@ -30,10 +32,12 @@ module.exports = Player = Character.extend({
 
     this.broadcastCallback = null;
 
+    this.broadcasts = 0;
+
     // Listen for and handle messages from this player's client
     this.connection.on('message', function(message){
       if(message.type == Types.Messages.MOVE){
-        self.applyInput(message.data)
+        self.queuedInputs.push(message.data);
       }
     });
 
@@ -45,26 +49,28 @@ module.exports = Player = Character.extend({
     server.onLogin(this);
   },
 
-  applyInput: function(input){
-    var vector = input.vector;
+  applyQueuedInputs: function(){
+    for(var i=0;i<this.queuedInputs.length;i++){
+      var input = this.queuedInputs.shift();
+      var vector = input.vector;
 
-    this.x += vector.x*input.pressTime*this.speed;
-    this.y += vector.y*input.pressTime*this.speed;
+      this.x += vector.x*input.pressTime*this.speed;
+      this.y += vector.y*input.pressTime*this.speed;
 
-    this.lastProcessedInput = input.seq;
+      this.lastProcessedInput = input.seq;
+    }
 
     this.broadcast(new Messages.Move(this));
   },
 
   update: function(){
-    this.applyQueuedInputs();
+    if(this.queuedInputs.length > 0)
+      this.applyQueuedInputs();
   },
 
   broadcast: function(message){
-    console.log(this.broadcastCallback)
     if(this.broadcastCallback){
       this.broadcastCallback(message);
-      console.log('broadcasting')
     }
   },
 
