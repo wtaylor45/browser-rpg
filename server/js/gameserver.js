@@ -20,6 +20,7 @@ module.exports = GameServer;
  * Game server that handles all the game logic, distributing messages, etc.
  */
 function GameServer(){
+  var self = this;
   // Initialization
   this.players = {};
   this.entities = {};
@@ -32,6 +33,17 @@ function GameServer(){
 
   this.FPS = 60;
   this.delay = 1/this.FPS;
+
+  this.onLogin = function(player){
+    self.players[player.id] = player;
+    self.outgoingMessages[player.id] = [];
+
+    player.onBroadcast(function(message){
+      for(var i in self.players){
+        self.outgoingMessages[self.players[i].id].push(message.serialize());
+      }
+    });
+  }
 
   /**
    * Initialize the server, start the loop
@@ -61,7 +73,15 @@ function GameServer(){
    * Logic that happens once every loop
    */
   this.tick = function(dt){
+    this.sendPlayerMessages();
+  }
 
+  this.sendPlayerMessages = function(){
+    for(var i in this.outgoingMessages){
+      var connection = this.getConnection(i);
+      for(var j in this.outgoingMessages[i])
+      connection.emit('message', this.outgoingMessages[i][j]);
+    }
   }
 
   /**
@@ -91,5 +111,9 @@ function GameServer(){
 
   this.validateInput = function(input){
     return (Math.abs(input.press_time) <= 1/60)
+  }
+
+  this.getConnection = function(id){
+    return this.players[id].connection;
   }
 }

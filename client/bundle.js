@@ -45,8 +45,9 @@ module.exports = App = class App{
  * http://www.gabrielgambetta.com/fpm2.html
  */
 
-var Input = require('./input');
-var stage = new createjs.Stage('canvas');
+var Input = require('./input'),
+    Stage = require('./stage'),
+    Socket = require('./socket');
 
 /**
  * The client instance of the game
@@ -55,8 +56,11 @@ var stage = new createjs.Stage('canvas');
  */
 module.exports = Game = class Game{
   constructor(){
+    var self = this;
     // Has the game started yet on the client side?
     this.started = false;
+
+    Stage.init();
 
     // Who is the client's player?
     this.player = false;
@@ -68,6 +72,10 @@ module.exports = Game = class Game{
     this.entities = {}
 
     this.FPS = 60;
+
+    Socket.on('message', function(){
+      console.log('message')
+    });
   }
 
   /**
@@ -78,7 +86,7 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
-    //this.render();
+    this.render();
 
     Input.init();
 
@@ -193,23 +201,22 @@ module.exports = Game = class Game{
   }
 
   render(){
-    stage.removeAllChildren();
+    Stage.removeAllChildren();
 
-    this.player.draw();
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+    circle.x = this.player.x+100;
+    circle.y = this.player.y;
+    Stage.addChild(circle);
 
-    for(var i in this.entities){
-      this.entities[i].draw();
-    }
-
-    stage.update();
+    Stage.update();
 
     window.requestAnimationFrame(this.render.bind(this));
   }
 
   draw(x, y, sprite){
-    var bitmap = Sprite.getPlayerSprite(sprite)
-    bitmap.x = x;
-    bitmap.y = y;
+    var g = new createjs.Graphics();
+
     stage.addChild(bitmap)
   }
 }
@@ -270,7 +277,7 @@ socket.on('update', function(mail){
 });
 */
 
-},{"./input":3}],3:[function(require,module,exports){
+},{"./input":3,"./socket":6,"./stage":7}],3:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -327,7 +334,7 @@ Input.init = function(){
   });
 }
 
-},{"../../shared/js/types":8}],4:[function(require,module,exports){
+},{"../../shared/js/types":9}],4:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -367,6 +374,8 @@ module.exports = Message = class Message{
 var Game = require('./game'),
     Message = require('./message');
 
+var stage = new createjs.Stage('canvas');
+
 /**
  * Player class, keeps track of player position, movement, etc.
  */
@@ -387,6 +396,8 @@ module.exports = Player = class Player{
     // Variables for client-side prediction
     this.pending_inputs = []
     this.input_seq = 0;
+
+    this.x = this.y = 0;
   }
 
   /**
@@ -396,8 +407,8 @@ module.exports = Player = class Player{
    */
   applyInput(input){
     // Update the player x and y based on the movement vector
-    this.x += input.vector[0]*input.press_time*this.speed;
-    this.y += input.vector[1]*input.press_time*this.speed;
+    this.x += input.vector.x*input.pressTime*this.speed;
+    this.y += input.vector.y*input.pressTime*this.speed;
   }
 
   /**
@@ -435,20 +446,12 @@ module.exports = Player = class Player{
   }
 
   draw(){
-    //this.sprite.draw();
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(1);
+    g.beginStroke("#000000");
+    g.beginFill("red");
+    g.drawRect(50,this.y,100,100);
   }
-}
-
-Player.Direction = {
-  UP: 1,
-  DOWN: 0,
-  LEFT: 2,
-  RIGHT: 3
-}
-
-Player.Actions = {
-  MOVE: {type: 'move', row: 0, num_frames:4, frame_length: 10, loop: true},
-  ATTACK: {type: 'attack', row: 4, num_frames:4, frame_length: 10}
 }
 
 },{"./game":2,"./message":4}],6:[function(require,module,exports){
@@ -472,6 +475,26 @@ Socket.on = function(evnt, callback){
 }
 
 },{}],7:[function(require,module,exports){
+module.exports = Stage = {};
+var stage;
+
+Stage.addChild = function(child){
+  stage.addChild(child);
+}
+
+Stage.update = function(){
+  stage.update();
+}
+
+Stage.removeAllChildren = function(){
+  stage.removeAllChildren();
+}
+
+Stage.init = function(){
+  stage = new createjs.Stage('canvas');
+}
+
+},{}],8:[function(require,module,exports){
 "use strict"
 
 var App = require('./js/app');
@@ -480,7 +503,7 @@ $(document).ready(function(){
   var app = new App();
 });
 
-},{"./js/app":1}],8:[function(require,module,exports){
+},{"./js/app":1}],9:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -518,4 +541,4 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}]},{},[7]);
+},{}]},{},[8]);

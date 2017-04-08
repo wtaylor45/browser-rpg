@@ -6,8 +6,9 @@
  * http://www.gabrielgambetta.com/fpm2.html
  */
 
-var Input = require('./input');
-var stage = new createjs.Stage('canvas');
+var Input = require('./input'),
+    Stage = require('./stage'),
+    Socket = require('./socket');
 
 /**
  * The client instance of the game
@@ -16,8 +17,11 @@ var stage = new createjs.Stage('canvas');
  */
 module.exports = Game = class Game{
   constructor(){
+    var self = this;
     // Has the game started yet on the client side?
     this.started = false;
+
+    Stage.init();
 
     // Who is the client's player?
     this.player = false;
@@ -29,6 +33,10 @@ module.exports = Game = class Game{
     this.entities = {}
 
     this.FPS = 60;
+
+    Socket.on('message', function(){
+      console.log('message')
+    });
   }
 
   /**
@@ -39,7 +47,7 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
-    //this.render();
+    this.render();
 
     Input.init();
 
@@ -154,23 +162,22 @@ module.exports = Game = class Game{
   }
 
   render(){
-    stage.removeAllChildren();
+    Stage.removeAllChildren();
 
-    this.player.draw();
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 50);
+    circle.x = this.player.x+100;
+    circle.y = this.player.y;
+    Stage.addChild(circle);
 
-    for(var i in this.entities){
-      this.entities[i].draw();
-    }
-
-    stage.update();
+    Stage.update();
 
     window.requestAnimationFrame(this.render.bind(this));
   }
 
   draw(x, y, sprite){
-    var bitmap = Sprite.getPlayerSprite(sprite)
-    bitmap.x = x;
-    bitmap.y = y;
+    var g = new createjs.Graphics();
+
     stage.addChild(bitmap)
   }
 }

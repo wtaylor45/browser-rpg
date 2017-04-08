@@ -5,32 +5,73 @@
 
 var cls = require('./lib/class'),
     Types = require('../../shared/js/types'),
-    Character = require('./character');
+    Character = require('./character'),
+    Messages = require('./message');
 
 module.exports = Player = Character.extend({
   init: function(connection, server){
+    var self = this;
+
     this.server = server;
     this.connection = connection;
+
+    this.id = connection.id;
 
     this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
 
     this.inGame = false;
 
+    this.speed = 10;
+
     // List of NPCs that are aggressive to the player
     this.enemies = {};
+
+    this.queuedInputs = [];
+
+    this.broadcastCallback = null;
 
     // Listen for and handle messages from this player's client
     this.connection.on('message', function(message){
       if(message.type == Types.Messages.MOVE){
-        console.log('moved')
+        self.applyInput(message.data)
       }
     });
 
     // When the player disconnects
     this.connection.on('disconnect', function(){
       console.log('Disconnected')
-    })
+    });
+
+    server.onLogin(this);
+  },
+
+  applyInput: function(input){
+    var vector = input.vector;
+
+    this.x += vector.x*input.pressTime*this.speed;
+    this.y += vector.y*input.pressTime*this.speed;
+
+    this.lastProcessedInput = input.seq;
+
+    this.broadcast(new Messages.Move(this));
+  },
+
+  update: function(){
+    this.applyQueuedInputs();
+  },
+
+  broadcast: function(message){
+    console.log(this.broadcastCallback)
+    if(this.broadcastCallback){
+      this.broadcastCallback(message);
+      console.log('broadcasting')
+    }
+  },
+
+  onBroadcast: function(callback){
+    this.broadcastCallback = callback;
   }
+
 });
 
 /*

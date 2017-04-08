@@ -9,6 +9,8 @@
 var Game = require('./game'),
     Message = require('./message');
 
+var stage = new createjs.Stage('canvas');
+
 /**
  * Player class, keeps track of player position, movement, etc.
  */
@@ -29,6 +31,8 @@ module.exports = Player = class Player{
     // Variables for client-side prediction
     this.pending_inputs = []
     this.input_seq = 0;
+
+    this.x = this.y = 0;
   }
 
   /**
@@ -38,8 +42,8 @@ module.exports = Player = class Player{
    */
   applyInput(input){
     // Update the player x and y based on the movement vector
-    this.x += input.vector[0]*input.press_time*this.speed;
-    this.y += input.vector[1]*input.press_time*this.speed;
+    this.x += input.vector.x*input.pressTime*this.speed;
+    this.y += input.vector.y*input.pressTime*this.speed;
   }
 
   /**
@@ -77,6 +81,10 @@ module.exports = Player = class Player{
   }
 
   draw(){
-    //this.sprite.draw();
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(1);
+    g.beginStroke("#000000");
+    g.beginFill("red");
+    g.drawRect(50,this.y,100,100);
   }
 }
