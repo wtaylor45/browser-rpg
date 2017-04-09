@@ -125,6 +125,7 @@ function GameServer(){
   }
 
   this.getConnection = function(id){
-    return this.players[id].connection;
+    if(this.players[id])
+      return this.players[id].connection;
   }
 }

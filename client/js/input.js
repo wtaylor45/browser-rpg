@@ -8,29 +8,46 @@ var Types = require('../../shared/js/types')
 module.exports = Input = {};
 
 var STATE = null;
-var DOWN = 1;
-var UP = 0;
+var DOWN = true;
+var UP = false;
 
 Input.onKeyEvent = function(keyCode, val){
   var state = Input.getState();
 
   switch(keyCode){
     case 87:  // up
-      state.vector.y = -1 * val;
+      state.up = val;
       break;
     case 83:
-      state.vector.y = val
+      state.down = val;
+      break;
+    case 65:
+      state.left = val;
+      break;
+    case 68:
+      state.right = val;
       break;
   }
 }
 
 Input.getMovementVector = function(){
-  return Input.getState().vector;
+  state = Input.getState();
+  vector = {x: 0, y: 0};
+
+  if(state.up) vector.y = -1;
+  else if(state.down) vector.y = 1;
+  if(state.left) vector.x = -1;
+  else if(state.right) vector.x = 1;
+
+  return vector;
 }
 
 Input.baseState = function(){
   return {
-    vector: {x: 0, y: 0}
+    up: false,
+    down: false,
+    left: false,
+    right: false
   }
 }
 
@@ -39,17 +56,18 @@ Input.getState = function(){
 }
 
 Input.reset = function(){
-  STATE = Input.baseState;
+  STATE = Input.baseState();
 }
 
 Input.init = function(){
   STATE = Input.baseState();
 
-  $(document).keydown(function(event){
+  document.onkeydown = function(event){
+    console.log('down')
     Input.onKeyEvent(event.keyCode, DOWN);
-  });
+  }
 
-  $(document).keyup(function(event){
+  document.onkeyup = function(event){
     Input.onKeyEvent(event.keyCode, UP);
-  });
+  }
 }
