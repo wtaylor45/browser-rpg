@@ -6,18 +6,23 @@
  * http://www.gabrielgambetta.com/fpm2.html
  */
 
-var stage = new createjs.Stage('canvas');
-var player_status = document.getElementById("player_status");
+var Input = require('./input'),
+    Stage = require('./stage'),
+    Types = require('../../shared/js/types'),
+    Socket = require('./socket');
 
 /**
  * The client instance of the game
  *
  * Handles the stage as well
  */
-class Game{
+module.exports = Game = class Game{
   constructor(){
+    var self = this;
     // Has the game started yet on the client side?
     this.started = false;
+
+    Stage.init();
 
     // Who is the client's player?
     this.player = false;
@@ -29,6 +34,10 @@ class Game{
     this.entities = {}
 
     this.FPS = 60;
+
+    new Socket.on('message', function(message){
+      self.mailbox.push(message);
+    });
   }
 
   /**
@@ -39,8 +48,9 @@ class Game{
     if(!this.player) return false;
 
     this.started = true;
-    Game.keyHandler(this);
     this.render();
+
+    Input.init();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -72,68 +82,35 @@ class Game{
     this.player = player;
   }
 
-  readServerMessages(dt){
-    // New list of entities to keep track of
-    //
-    // Purpose of this is to automatically remove any entities
-    // who do not need to be drawn anymore for whatever reason
-    var entities = {};
-
+  /**
+   * Read messages sent from the server since last update
+   */
+  readServerMessages(){
     // Read every message one at a time
-    for(var i in this.mailbox){
-      var mail = this.mailbox[i];
-
-      // First, go through each player
-      for(var j in mail.players){
-        var server_player = mail.players[j];
-
-        // Check if the player is this client's player
-        if(server_player.id == game.player.id){
-          // Update the player's position to where they are according to server
-          // This is in essence a correction
-          game.player.setPos(server_player.x, server_player.y);
-
+    for(var i=0;i<this.mailbox.length;i++){
+      var message = this.mailbox[i];
+      if(message.type == Types.Messages.MOVE){
+        if(message.id == this.player.id){
+          this.player.setPos(message.x, message.y);
           // Preform reconciliation
           var k = 0;
-          while (k < game.player.pending_inputs.length){
-            var input = game.player.pending_inputs[k];
+          while (k < this.player.pending_inputs.length){
+            var input = this.player.pending_inputs[k];
             // Check if this input has already been processed client side
-            if(input.seq <= server_player.last_input){
+            if(input.seq <= message.lastProcessedInput){
               // This input has been processed by the server
               // Therefore there is no need to reapply it
-              game.player.pending_inputs.splice(k,1);
+              this.player.pending_inputs.splice(k,1);
             }
             else{
               // This input has not been processed by the server yet
               // Reapply it
-              game.player.applyInput(input);
+              this.player.applyInput(input);
               k++;
             }
           }
         }
-        else{
-          // Other player
-
-          // We haven't seen this entity before
-          // Create a new entity for it
-          if(!this.entities[server_player.id]){
-            this.entities[server_player.id] = new Entity(server_player.sprite,
-              Entity.EntityType.PLAYER);
-          }
-
-          // Add this entity to the updated entities list
-          entities[server_player.id] = this.entities[server_player.id];
-
-          var entity = entities[server_player.id];
-
-          // Update entity's position
-          entity.update(server_player)
-        }
       }
-
-      this.entities = entities;
-
-      // Remove mail
       this.mailbox.splice(i,1);
     }
   }
@@ -150,80 +127,4 @@ class Game{
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
     player_status.textContent = info;
   }
-
-  render(){
-    stage.removeAllChildren();
-
-    this.player.draw();
-
-    for(var i in this.entities){
-      this.entities[i].draw();
-    }
-
-    stage.update();
-
-    window.requestAnimationFrame(this.render.bind(this));
-  }
-
-  draw(x, y, sprite){
-    var bitmap = Sprite.getPlayerSprite(sprite)
-    bitmap.x = x;
-    bitmap.y = y;
-    stage.addChild(bitmap)
-  }
 }
-
-// Input handling
-var up = down = left = right = false;
-var attack1 = false;
-var allowed = true;
-
-Game.keyHandler = function(game){
-  document.onkeydown = function(event){
-    if(event.keyCode === 68){    //d
-      right = true;
-    }
-    else if(event.keyCode === 83){   //s
-      down = true;
-    }
-    else if(event.keyCode === 65){ //a
-      left = true;
-    }
-    else if(event.keyCode === 87){ // w
-      up = true;
-    }
-    else if(event.keyCode == 49){
-      if(!allowed) return;
-      attack1 = true;
-      allowed = false;
-    }
-  }
-
-  document.onkeyup = function(event){
-    if(event.keyCode === 68){    //d
-      right = false;
-    }
-    else if(event.keyCode === 83){   //s
-      down = false;
-    }
-    else if(event.keyCode === 65){ //a
-      left = false;
-    }
-    else if(event.keyCode === 87){ // w
-      up = false;
-    }
-    else if(event.keyCode == 49){
-      // TODO: Make cool down dependant in actor class
-      attack1 = false;
-      allowed = true;
-    }
-  }
-}
-
-/**
- * Get updates information from the server
- */
-socket.on('update', function(mail){
-  // Only accept mail if game is created
-  game.mailbox.push(mail);
-});

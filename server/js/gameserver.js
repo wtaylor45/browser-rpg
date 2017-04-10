@@ -9,7 +9,7 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
-var Mailman = require('./mailman.js');
+var Entity = require('./entity')
 var Player = require('./player.js');
 
 // Export the GameServer module
@@ -19,15 +19,43 @@ module.exports = GameServer;
  * Game server that handles all the game logic, distributing messages, etc.
  */
 function GameServer(){
+  var self = this;
   // Initialization
   this.players = {};
+  this.entities = {};
 
-  this.mailman = new Mailman(this);
+  // Messages, index by player it is going to
+  this.outgoingMessages = {};
 
+  // Amount of players on the server
+  this.population = 0;
+
+  // Has the server started
   this.started = false;
 
+  // Frames, aka updates, per second
   this.FPS = 60;
   this.delay = 1/this.FPS;
+
+  /**
+   * Performed on player login
+   * @param  {Object} player The player who logged in
+   */
+  this.onLogin = function(player){
+    // Add player to the list of players
+    self.players[player.id] = player;
+
+    // Set up their outgoing messages
+    self.outgoingMessages[player.id] = [];
+
+    // What to do when this player broadcasts a message
+    // TODO: Change to only broadcast to certain group
+    player.onBroadcast(function(message){
+      for(var i in self.players){
+        self.outgoingMessages[self.players[i].id].push(message.serialize());
+      }
+    });
+  }
 
   /**
    * Initialize the server, start the loop
@@ -53,18 +81,36 @@ function GameServer(){
 
   /**
    * Logic that happens once every loop
+   * TODO: Update entities as well
    */
   this.tick = function(dt){
-    // The mailbag to send out to each client
-    var mail = {players: {}}
+    // Update all players on the server
+    this.updatePlayers();
+    // Send each player their messages
+    this.sendPlayerMessages();
+  }
 
+  /**
+   * Update every player on the server
+   */
+  this.updatePlayers = function(){
     for(var i in this.players){
       var player = this.players[i];
-      player.update(dt);
-      mail.players[player.id] = player.pack();
+      player.update();
     }
+  }
 
-    this.mailman.sendMail(mail);
+  /**
+   * Send each player their messages
+   */
+  this.sendPlayerMessages = function(){
+    for(var i in this.outgoingMessages){
+      var connection = this.getConnection(i);
+      for(var j=0;j<this.outgoingMessages[i].length;j++){
+        var message = this.outgoingMessages[i].shift();
+        connection.emit('message', message);
+      }
+    }
   }
 
   /**
@@ -76,9 +122,8 @@ function GameServer(){
     if(!this.started) this.init();
     console.log('Client', client.id, 'connected.');
 
-    this.players[client.id] = new Player(client.id);
+    this.players[client.id] = new Player(client, this);
     client.emit('connected', client.id);
-    console.log('Added a player for this client.')
   }
 
   /**
@@ -86,38 +131,29 @@ function GameServer(){
    * logged in.
    * @param  {Object} client The client that has disconnected
    */
-  this.onDisconnect = function(client){
+  this.disconnect = function(id){
     // TODO: Logout if the player is logged in
-    delete global.SOCKET_LIST[client.id];
-    delete this.players[client.id];
-    console.log('Client', client.id, 'disconnected.');
+    delete global.SOCKET_LIST[id];
+    delete this.players[id];
+    console.log('Player', id, 'disconnected.');
   }
 
   /**
-   * Handle the message sent by the given client
-   * @param {Object} client The client that has sent the message
-   * @param {Object} message  The message that was sent by the client
+   * Make sure input was valid
+   * @param  {Object} input The input to check
+   * @return {boolean}      The validity of the input
    */
-  this.onMessage = function(client, message){
-    // First, check if this client has a player
-    var player = this.players[client.id];
-    // Check the message type, distribute accordingly
-    switch(message.type){
-      case 'move':
-        if(player){
-          var input = message.data;
-          if(true){
-            player.queueInput(message.type, input);
-          }
-        }
-        break;
-      case 'atk':
-        player.queueInput(message.type, message.data)
-        break;
-    }
-  }
-
   this.validateInput = function(input){
     return (Math.abs(input.press_time) <= 1/60)
+  }
+
+  /**
+   * Get the connection of the given player
+   * @param  {String} id ID of the player
+   * @return {Object}    The player's connection
+   */
+  this.getConnection = function(id){
+    if(this.players[id])
+      return this.players[id].connection;
   }
 }

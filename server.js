@@ -40,14 +40,4 @@ io.sockets.on('connection', function(socket){
 
   // Send connection to game server
   gameserver.onConnection(socket);
-
-  // Handle disconnection from this client
-  socket.on('disconnect', function(){
-    gameserver.onDisconnect(socket);
-  });
-
-  // Handle messages from client
-  socket.on('message', function(message){
-    gameserver.onMessage(socket, message);
-  });
 });
