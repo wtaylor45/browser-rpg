@@ -10,6 +10,9 @@
  var game;
 
 module.exports = App = class App{
+  /**
+   * Create the app that contains the game
+   */
   constructor(){
     this.game = false;
     this.ready = false;
@@ -19,18 +22,30 @@ module.exports = App = class App{
     Socket.on('connected', this.onConnected.bind(this));
   }
 
+  /**
+   * Set this app's game
+   */
   setGame(game){
     this.game = game;
+    this.ready = true;
   }
 
+  /**
+   * Start the game
+   */
   start(){
-    if(!this.game.started && this.game.player){
+    if(this.ready && this.game.player){
       this.game.start();
     }
   }
 
+  /**
+   * When the server confirms the connection
+   */
   onConnected(id){
-    this.game.setPlayer(new Player(id, 0));
-    this.start();
+    if(this.game){
+      this.game.setPlayer(new Player(id, 0));
+      this.start();
+    }
   }
 }

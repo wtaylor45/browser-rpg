@@ -84,12 +84,4 @@ module.exports = Player = class Player{
       this.pending_inputs.push(input);
     }
   }
-
-  draw(){
-    var g = new createjs.Graphics();
-    g.setStrokeStyle(1);
-    g.beginStroke("#000000");
-    g.beginFill("red");
-    g.drawRect(50,this.y,100,100);
-  }
 }

@@ -11,6 +11,11 @@ var STATE = null;
 var DOWN = true;
 var UP = false;
 
+/**
+ * Update the state of the given key to the given value (UP/DOWN)
+ * @param  {number} keyCode The keycode of the key that triggered the event
+ * @param  {boolean} val    Wether the key is up or down (false/true)
+ */
 Input.onKeyEvent = function(keyCode, val){
   var state = Input.getState();
 
@@ -18,18 +23,22 @@ Input.onKeyEvent = function(keyCode, val){
     case 87:  // up
       state.up = val;
       break;
-    case 83:
+    case 83: // down
       state.down = val;
       break;
-    case 65:
+    case 65: // left
       state.left = val;
       break;
-    case 68:
+    case 68: // right
       state.right = val;
       break;
   }
 }
 
+/**
+ * Get the movement vector based on the current state of input
+ * @return {Object}   The movement vector
+ */
 Input.getMovementVector = function(){
   state = Input.getState();
   vector = {x: 0, y: 0};
@@ -42,6 +51,10 @@ Input.getMovementVector = function(){
   return vector;
 }
 
+/**
+ * The default way that the input state starts
+ * @return {[type]} [description]
+ */
 Input.baseState = function(){
   return {
     up: false,
@@ -51,14 +64,24 @@ Input.baseState = function(){
   }
 }
 
+/**
+ * Get the current input state
+ * @return {Object} the current input state
+ */
 Input.getState = function(){
   return STATE;
 }
 
+/**
+ * Reset the current input state
+ */
 Input.reset = function(){
   STATE = Input.baseState();
 }
 
+/**
+ * Initialize the input state, start listening for key events
+ */
 Input.init = function(){
   STATE = Input.baseState();
 

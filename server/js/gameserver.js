@@ -9,7 +9,6 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
-var Mailman = require('./mailman.js');
 var Entity = require('./entity')
 var Player = require('./player.js');
 
@@ -25,19 +24,32 @@ function GameServer(){
   this.players = {};
   this.entities = {};
 
+  // Messages, index by player it is going to
   this.outgoingMessages = {};
 
+  // Amount of players on the server
   this.population = 0;
 
+  // Has the server started
   this.started = false;
 
+  // Frames, aka updates, per second
   this.FPS = 60;
   this.delay = 1/this.FPS;
 
+  /**
+   * Performed on player login
+   * @param  {Object} player The player who logged in
+   */
   this.onLogin = function(player){
+    // Add player to the list of players
     self.players[player.id] = player;
+
+    // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
+    // What to do when this player broadcasts a message
+    // TODO: Change to only broadcast to certain group
     player.onBroadcast(function(message){
       for(var i in self.players){
         self.outgoingMessages[self.players[i].id].push(message.serialize());
@@ -50,8 +62,6 @@ function GameServer(){
    */
   this.init = function(){
     this.started = true;
-
-    new Entity();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -71,13 +81,18 @@ function GameServer(){
 
   /**
    * Logic that happens once every loop
+   * TODO: Update entities as well
    */
   this.tick = function(dt){
+    // Update all players on the server
     this.updatePlayers();
-    //this.updateEntities();
+    // Send each player their messages
     this.sendPlayerMessages();
   }
 
+  /**
+   * Update every player on the server
+   */
   this.updatePlayers = function(){
     for(var i in this.players){
       var player = this.players[i];
@@ -85,6 +100,9 @@ function GameServer(){
     }
   }
 
+  /**
+   * Send each player their messages
+   */
   this.sendPlayerMessages = function(){
     for(var i in this.outgoingMessages){
       var connection = this.getConnection(i);
@@ -113,17 +131,27 @@ function GameServer(){
    * logged in.
    * @param  {Object} client The client that has disconnected
    */
-  this.onDisconnect = function(client){
+  this.disconnect = function(id){
     // TODO: Logout if the player is logged in
-    delete global.SOCKET_LIST[client.id];
-    delete this.players[client.id];
-    console.log('Client', client.id, 'disconnected.');
+    delete global.SOCKET_LIST[id];
+    delete this.players[id];
+    console.log('Player', id, 'disconnected.');
   }
 
+  /**
+   * Make sure input was valid
+   * @param  {Object} input The input to check
+   * @return {boolean}      The validity of the input
+   */
   this.validateInput = function(input){
     return (Math.abs(input.press_time) <= 1/60)
   }
 
+  /**
+   * Get the connection of the given player
+   * @param  {String} id ID of the player
+   * @return {Object}    The player's connection
+   */
   this.getConnection = function(id){
     if(this.players[id])
       return this.players[id].connection;
