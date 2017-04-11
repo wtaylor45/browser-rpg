@@ -1,6 +1,14 @@
+var _ = require('underscore');
 
-module.exports = Sprites = {
-  players: [
-    "../sprites/player.json"
-  ]
-}
+define(['text!../sprites/player.json'], function() {
+
+    var sprites = {};
+
+    _.each(arguments, function(spriteJson) {
+        var sprite = JSON.parse(spriteJson);
+
+        sprites[sprite.id] = sprite;
+    });
+
+    return sprites;
+});

@@ -48,7 +48,7 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
-    this.render();
+    //this.render();
 
     Input.init();
 

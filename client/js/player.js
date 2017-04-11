@@ -6,7 +6,7 @@
  * http://www.gabrielgambetta.com/fpm2.html
  */
 
-var Game = require('./game'),
+var Character = require('./character'),
     Message = require('./message');
 
 var stage = new createjs.Stage('canvas');
@@ -14,25 +14,22 @@ var stage = new createjs.Stage('canvas');
 /**
  * Player class, keeps track of player position, movement, etc.
  */
-module.exports = Player = class Player{
+module.exports = Player = class Player extends Character{
   /**
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
   constructor(id, sprite){
-    // Create the player's entity
-    //this.sprite = new Sprite(Sprite.getPlayerSprite(sprite), false);
-    this.id = id;
+    super(id, Types.Entities.PLAYER)
 
     // Player movement variables
-    this.MAX_SPEED = 15;
     this.speed = 10;
 
     // Variables for client-side prediction
     this.pending_inputs = []
     this.input_seq = 0;
 
-    this.x = this.y = 0;
+    this.setSprite();
   }
 
   /**
@@ -44,11 +41,9 @@ module.exports = Player = class Player{
     // Update the player x and y based on the movement vector
     this.x += input.vector.x*input.pressTime*this.speed;
     this.y += input.vector.y*input.pressTime*this.speed;
-  }
 
-  setPos(x, y){
-    this.x = x;
-    this.y = y;
+    this.setDirection(this.getDirectionFromVector(vector))
+    this.walk();
   }
 
   /**
@@ -82,6 +77,8 @@ module.exports = Player = class Player{
 
       // Save input to validated later
       this.pending_inputs.push(input);
+    }else{
+      this.idle();
     }
   }
 }

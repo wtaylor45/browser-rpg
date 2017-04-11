@@ -86,7 +86,6 @@ Input.init = function(){
   STATE = Input.baseState();
 
   document.onkeydown = function(event){
-    console.log('down')
     Input.onKeyEvent(event.keyCode, DOWN);
   }
 

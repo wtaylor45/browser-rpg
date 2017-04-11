@@ -1,5 +1,5 @@
-var Types = require('../../shared/js/types'),
-    _ = require('underscore');
+var Entity = require('./entity'),
+    Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
   constructor(id, species){
@@ -24,5 +24,13 @@ module.exports = Character = class Character extends Entity{
     }
 
     this.setAnimation(animation, speed, count, onEnd);
+  }
+
+  idle(){
+    this.animate('idle', this.idleSpeed);
+  }
+
+  walk(){
+    this.animate('walk', this.walkSpeed);
   }
 }

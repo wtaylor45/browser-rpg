@@ -3,6 +3,8 @@
  * Created on: 4/9/17
  */
 
+var Types = require('../../shared/js/types'),
+    _ = require('underscore');
 
 module.exports = Entity = class Entity{
   constructor(id, species, width, height){
@@ -12,7 +14,7 @@ module.exports = Entity = class Entity{
     this.x = 0;
     this.y = 0;
 
-    this.direction = down;
+    this.direction = Types.Directions.DOWN;
 
     this.width = width;
     this.height = height;
@@ -25,6 +27,17 @@ module.exports = Entity = class Entity{
   setPos(x, y){
     this.x = x;
     this.y = y;
+  }
+
+  getDirectionFromVector(vector){
+    if(vector.y == 1) return Types.Directions.DOWN;
+    if(vector.y == -1) return Types.Directions.UP;
+    if(vector.x == 1) return Types.Directions.RIGHT;
+    if(vector.x == -1) return Types.Directions.LEFT;
+  }
+
+  setDirection(direction){
+    this.direction =  direction;
   }
 
   setSprite(sprite){
@@ -48,7 +61,7 @@ module.exports = Entity = class Entity{
   getAnimationByName(name){
     var animation;
 
-    if(name in this.animations){
+    if(_.indexOf(this.animations, name) >= 0){
       animation = this.animation[name];
     }
 
@@ -57,19 +70,25 @@ module.exports = Entity = class Entity{
 
   setAnimation(name, speed, count, endCount){
     var self = this;
+    var directionBased = ["walk", "idle"];
+    var rowOffset = 0;
 
     if(this.currentAnimation && this.currentAnimation.name == name){
       return;
     }
 
+    if(_.indexOf(this.directionBased, name) >= 0){
+      rowOffset = this.direction;
+    }
+
     var anim = this.getAnimationByName(name);
 
     if(anim){
+      anim.row += rowOffset;
       this.currentAnimation = anim;
       this.currentAnimation.setSpeed(speed);
-      this.currentAnimation.setIterations(count);
-      this.currentAnimation.(count ? count : 0, endCount, function(){
-        //self.idle();
+      this.currentAnimation.setIterations(count ? count : 0, endCount, function(){
+        self.idle();
       })
     }
   }
