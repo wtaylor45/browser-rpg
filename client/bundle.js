@@ -89,14 +89,15 @@ module.exports = Character = class Character extends Entity{
   }
 }
 
-},{"../../shared/js/types":12,"./entity":3}],3:[function(require,module,exports){
+},{"../../shared/js/types":16,"./entity":3}],3:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/9/17
  */
 
 var Types = require('../../shared/js/types'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    Sprite = require('./sprite');
 
 module.exports = Entity = class Entity{
   constructor(id, species, width, height){
@@ -186,7 +187,7 @@ module.exports = Entity = class Entity{
   }
 }
 
-},{"../../shared/js/types":12,"underscore":11}],4:[function(require,module,exports){
+},{"../../shared/js/types":16,"./sprite":9,"underscore":15}],4:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -318,7 +319,7 @@ module.exports = Game = class Game{
   }
 }
 
-},{"../../shared/js/types":12,"./input":5,"./socket":8,"./stage":9}],5:[function(require,module,exports){
+},{"../../shared/js/types":16,"./input":5,"./socket":8,"./stage":11}],5:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -407,7 +408,6 @@ Input.init = function(){
   STATE = Input.baseState();
 
   document.onkeydown = function(event){
-    console.log('down')
     Input.onKeyEvent(event.keyCode, DOWN);
   }
 
@@ -416,7 +416,7 @@ Input.init = function(){
   }
 }
 
-},{"../../shared/js/types":12}],6:[function(require,module,exports){
+},{"../../shared/js/types":16}],6:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -464,8 +464,6 @@ module.exports = Message = class Message{
 var Character = require('./character'),
     Message = require('./message');
 
-var stage = new createjs.Stage('canvas');
-
 /**
  * Player class, keeps track of player position, movement, etc.
  */
@@ -483,6 +481,8 @@ module.exports = Player = class Player extends Character{
     // Variables for client-side prediction
     this.pending_inputs = []
     this.input_seq = 0;
+
+    this.setSprite(new Sprite("player"));
   }
 
   /**
@@ -556,6 +556,41 @@ Socket.on = function(evnt, callback){
 }
 
 },{}],9:[function(require,module,exports){
+var sprites = require('./sprites').init();
+
+module.exports = Sprite = class Sprite{
+  constructor(name){
+    this.name = name;
+    this.loadJSON(sprites[name]);
+  }
+
+  loadJSON(name){
+    console.log(sprites);
+  }
+}
+
+},{"./sprites":10}],10:[function(require,module,exports){
+var _ = require('underscore'),
+    paths = [
+      require("../sprites/player.json"),
+      require("../sprites/ogre.json")
+    ]
+
+module.exports = Sprites = {
+  init: function(){
+    var sprites = {};
+
+    _.each(paths, function(json){
+      sprites[json.id] = json;
+
+      console.log(json.id)
+    });
+
+    return sprites;
+  }
+};
+
+},{"../sprites/ogre.json":13,"../sprites/player.json":14,"underscore":15}],11:[function(require,module,exports){
 module.exports = Stage = {};
 var stage;
 
@@ -575,7 +610,7 @@ Stage.init = function(){
   stage = new createjs.Stage('canvas');
 }
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict"
 
 var App = require('./js/app');
@@ -584,7 +619,43 @@ $(document).ready(function(){
   var app = new App();
 });
 
-},{"./js/app":1}],11:[function(require,module,exports){
+},{"./js/app":1}],13:[function(require,module,exports){
+module.exports={
+  "id": "ogre",
+  "width": 32,
+  "height": 64,
+  "animations": {
+    "walk": {
+      "frames": 4,
+      "row": 0
+    },
+
+    "atk": {
+      "frames": 4,
+      "row": 4
+    }
+  }
+}
+
+},{}],14:[function(require,module,exports){
+module.exports={
+  "id": "player",
+  "width": 32,
+  "height": 64,
+  "animations": {
+    "walk": {
+      "frames": 4,
+      "row": 0
+    },
+
+    "atk": {
+      "frames": 4,
+      "row": 4
+    }
+  }
+}
+
+},{}],15:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2134,7 +2205,7 @@ $(document).ready(function(){
   }
 }.call(this));
 
-},{}],12:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -2172,4 +2243,4 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}]},{},[10]);
+},{}]},{},[12]);

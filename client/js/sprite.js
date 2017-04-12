@@ -1,4 +1,4 @@
-var sprites = require('./sprites');
+var sprites = require('./sprites').init();
 
 module.exports = Sprite = class Sprite{
   constructor(name){

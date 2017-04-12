@@ -4,7 +4,8 @@
  */
 
 var Types = require('../../shared/js/types'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    Sprite = require('./sprite');
 
 module.exports = Entity = class Entity{
   constructor(id, species, width, height){

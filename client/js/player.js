@@ -9,8 +9,6 @@
 var Character = require('./character'),
     Message = require('./message');
 
-var stage = new createjs.Stage('canvas');
-
 /**
  * Player class, keeps track of player position, movement, etc.
  */
@@ -29,7 +27,7 @@ module.exports = Player = class Player extends Character{
     this.pending_inputs = []
     this.input_seq = 0;
 
-    this.setSprite();
+    this.setSprite(new Sprite("player"));
   }
 
   /**
