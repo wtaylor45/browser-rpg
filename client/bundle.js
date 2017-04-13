@@ -1,4 +1,67 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+
+module.exports = Animation = class Animation{
+  constructor(name, length, row, width, height){
+    this.name = name;
+    this.row = row;
+    this.width = width;
+    this.height = height;
+    this.frames = length;
+    this.currentFrame = null;
+    this.currentTime = 0;
+    this.reset();
+  }
+
+  tick(){
+    var i = this.currentFrame.index;
+
+    i = (i < this.length - 1) ? i + 1 : 0;
+
+    if(this.iterations > 0){
+      if(i == 0){
+        this.iterations--;
+        if(this.iterations == 0){
+          this.onEnd();
+          return;
+        }
+      }
+    }
+
+    this.currentFrame.x = this.width * i;
+    this.currentFrame.y = this.height * this.row;
+    this.currentFrame.index = i;
+  }
+
+  reset(){
+    this.currentTime = 0;
+    this.currentFrame = {index: 0, x: 0, y: this.row*this.height}
+  }
+
+  isAnimationTick(){
+    return this.currentTime > this.speed;
+  }
+
+  update(dt){
+    this.currentTime += dt;
+
+    if(this.isAnimationTick()){
+      this.currentTime = 0;
+      this.tick();
+    }
+  }
+
+  setSpeed(speed){
+    this.speed = speed;
+  }
+
+  setIterations(iters, onEnd){
+    this.iterations = iters;
+    this.onEnd = onEnd;
+  }
+}
+
+},{}],2:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -51,7 +114,7 @@ module.exports = App = class App{
   }
 }
 
-},{"./game":4,"./player":7,"./socket":8}],2:[function(require,module,exports){
+},{"./game":5,"./player":8,"./socket":10}],3:[function(require,module,exports){
 var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
@@ -89,7 +152,7 @@ module.exports = Character = class Character extends Entity{
   }
 }
 
-},{"../../shared/js/types":16,"./entity":3}],3:[function(require,module,exports){
+},{"../../shared/js/types":17,"./entity":4}],4:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/9/17
@@ -145,6 +208,7 @@ module.exports = Entity = class Entity{
     }
 
     this.sprite = sprite;
+    this.animations = sprite.createAnimations();
   }
 
   getSprite(){
@@ -152,13 +216,7 @@ module.exports = Entity = class Entity{
   }
 
   getAnimationByName(name){
-    var animation;
-
-    if(_.indexOf(this.animations, name) >= 0){
-      animation = this.animation[name];
-    }
-
-    return animation;
+    return this.animations[name];
   }
 
   setAnimation(name, speed, count, endCount){
@@ -175,7 +233,7 @@ module.exports = Entity = class Entity{
     }
 
     var anim = this.getAnimationByName(name);
-
+    console.log(anim)
     if(anim){
       anim.row += rowOffset;
       this.currentAnimation = anim;
@@ -187,7 +245,7 @@ module.exports = Entity = class Entity{
   }
 }
 
-},{"../../shared/js/types":16,"./sprite":9,"underscore":15}],4:[function(require,module,exports){
+},{"../../shared/js/types":17,"./sprite":11,"underscore":16}],5:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -197,7 +255,7 @@ module.exports = Entity = class Entity{
  */
 
 var Input = require('./input'),
-    Stage = require('./stage'),
+    Renderer = require('./renderer'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket');
 
@@ -212,10 +270,10 @@ module.exports = Game = class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    Stage.init();
-
     // Who is the client's player?
     this.player = false;
+
+    this.renderer = null;
 
     // Recieve messages from server to be processed here
     this.mailbox = [];
@@ -238,7 +296,7 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
-    //this.render();
+    this.renderer = new Renderer(this, "canvas");
 
     Input.init();
 
@@ -270,6 +328,7 @@ module.exports = Game = class Game{
    */
   setPlayer(player){
     this.player = player;
+    this.entities[player.id] = player;
   }
 
   /**
@@ -316,10 +375,12 @@ module.exports = Game = class Game{
 
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
     player_status.textContent = info;
+
+    this.renderer.render();
   }
 }
 
-},{"../../shared/js/types":16,"./input":5,"./socket":8,"./stage":11}],5:[function(require,module,exports){
+},{"../../shared/js/types":17,"./input":6,"./renderer":9,"./socket":10}],6:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -416,7 +477,7 @@ Input.init = function(){
   }
 }
 
-},{"../../shared/js/types":16}],6:[function(require,module,exports){
+},{"../../shared/js/types":17}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -452,7 +513,7 @@ module.exports = Message = class Message{
   }
 }
 
-},{"./socket":8}],7:[function(require,module,exports){
+},{"./socket":10}],8:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -536,7 +597,115 @@ module.exports = Player = class Player extends Character{
   }
 }
 
-},{"./character":2,"./message":6}],8:[function(require,module,exports){
+},{"./character":3,"./message":7}],9:[function(require,module,exports){
+var _ = require('underscore');
+
+module.exports = Renderer = class Renderer{
+  constructor(game, canvas){
+    this.game = game;
+    this.stage = new createjs.Stage(canvas);
+
+    this.FPS = 60;
+    this.tileSize = 8;
+
+    this.lastTime = new Date();
+    this.frameCount = 0;
+    this.MAX_FPS = this.FPS;
+    this.realFPS = 0;
+
+    this.font = "Macondo";
+  }
+
+  getWidth(){
+    return this.stage.canvas.width;
+  }
+
+  getHeight(){
+    return this.stage.canvas.height;
+  }
+
+  createCamera(){
+    this.camera = new Camera(this);
+  }
+
+  drawText(text, x, y, centered, color, strokeColor, fontSize){
+    var stage = this.stage;
+
+    if(text && x && y){
+      var textToDraw = new createjs.Text(text);
+      var font = (fontSize || "20px") + " " + this.font;
+      textToDraw.font = font;
+      textToDraw.x = x;
+      textToDraw.y = y;
+      textToDraw.color = color || "#fff";
+
+      if(strokeColor){
+        var stroke = textToDraw.clone();
+        stroke.outline = 3;
+        stroke.color = strokeColor;
+        stage.addChild(stroke);
+      }
+
+      stage.addChild(textToDraw);
+    }
+  }
+
+  drawFPS(){
+    var curTime = new Date();
+    var diff = curTime.getTime() - this.lastTime.getTime();
+
+    if(diff >= 1000){
+      this.realFPS = this.frameCount;
+      this.frameCount = 0;
+      this.lastTime = curTime;
+    }
+
+    this.frameCount++;
+
+    this.drawText("FPS: " + this.realFPS, 30, 30, false, "#ff0", "#000");
+  }
+
+  drawEntity(entity){
+    var sprite = entity.sprite,
+        anim = entity.currentAnimation,
+        stage = this.stage;
+
+    if(anim && sprite){
+      var frame = anim.currentFrame,
+          x = frame.x,
+          y = frame.y,
+          dx = sprite.x,
+          width = sprite.width,
+          height = sprite.height;
+
+      sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
+      sprite.image.x = entity.x;
+      sprite.image.y = entity.y;
+      stage.addChild(sprite.image);
+      console.log('drawed')
+    }
+  }
+
+  drawEntities(){
+    var self = this;
+    var entities = this.game.entities;
+
+    _.each(entities, function(entity){
+      self.drawEntity(entity);
+    });
+  }
+
+  render(){
+    this.stage.removeAllChildren();
+
+    this.drawEntities();
+
+    this.drawFPS();
+    this.stage.update();
+  }
+}
+
+},{"underscore":16}],10:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -555,8 +724,9 @@ Socket.on = function(evnt, callback){
   });
 }
 
-},{}],9:[function(require,module,exports){
-var sprites = require('./sprites').init();
+},{}],11:[function(require,module,exports){
+var sprites = require('./sprites').init(),
+    Animation = require('./animation');
 
 module.exports = Sprite = class Sprite{
   constructor(name){
@@ -564,12 +734,33 @@ module.exports = Sprite = class Sprite{
     this.loadJSON(sprites[name]);
   }
 
-  loadJSON(name){
-    console.log(sprites);
+  loadJSON(json){
+    this.id = json.id;
+    this.path = json.image;
+    this.animations = json.animations;
+    this.width = json.width;
+    this.height = json.height;
+
+    this.load();
+  }
+
+  load(){
+    this.image = new createjs.Bitmap(this.path);
+  }
+
+  createAnimations(){
+    var animations = {};
+
+    for(var name in this.animations){
+      var anim = this.animations[name];
+      animations[name] = new Animation(name, anim.frames, anim.row, this.width, this.height);
+    }
+
+    return animations;
   }
 }
 
-},{"./sprites":10}],10:[function(require,module,exports){
+},{"./animation":1,"./sprites":12}],12:[function(require,module,exports){
 var _ = require('underscore'),
     paths = [
       require("../sprites/player.json"),
@@ -582,35 +773,13 @@ module.exports = Sprites = {
 
     _.each(paths, function(json){
       sprites[json.id] = json;
-
-      console.log(json.id)
     });
 
     return sprites;
   }
 };
 
-},{"../sprites/ogre.json":13,"../sprites/player.json":14,"underscore":15}],11:[function(require,module,exports){
-module.exports = Stage = {};
-var stage;
-
-Stage.addChild = function(child){
-  stage.addChild(child);
-}
-
-Stage.update = function(){
-  stage.update();
-}
-
-Stage.removeAllChildren = function(){
-  stage.removeAllChildren();
-}
-
-Stage.init = function(){
-  stage = new createjs.Stage('canvas');
-}
-
-},{}],12:[function(require,module,exports){
+},{"../sprites/ogre.json":14,"../sprites/player.json":15,"underscore":16}],13:[function(require,module,exports){
 "use strict"
 
 var App = require('./js/app');
@@ -619,7 +788,7 @@ $(document).ready(function(){
   var app = new App();
 });
 
-},{"./js/app":1}],13:[function(require,module,exports){
+},{"./js/app":2}],14:[function(require,module,exports){
 module.exports={
   "id": "ogre",
   "width": 32,
@@ -637,25 +806,29 @@ module.exports={
   }
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports={
   "id": "player",
   "width": 32,
   "height": 64,
+  "image": "client/assets/players/sprite_000b.png",
   "animations": {
-    "walk": {
+    "idle": {
       "frames": 4,
       "row": 0
     },
-
-    "atk": {
+    "walk": {
       "frames": 4,
       "row": 4
+    },
+    "atk": {
+      "frames": 4,
+      "row": 8
     }
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2205,7 +2378,7 @@ module.exports={
   }
 }.call(this));
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -2243,4 +2416,4 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}]},{},[12]);
+},{}]},{},[13]);

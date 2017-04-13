@@ -53,6 +53,7 @@ module.exports = Entity = class Entity{
     }
 
     this.sprite = sprite;
+    this.animations = sprite.createAnimations();
   }
 
   getSprite(){
@@ -60,13 +61,7 @@ module.exports = Entity = class Entity{
   }
 
   getAnimationByName(name){
-    var animation;
-
-    if(_.indexOf(this.animations, name) >= 0){
-      animation = this.animation[name];
-    }
-
-    return animation;
+    return this.animations[name];
   }
 
   setAnimation(name, speed, count, endCount){
@@ -83,7 +78,6 @@ module.exports = Entity = class Entity{
     }
 
     var anim = this.getAnimationByName(name);
-
     if(anim){
       anim.row += rowOffset;
       this.currentAnimation = anim;

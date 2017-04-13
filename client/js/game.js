@@ -7,7 +7,7 @@
  */
 
 var Input = require('./input'),
-    Stage = require('./stage'),
+    Renderer = require('./renderer'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket');
 
@@ -22,10 +22,10 @@ module.exports = Game = class Game{
     // Has the game started yet on the client side?
     this.started = false;
 
-    Stage.init();
-
     // Who is the client's player?
     this.player = false;
+
+    this.renderer = null;
 
     // Recieve messages from server to be processed here
     this.mailbox = [];
@@ -48,7 +48,7 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
-    //this.render();
+    this.renderer = new Renderer(this, "canvas");
 
     Input.init();
 
@@ -80,6 +80,7 @@ module.exports = Game = class Game{
    */
   setPlayer(player){
     this.player = player;
+    this.entities[player.id] = player;
   }
 
   /**
@@ -126,5 +127,7 @@ module.exports = Game = class Game{
 
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
     player_status.textContent = info;
+
+    this.renderer.render();
   }
 }

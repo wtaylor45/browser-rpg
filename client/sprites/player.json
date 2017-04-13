@@ -2,15 +2,19 @@
   "id": "player",
   "width": 32,
   "height": 64,
+  "image": "client/assets/players/sprite_000b.png",
   "animations": {
-    "walk": {
+    "idle": {
       "frames": 4,
       "row": 0
     },
-
-    "atk": {
+    "walk": {
       "frames": 4,
       "row": 4
+    },
+    "atk": {
+      "frames": 4,
+      "row": 8
     }
   }
 }
