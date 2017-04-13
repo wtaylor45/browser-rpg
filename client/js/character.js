@@ -22,15 +22,34 @@ module.exports = Character = class Character extends Entity{
     if(this.currentAnimation && this.currentAnimation.name == "die"){
       return;
     }
-
     this.setAnimation(animation, speed, count, onEnd);
   }
 
+  setDirection(dir){
+    this.direction = dir;
+  }
+
+  updateMovement(){
+    var lastPos = this.lastPos;
+
+    if(lastPos[0] > this.x) this.walk(Types.Directions.RIGHT);
+    if(lastPos[0] < this.x) this.walk(Types.Directions.LEFT);
+    if(lastPos[1] > this.y) this.walk(Types.Directions.DOWN);
+    if(lastPos[1] < this.y) this.walk(Types.Directions.UP);
+  }
+
   idle(){
+    this.hasMoved = false;
     this.animate('idle', this.idleSpeed);
   }
 
-  walk(){
-    this.animate('walk', this.walkSpeed);
+  walk(direction){
+    this.setDirection(direction);
+    this.hasMoved = true;
+
+    var self = this;
+    this.animate('walk', this.walkSpeed, 1, function(){
+      self.idle();
+    });
   }
 }

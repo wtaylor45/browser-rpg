@@ -15,7 +15,7 @@ module.exports = Animation = class Animation{
   tick(){
     var i = this.currentFrame.index;
 
-    i = (i < this.length - 1) ? i + 1 : 0;
+    i = (i < this.frames - 1) ? i + 1 : 0;
 
     if(this.iterations > 0){
       if(i == 0){
@@ -28,7 +28,6 @@ module.exports = Animation = class Animation{
     }
 
     this.currentFrame.x = this.width * i;
-    this.currentFrame.y = this.height * this.row;
     this.currentFrame.index = i;
   }
 
@@ -38,7 +37,7 @@ module.exports = Animation = class Animation{
   }
 
   isAnimationTick(){
-    return this.currentTime > this.speed;
+    return this.currentTime > this.speed*100;
   }
 
   update(dt){

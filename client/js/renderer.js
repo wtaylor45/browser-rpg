@@ -62,7 +62,7 @@ module.exports = Renderer = class Renderer{
 
     this.frameCount++;
 
-    this.drawText("FPS: " + this.realFPS, 30, 30, false, "#ff0", "#000");
+    this.drawText("FPS: " + this.realFPS, 10, 10, false, "#ff0", "#000");
   }
 
   drawEntity(entity){
@@ -74,7 +74,6 @@ module.exports = Renderer = class Renderer{
       var frame = anim.currentFrame,
           x = frame.x,
           y = frame.y,
-          dx = sprite.x,
           width = sprite.width,
           height = sprite.height;
 

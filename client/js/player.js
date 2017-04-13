@@ -39,9 +39,27 @@ module.exports = Player = class Player extends Character{
     // Update the player x and y based on the movement vector
     this.x += input.vector.x*input.pressTime*this.speed;
     this.y += input.vector.y*input.pressTime*this.speed;
+  }
 
-    this.setDirection(this.getDirectionFromVector(vector))
-    this.walk();
+  onMove(message){
+    this.setPos(message.x, message.y);
+    // Preform reconciliation
+    var k = 0;
+    while (k < this.pending_inputs.length){
+      var input = this.pending_inputs[k];
+      // Check if this input has already been processed client side
+      if(input.seq <= message.lastProcessedInput){
+        // This input has been processed by the server
+        // Therefore there is no need to reapply it
+        this.pending_inputs.splice(k,1);
+      }
+      else{
+        // This input has not been processed by the server yet
+        // Reapply it
+        this.applyInput(input);
+        k++;
+      }
+    }
   }
 
   /**
@@ -75,8 +93,6 @@ module.exports = Player = class Player extends Character{
 
       // Save input to validated later
       this.pending_inputs.push(input);
-    }else{
-      this.idle();
     }
   }
 }

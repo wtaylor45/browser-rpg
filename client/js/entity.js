@@ -20,12 +20,15 @@ module.exports = Entity = class Entity{
     this.width = width;
     this.height = height;
 
+    this.lastPos = [this.x, this.y];
+
     this.sprite = null;
     this.animations = null;
     this.currentAnimation = null;
   }
 
   setPos(x, y){
+    this.lastPos = [this.x, this.y];
     this.x = x;
     this.y = y;
   }
@@ -69,7 +72,8 @@ module.exports = Entity = class Entity{
     var directionBased = ["walk", "idle"];
     var rowOffset = 0;
 
-    if(this.currentAnimation && this.currentAnimation.name == name){
+    if(this.currentAnimation && this.currentAnimation.name === name){
+      console.log('anim already running')
       return;
     }
 

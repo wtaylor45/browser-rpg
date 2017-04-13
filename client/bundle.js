@@ -16,7 +16,7 @@ module.exports = Animation = class Animation{
   tick(){
     var i = this.currentFrame.index;
 
-    i = (i < this.length - 1) ? i + 1 : 0;
+    i = (i < this.frames - 1) ? i + 1 : 0;
 
     if(this.iterations > 0){
       if(i == 0){
@@ -29,7 +29,6 @@ module.exports = Animation = class Animation{
     }
 
     this.currentFrame.x = this.width * i;
-    this.currentFrame.y = this.height * this.row;
     this.currentFrame.index = i;
   }
 
@@ -39,7 +38,7 @@ module.exports = Animation = class Animation{
   }
 
   isAnimationTick(){
-    return this.currentTime > this.speed;
+    return this.currentTime > this.speed*100;
   }
 
   update(dt){
@@ -139,20 +138,39 @@ module.exports = Character = class Character extends Entity{
     if(this.currentAnimation && this.currentAnimation.name == "die"){
       return;
     }
-
     this.setAnimation(animation, speed, count, onEnd);
   }
 
+  setDirection(dir){
+    this.direction = dir;
+  }
+
+  updateMovement(){
+    var lastPos = this.lastPos;
+
+    if(lastPos[0] > this.x) this.walk(Types.Directions.RIGHT);
+    if(lastPos[0] < this.x) this.walk(Types.Directions.LEFT);
+    if(lastPos[1] > this.y) this.walk(Types.Directions.DOWN);
+    if(lastPos[1] < this.y) this.walk(Types.Directions.UP);
+  }
+
   idle(){
+    this.hasMoved = false;
     this.animate('idle', this.idleSpeed);
   }
 
-  walk(){
-    this.animate('walk', this.walkSpeed);
+  walk(direction){
+    this.setDirection(direction);
+    this.hasMoved = true;
+
+    var self = this;
+    this.animate('walk', this.walkSpeed, 1, function(){
+      self.idle();
+    });
   }
 }
 
-},{"../../shared/js/types":17,"./entity":4}],4:[function(require,module,exports){
+},{"../../shared/js/types":18,"./entity":4}],4:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/9/17
@@ -175,12 +193,15 @@ module.exports = Entity = class Entity{
     this.width = width;
     this.height = height;
 
+    this.lastPos = [this.x, this.y];
+
     this.sprite = null;
     this.animations = null;
     this.currentAnimation = null;
   }
 
   setPos(x, y){
+    this.lastPos = [this.x, this.y];
     this.x = x;
     this.y = y;
   }
@@ -224,7 +245,8 @@ module.exports = Entity = class Entity{
     var directionBased = ["walk", "idle"];
     var rowOffset = 0;
 
-    if(this.currentAnimation && this.currentAnimation.name == name){
+    if(this.currentAnimation && this.currentAnimation.name === name){
+      console.log('anim already running')
       return;
     }
 
@@ -233,7 +255,6 @@ module.exports = Entity = class Entity{
     }
 
     var anim = this.getAnimationByName(name);
-    console.log(anim)
     if(anim){
       anim.row += rowOffset;
       this.currentAnimation = anim;
@@ -245,7 +266,7 @@ module.exports = Entity = class Entity{
   }
 }
 
-},{"../../shared/js/types":17,"./sprite":11,"underscore":16}],5:[function(require,module,exports){
+},{"../../shared/js/types":18,"./sprite":11,"underscore":17}],5:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -256,6 +277,7 @@ module.exports = Entity = class Entity{
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket');
 
@@ -269,6 +291,7 @@ module.exports = Game = class Game{
     var self = this;
     // Has the game started yet on the client side?
     this.started = false;
+    this.running = false;
 
     // Who is the client's player?
     this.player = false;
@@ -296,29 +319,13 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
+    this.running = true;
     this.renderer = new Renderer(this, "canvas");
-
+    this.updater = new Updater(this);
     Input.init();
 
-    // ∆t variables
-    var lastTime = new Date().getTime();
-    var curTime, dt;
-
-    // Keep track of loop iteration
-    var iter = 0;
-
-    var self = this;
-    setInterval(function(){
-      // ∆t calculation
-      curTime = new Date().getTime();
-      dt = (curTime - lastTime)/100;
-      lastTime = curTime;
-
-      // Update every loop
-      self.update(dt);
-
-      iter++;
-    }, 1000/this.FPS);
+    // Update every loop
+    this.tick();
   }
 
   /**
@@ -340,24 +347,7 @@ module.exports = Game = class Game{
       var message = this.mailbox[i];
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
-          this.player.setPos(message.x, message.y);
-          // Preform reconciliation
-          var k = 0;
-          while (k < this.player.pending_inputs.length){
-            var input = this.player.pending_inputs[k];
-            // Check if this input has already been processed client side
-            if(input.seq <= message.lastProcessedInput){
-              // This input has been processed by the server
-              // Therefore there is no need to reapply it
-              this.player.pending_inputs.splice(k,1);
-            }
-            else{
-              // This input has not been processed by the server yet
-              // Reapply it
-              this.player.applyInput(input);
-              k++;
-            }
-          }
+          this.player.onMove(message);
         }
       }
       this.mailbox.splice(i,1);
@@ -369,18 +359,26 @@ module.exports = Game = class Game{
    *
    * @param {number} dt Delta time, time since last loop
    */
-  update(dt){
-    this.readServerMessages(dt);
+  tick(){
+    this.updater.update();
+    this.renderer.render();
+
+    if(this.running)
+      window.requestAnimationFrame(this.tick.bind(this));
+
+    /*
+
     this.player.update(dt);
 
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
     player_status.textContent = info;
 
     this.renderer.render();
+    */
   }
 }
 
-},{"../../shared/js/types":17,"./input":6,"./renderer":9,"./socket":10}],6:[function(require,module,exports){
+},{"../../shared/js/types":18,"./input":6,"./renderer":9,"./socket":10,"./updater":13}],6:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -477,7 +475,7 @@ Input.init = function(){
   }
 }
 
-},{"../../shared/js/types":17}],7:[function(require,module,exports){
+},{"../../shared/js/types":18}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -555,9 +553,27 @@ module.exports = Player = class Player extends Character{
     // Update the player x and y based on the movement vector
     this.x += input.vector.x*input.pressTime*this.speed;
     this.y += input.vector.y*input.pressTime*this.speed;
+  }
 
-    this.setDirection(this.getDirectionFromVector(vector))
-    this.walk();
+  onMove(message){
+    this.setPos(message.x, message.y);
+    // Preform reconciliation
+    var k = 0;
+    while (k < this.pending_inputs.length){
+      var input = this.pending_inputs[k];
+      // Check if this input has already been processed client side
+      if(input.seq <= message.lastProcessedInput){
+        // This input has been processed by the server
+        // Therefore there is no need to reapply it
+        this.pending_inputs.splice(k,1);
+      }
+      else{
+        // This input has not been processed by the server yet
+        // Reapply it
+        this.applyInput(input);
+        k++;
+      }
+    }
   }
 
   /**
@@ -591,8 +607,6 @@ module.exports = Player = class Player extends Character{
 
       // Save input to validated later
       this.pending_inputs.push(input);
-    }else{
-      this.idle();
     }
   }
 }
@@ -662,7 +676,7 @@ module.exports = Renderer = class Renderer{
 
     this.frameCount++;
 
-    this.drawText("FPS: " + this.realFPS, 30, 30, false, "#ff0", "#000");
+    this.drawText("FPS: " + this.realFPS, 10, 10, false, "#ff0", "#000");
   }
 
   drawEntity(entity){
@@ -674,7 +688,6 @@ module.exports = Renderer = class Renderer{
       var frame = anim.currentFrame,
           x = frame.x,
           y = frame.y,
-          dx = sprite.x,
           width = sprite.width,
           height = sprite.height;
 
@@ -682,7 +695,6 @@ module.exports = Renderer = class Renderer{
       sprite.image.x = entity.x;
       sprite.image.y = entity.y;
       stage.addChild(sprite.image);
-      console.log('drawed')
     }
   }
 
@@ -705,7 +717,7 @@ module.exports = Renderer = class Renderer{
   }
 }
 
-},{"underscore":16}],10:[function(require,module,exports){
+},{"underscore":17}],10:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -779,7 +791,46 @@ module.exports = Sprites = {
   }
 };
 
-},{"../sprites/ogre.json":14,"../sprites/player.json":15,"underscore":16}],13:[function(require,module,exports){
+},{"../sprites/ogre.json":15,"../sprites/player.json":16,"underscore":17}],13:[function(require,module,exports){
+var _ = require('underscore')
+
+module.exports = Updater = class Updater{
+  constructor(game){
+    this.game = game;
+    this.lastTime = new Date().getTime();
+  }
+
+  update(){
+    var currentTime = new Date().getTime();
+    var dt = currentTime - this.lastTime;
+
+    this.game.readServerMessages();
+    this.updatePlayer(dt);
+    this.updateEntities(dt);
+  }
+
+  updatePlayer(dt){
+    this.game.player.update(dt);
+  }
+
+  updateEntities(dt){
+    var self = this;
+    _.each(this.game.entities, function(entity){
+      entity.updateMovement();
+      self.updateAnimation(entity, dt);
+    });
+  }
+
+  updateAnimation(entity, dt){
+    var anim = entity.currentAnimation;
+
+    if(anim){
+      anim.update(dt);
+    }
+  }
+}
+
+},{"underscore":17}],14:[function(require,module,exports){
 "use strict"
 
 var App = require('./js/app');
@@ -788,7 +839,7 @@ $(document).ready(function(){
   var app = new App();
 });
 
-},{"./js/app":2}],14:[function(require,module,exports){
+},{"./js/app":2}],15:[function(require,module,exports){
 module.exports={
   "id": "ogre",
   "width": 32,
@@ -806,7 +857,7 @@ module.exports={
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports={
   "id": "player",
   "width": 32,
@@ -819,7 +870,7 @@ module.exports={
     },
     "walk": {
       "frames": 4,
-      "row": 4
+      "row": 0
     },
     "atk": {
       "frames": 4,
@@ -828,7 +879,7 @@ module.exports={
   }
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2378,7 +2429,7 @@ module.exports={
   }
 }.call(this));
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -2416,4 +2467,4 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}]},{},[13]);
+},{}]},{},[14]);

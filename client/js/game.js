@@ -8,6 +8,7 @@
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket');
 
@@ -21,6 +22,7 @@ module.exports = Game = class Game{
     var self = this;
     // Has the game started yet on the client side?
     this.started = false;
+    this.running = false;
 
     // Who is the client's player?
     this.player = false;
@@ -48,29 +50,13 @@ module.exports = Game = class Game{
     if(!this.player) return false;
 
     this.started = true;
+    this.running = true;
     this.renderer = new Renderer(this, "canvas");
-
+    this.updater = new Updater(this);
     Input.init();
 
-    // ∆t variables
-    var lastTime = new Date().getTime();
-    var curTime, dt;
-
-    // Keep track of loop iteration
-    var iter = 0;
-
-    var self = this;
-    setInterval(function(){
-      // ∆t calculation
-      curTime = new Date().getTime();
-      dt = (curTime - lastTime)/100;
-      lastTime = curTime;
-
-      // Update every loop
-      self.update(dt);
-
-      iter++;
-    }, 1000/this.FPS);
+    // Update every loop
+    this.tick();
   }
 
   /**
@@ -92,24 +78,7 @@ module.exports = Game = class Game{
       var message = this.mailbox[i];
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
-          this.player.setPos(message.x, message.y);
-          // Preform reconciliation
-          var k = 0;
-          while (k < this.player.pending_inputs.length){
-            var input = this.player.pending_inputs[k];
-            // Check if this input has already been processed client side
-            if(input.seq <= message.lastProcessedInput){
-              // This input has been processed by the server
-              // Therefore there is no need to reapply it
-              this.player.pending_inputs.splice(k,1);
-            }
-            else{
-              // This input has not been processed by the server yet
-              // Reapply it
-              this.player.applyInput(input);
-              k++;
-            }
-          }
+          this.player.onMove(message);
         }
       }
       this.mailbox.splice(i,1);
@@ -121,13 +90,21 @@ module.exports = Game = class Game{
    *
    * @param {number} dt Delta time, time since last loop
    */
-  update(dt){
-    this.readServerMessages(dt);
+  tick(){
+    this.updater.update();
+    this.renderer.render();
+
+    if(this.running)
+      window.requestAnimationFrame(this.tick.bind(this));
+
+    /*
+
     this.player.update(dt);
 
     var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
     player_status.textContent = info;
 
     this.renderer.render();
+    */
   }
 }
