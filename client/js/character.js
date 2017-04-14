@@ -32,10 +32,10 @@ module.exports = Character = class Character extends Entity{
   updateMovement(){
     var lastPos = this.lastPos;
 
-    if(lastPos[0] > this.x) this.walk(Types.Directions.RIGHT);
-    if(lastPos[0] < this.x) this.walk(Types.Directions.LEFT);
-    if(lastPos[1] > this.y) this.walk(Types.Directions.DOWN);
-    if(lastPos[1] < this.y) this.walk(Types.Directions.UP);
+    if(lastPos[0] < this.x) this.walk(Types.Directions.RIGHT);
+    if(lastPos[0] > this.x) this.walk(Types.Directions.LEFT);
+    if(lastPos[1] < this.y) this.walk(Types.Directions.DOWN);
+    if(lastPos[1] > this.y) this.walk(Types.Directions.UP);
   }
 
   idle(){
@@ -48,8 +48,6 @@ module.exports = Character = class Character extends Entity{
     this.hasMoved = true;
 
     var self = this;
-    this.animate('walk', this.walkSpeed, 1, function(){
-      self.idle();
-    });
+    this.animate('walk', this.walkSpeed, 1);
   }
 }

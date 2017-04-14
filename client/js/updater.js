@@ -9,10 +9,12 @@ module.exports = Updater = class Updater{
   update(){
     var currentTime = new Date().getTime();
     var dt = currentTime - this.lastTime;
+    this.lastTime = currentTime;
 
     this.game.readServerMessages();
     this.updatePlayer(dt);
     this.updateEntities(dt);
+
   }
 
   updatePlayer(dt){
@@ -22,9 +24,13 @@ module.exports = Updater = class Updater{
   updateEntities(dt){
     var self = this;
     _.each(this.game.entities, function(entity){
-      entity.updateMovement();
+      if(entity instanceof Character) self.updateCharacter(entity);
       self.updateAnimation(entity, dt);
     });
+  }
+
+  updateCharacter(entity){
+    entity.updateMovement();
   }
 
   updateAnimation(entity, dt){

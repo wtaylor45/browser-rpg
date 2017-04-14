@@ -72,21 +72,21 @@ module.exports = Entity = class Entity{
     var directionBased = ["walk", "idle"];
     var rowOffset = 0;
 
-    if(this.currentAnimation && this.currentAnimation.name === name){
-      console.log('anim already running')
-      return;
+    if(_.indexOf(directionBased, name) >= 0){
+      name += '_' + this.direction
     }
 
-    if(_.indexOf(this.directionBased, name) >= 0){
-      rowOffset = this.direction;
+    if(this.currentAnimation && this.currentAnimation.name === name){
+      return;
     }
 
     var anim = this.getAnimationByName(name);
     if(anim){
-      anim.row += rowOffset;
+      anim.row = anim.row;
+      anim.rowOffset = rowOffset;
       this.currentAnimation = anim;
       this.currentAnimation.setSpeed(speed);
-      this.currentAnimation.setIterations(count ? count : 0, endCount, function(){
+      this.currentAnimation.setIterations(count ? count : 0, endCount || function(){
         self.idle();
       })
     }

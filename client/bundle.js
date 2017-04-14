@@ -7,6 +7,7 @@ module.exports = Animation = class Animation{
     this.row = row;
     this.width = width;
     this.height = height;
+    this.rowOffset = 0;
     this.frames = length;
     this.currentFrame = null;
     this.currentTime = 0;
@@ -16,29 +17,31 @@ module.exports = Animation = class Animation{
   tick(){
     var i = this.currentFrame.index;
 
-    i = (i < this.frames - 1) ? i + 1 : 0;
+    i = (i < this.frames-1) ? i + 1 : 0;
 
     if(this.iterations > 0){
       if(i == 0){
         this.iterations--;
         if(this.iterations == 0){
           this.onEnd();
+          this.reset();
           return;
         }
       }
     }
 
     this.currentFrame.x = this.width * i;
+    this.currentFrame.y = (this.row+this.rowOffset)*this.height;
     this.currentFrame.index = i;
   }
 
   reset(){
     this.currentTime = 0;
-    this.currentFrame = {index: 0, x: 0, y: this.row*this.height}
+    this.currentFrame = {index: 0, x: 0, y: (this.row+this.rowOffset)*this.height}
   }
 
   isAnimationTick(){
-    return this.currentTime > this.speed*100;
+    return this.currentTime > this.speed;
   }
 
   update(dt){
@@ -148,10 +151,10 @@ module.exports = Character = class Character extends Entity{
   updateMovement(){
     var lastPos = this.lastPos;
 
-    if(lastPos[0] > this.x) this.walk(Types.Directions.RIGHT);
-    if(lastPos[0] < this.x) this.walk(Types.Directions.LEFT);
-    if(lastPos[1] > this.y) this.walk(Types.Directions.DOWN);
-    if(lastPos[1] < this.y) this.walk(Types.Directions.UP);
+    if(lastPos[0] < this.x) this.walk(Types.Directions.RIGHT);
+    if(lastPos[0] > this.x) this.walk(Types.Directions.LEFT);
+    if(lastPos[1] < this.y) this.walk(Types.Directions.DOWN);
+    if(lastPos[1] > this.y) this.walk(Types.Directions.UP);
   }
 
   idle(){
@@ -164,9 +167,7 @@ module.exports = Character = class Character extends Entity{
     this.hasMoved = true;
 
     var self = this;
-    this.animate('walk', this.walkSpeed, 1, function(){
-      self.idle();
-    });
+    this.animate('walk', this.walkSpeed, 1);
   }
 }
 
@@ -245,21 +246,21 @@ module.exports = Entity = class Entity{
     var directionBased = ["walk", "idle"];
     var rowOffset = 0;
 
-    if(this.currentAnimation && this.currentAnimation.name === name){
-      console.log('anim already running')
-      return;
+    if(_.indexOf(directionBased, name) >= 0){
+      name += '_' + this.direction
     }
 
-    if(_.indexOf(this.directionBased, name) >= 0){
-      rowOffset = this.direction;
+    if(this.currentAnimation && this.currentAnimation.name === name){
+      return;
     }
 
     var anim = this.getAnimationByName(name);
     if(anim){
-      anim.row += rowOffset;
+      anim.row = anim.row;
+      anim.rowOffset = rowOffset;
       this.currentAnimation = anim;
       this.currentAnimation.setSpeed(speed);
-      this.currentAnimation.setIterations(count ? count : 0, endCount, function(){
+      this.currentAnimation.setIterations(count ? count : 0, endCount || function(){
         self.idle();
       })
     }
@@ -542,6 +543,8 @@ module.exports = Player = class Player extends Character{
     this.input_seq = 0;
 
     this.setSprite(new Sprite("player"));
+
+    this.idle();
   }
 
   /**
@@ -593,7 +596,7 @@ module.exports = Player = class Player extends Character{
 
     // If there is movement vector will not be [0,0]
     if(movementVector.x != 0 || movementVector.y != 0){
-      input = {pressTime: dt, vector: movementVector}
+      input = {pressTime: dt/100, vector: movementVector}
     }
 
     if(input){
@@ -628,6 +631,8 @@ module.exports = Renderer = class Renderer{
     this.realFPS = 0;
 
     this.font = "Macondo";
+
+    this.numCalls = 0;
   }
 
   getWidth(){
@@ -803,10 +808,12 @@ module.exports = Updater = class Updater{
   update(){
     var currentTime = new Date().getTime();
     var dt = currentTime - this.lastTime;
+    this.lastTime = currentTime;
 
     this.game.readServerMessages();
     this.updatePlayer(dt);
     this.updateEntities(dt);
+
   }
 
   updatePlayer(dt){
@@ -816,9 +823,13 @@ module.exports = Updater = class Updater{
   updateEntities(dt){
     var self = this;
     _.each(this.game.entities, function(entity){
-      entity.updateMovement();
+      if(entity instanceof Character) self.updateCharacter(entity);
       self.updateAnimation(entity, dt);
     });
+  }
+
+  updateCharacter(entity){
+    entity.updateMovement();
   }
 
   updateAnimation(entity, dt){
@@ -864,13 +875,37 @@ module.exports={
   "height": 64,
   "image": "client/assets/players/sprite_000b.png",
   "animations": {
-    "idle": {
+    "idle_0": {
       "frames": 4,
       "row": 0
     },
-    "walk": {
+    "idle_1": {
       "frames": 4,
-      "row": 0
+      "row": 1
+    },
+    "idle_2": {
+      "frames": 4,
+      "row": 2
+    },
+    "idle_3": {
+      "frames": 4,
+      "row": 3
+    },
+    "walk_0": {
+      "frames": 4,
+      "row": 4
+    },
+    "walk_1": {
+      "frames": 4,
+      "row": 5
+    },
+    "walk_2": {
+      "frames": 4,
+      "row": 6
+    },
+    "walk_3": {
+      "frames": 4,
+      "row": 7
     },
     "atk": {
       "frames": 4,
@@ -2456,10 +2491,10 @@ Types = {
   },
 
   Directions: {
-    UP: 0,
-    DOWN: 1,
-    LEFT: 2,
-    RIGHT: 3
+    UP: 1,
+    DOWN: 0,
+    LEFT: 3,
+    RIGHT: 2
   }
 }
 

@@ -14,6 +14,8 @@ module.exports = Renderer = class Renderer{
     this.realFPS = 0;
 
     this.font = "Macondo";
+
+    this.numCalls = 0;
   }
 
   getWidth(){

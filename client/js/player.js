@@ -28,6 +28,8 @@ module.exports = Player = class Player extends Character{
     this.input_seq = 0;
 
     this.setSprite(new Sprite("player"));
+
+    this.idle();
   }
 
   /**
@@ -79,7 +81,7 @@ module.exports = Player = class Player extends Character{
 
     // If there is movement vector will not be [0,0]
     if(movementVector.x != 0 || movementVector.y != 0){
-      input = {pressTime: dt, vector: movementVector}
+      input = {pressTime: dt/100, vector: movementVector}
     }
 
     if(input){
