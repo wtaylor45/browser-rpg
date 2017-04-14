@@ -9,8 +9,9 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
-var Entity = require('./entity')
+var Entity = require('./entity');
 var Player = require('./player.js');
+var Messages = require('./message');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -21,7 +22,7 @@ module.exports = GameServer;
 function GameServer(){
   var self = this;
   // Initialization
-  this.players = {};
+  this.players = {}
   this.entities = {};
 
   // Messages, index by player it is going to
@@ -43,10 +44,12 @@ function GameServer(){
    */
   this.onLogin = function(player){
     // Add player to the list of players
-    self.players[player.id] = player;
+    this.entities[player.id] = player;
 
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
+
+    self.pushEntityIDs(player);
 
     // What to do when this player broadcasts a message
     // TODO: Change to only broadcast to certain group
@@ -155,5 +158,16 @@ function GameServer(){
   this.getConnection = function(id){
     if(this.players[id])
       return this.players[id].connection;
+  }
+
+  this.pushEntityIDs = function(player){
+    var entities = this.entities;
+
+    var message = new Messages.List(entities);
+    this.addMessageToOutbox(player, message.serialize());
+  }
+
+  this.addMessageToOutbox = function(player, message){
+    this.outgoingMessages[player.id].push(message);
   }
 }

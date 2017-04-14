@@ -45,6 +45,9 @@ module.exports = Player = Character.extend({
       if(message.type == Types.Messages.MOVE){
         self.queuedInputs.push(message.data);
       }
+      else if(message.type == Types.Message.WHO){
+        console.log('who?');
+      }
     });
 
     // When the player disconnects

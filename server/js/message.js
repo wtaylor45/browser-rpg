@@ -36,3 +36,16 @@ Messages.Move = Message.extend({
     return message;
   }
 })
+
+Messages.List = Message.extend({
+  init: function(ids){
+    this.ids = ids;
+  },
+
+  serialize: function(){
+    return {
+            type: Types.Messages.LIST,
+            list: this.ids
+          }
+  }
+});
