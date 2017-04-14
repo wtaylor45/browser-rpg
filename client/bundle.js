@@ -151,20 +151,32 @@ module.exports = Character = class Character extends Entity{
   updateMovement(){
     var lastPos = this.lastPos;
 
-    if(lastPos[0] < this.x) this.walk(Types.Directions.RIGHT);
-    if(lastPos[0] > this.x) this.walk(Types.Directions.LEFT);
-    if(lastPos[1] < this.y) this.walk(Types.Directions.DOWN);
-    if(lastPos[1] > this.y) this.walk(Types.Directions.UP);
+    if(lastPos[1] < this.y){
+      this.walk(Types.Directions.DOWN);
+      return;
+    }
+    if(lastPos[1] > this.y){
+      this.walk(Types.Directions.UP);
+      return;
+    }
+    if(lastPos[0] < this.x){
+      this.walk(Types.Directions.RIGHT);
+      return;
+    }
+    if(lastPos[0] > this.x){
+      this.walk(Types.Directions.LEFT);
+      return;
+    }
+
+    this.idle();
   }
 
   idle(){
-    this.hasMoved = false;
     this.animate('idle', this.idleSpeed);
   }
 
   walk(direction){
     this.setDirection(direction);
-    this.hasMoved = true;
 
     var self = this;
     this.animate('walk', this.walkSpeed, 1);
