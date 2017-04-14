@@ -24,10 +24,10 @@ Types = {
   },
 
   Directions: {
-    UP: 0,
-    DOWN: 1,
-    LEFT: 2,
-    RIGHT: 3
+    UP: 1,
+    DOWN: 0,
+    LEFT: 3,
+    RIGHT: 2
   }
 }
 

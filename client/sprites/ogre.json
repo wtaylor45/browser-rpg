@@ -1,0 +1,16 @@
+{
+  "id": "ogre",
+  "width": 32,
+  "height": 64,
+  "animations": {
+    "walk": {
+      "frames": 4,
+      "row": 0
+    },
+
+    "atk": {
+      "frames": 4,
+      "row": 4
+    }
+  }
+}

@@ -6,33 +6,30 @@
  * http://www.gabrielgambetta.com/fpm2.html
  */
 
-var Game = require('./game'),
+var Character = require('./character'),
     Message = require('./message');
-
-var stage = new createjs.Stage('canvas');
 
 /**
  * Player class, keeps track of player position, movement, etc.
  */
-module.exports = Player = class Player{
+module.exports = Player = class Player extends Character{
   /**
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
   constructor(id, sprite){
-    // Create the player's entity
-    //this.sprite = new Sprite(Sprite.getPlayerSprite(sprite), false);
-    this.id = id;
+    super(id, Types.Entities.PLAYER)
 
     // Player movement variables
-    this.MAX_SPEED = 15;
     this.speed = 10;
 
     // Variables for client-side prediction
     this.pending_inputs = []
     this.input_seq = 0;
 
-    this.x = this.y = 0;
+    this.setSprite(new Sprite("player"));
+
+    this.idle();
   }
 
   /**
@@ -46,9 +43,25 @@ module.exports = Player = class Player{
     this.y += input.vector.y*input.pressTime*this.speed;
   }
 
-  setPos(x, y){
-    this.x = x;
-    this.y = y;
+  onMove(message){
+    this.setPos(message.x, message.y);
+    // Preform reconciliation
+    var k = 0;
+    while (k < this.pending_inputs.length){
+      var input = this.pending_inputs[k];
+      // Check if this input has already been processed client side
+      if(input.seq <= message.lastProcessedInput){
+        // This input has been processed by the server
+        // Therefore there is no need to reapply it
+        this.pending_inputs.splice(k,1);
+      }
+      else{
+        // This input has not been processed by the server yet
+        // Reapply it
+        this.applyInput(input);
+        k++;
+      }
+    }
   }
 
   /**
@@ -68,7 +81,7 @@ module.exports = Player = class Player{
 
     // If there is movement vector will not be [0,0]
     if(movementVector.x != 0 || movementVector.y != 0){
-      input = {pressTime: dt, vector: movementVector}
+      input = {pressTime: dt/100, vector: movementVector}
     }
 
     if(input){

@@ -1,0 +1,44 @@
+{
+  "id": "player",
+  "width": 32,
+  "height": 64,
+  "image": "client/assets/players/sprite_000b.png",
+  "animations": {
+    "idle_0": {
+      "frames": 4,
+      "row": 0
+    },
+    "idle_1": {
+      "frames": 4,
+      "row": 1
+    },
+    "idle_2": {
+      "frames": 4,
+      "row": 2
+    },
+    "idle_3": {
+      "frames": 4,
+      "row": 3
+    },
+    "walk_0": {
+      "frames": 4,
+      "row": 4
+    },
+    "walk_1": {
+      "frames": 4,
+      "row": 5
+    },
+    "walk_2": {
+      "frames": 4,
+      "row": 6
+    },
+    "walk_3": {
+      "frames": 4,
+      "row": 7
+    },
+    "atk": {
+      "frames": 4,
+      "row": 8
+    }
+  }
+}
