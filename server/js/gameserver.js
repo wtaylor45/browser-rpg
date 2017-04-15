@@ -138,6 +138,7 @@ function GameServer(){
     // TODO: Logout if the player is logged in
     delete global.SOCKET_LIST[id];
     delete this.players[id];
+    delete this.entities[id];
     console.log('Player', id, 'disconnected.');
   }
 
@@ -161,7 +162,7 @@ function GameServer(){
   }
 
   this.pushEntityIDs = function(player){
-    var entities = this.entities;
+    var entities = _.pluck(this.entities, "id");
 
     var message = new Messages.List(entities);
     this.addMessageToOutbox(player, message.serialize());
