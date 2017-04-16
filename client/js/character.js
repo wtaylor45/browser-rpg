@@ -2,8 +2,8 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species){
-    super(id, species);
+  constructor(id, species, w, h, x, y){
+    super(id, species, w, h, x, y);
 
     var self = this;
 
@@ -48,7 +48,6 @@ module.exports = Character = class Character extends Entity{
       this.walk(Types.Directions.LEFT);
       return;
     }
-
     this.idle();
   }
 
@@ -58,8 +57,8 @@ module.exports = Character = class Character extends Entity{
 
   walk(direction){
     this.setDirection(direction);
-
+    this.lastPos = [this.x, this.y];
     var self = this;
-    this.animate('walk', this.walkSpeed, 1);
+    this.animate('walk', this.walkSpeed, 0);
   }
 }

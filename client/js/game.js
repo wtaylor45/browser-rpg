@@ -10,7 +10,8 @@ var Input = require('./input'),
     Renderer = require('./renderer'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
-    Socket = require('./socket');
+    Socket = require('./socket'),
+    _ = require('underscore');
 
 /**
  * The client instance of the game
@@ -34,6 +35,7 @@ module.exports = Game = class Game{
 
     // List of all entities to be drawn
     this.entities = {}
+    this.entitiesToPrune = {};
 
     this.FPS = 60;
 
@@ -69,6 +71,15 @@ module.exports = Game = class Game{
     this.entities[player.id] = player;
   }
 
+  pruneEntities(){
+    console.log(this.entitiesToPrune.length);
+    _.each(this.entitiesToPrune, function(entity){
+      delete this.entities[entity.id];
+    });
+
+    this.obsoleteEntities = {};
+  }
+
   /**
    * Read messages sent from the server since last update
    */
@@ -79,10 +90,64 @@ module.exports = Game = class Game{
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
           this.player.onMove(message);
+        }else{
+          // Other entity
+          this.receiveMove(message);
         }
+      }
+      else if(message.type == Types.Messages.LIST){
+        this.receiveEntityList(message.list);
+      }
+      else if(message.type == Types.Messages.SPAWN){
+        if(message.id !== this.player.id)
+          this.receiveSpawn(message);
+      }
+      else if(message.type == Types.Messages.DESPAWN){
+        this.receiveDespawn(message);
       }
       this.mailbox.splice(i,1);
     }
+  }
+
+  receiveEntityList(list){
+    var entityIds = _.pluck(this.entites, 'id');
+    var alreadySeen = _.intersection(this.entityIds, list);
+    var notSeen = _.difference(list, alreadySeen);
+    var self = this;
+
+    this.entitiesToPrune = _.reject(this.entities, function(entity){
+      return _.contains(this.alreadySeen, entity) || entity.id == self.player.id;
+    });
+
+    this.pruneEntities();
+
+    if(_.size(notSeen) > 0){
+      this.askWhoAre(notSeen);
+    }
+  }
+
+  receiveMove(message){
+    var entity = this.entities[message.id];
+
+    if(!entity){
+      return;
+    }
+
+    entity.setPos(message.x, message.y);
+  }
+
+  receiveSpawn(message){
+    this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
+    var entity = this.entities[message.id];
+
+    entity.setDirection(message.direction);
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+    entity.setSprite(sprite);
+    entity.idle();
+  }
+
+  receiveDespawn(message){
+    delete this.entities[message.id];
   }
 
   /**
@@ -96,15 +161,10 @@ module.exports = Game = class Game{
 
     if(this.running)
       window.requestAnimationFrame(this.tick.bind(this));
+  }
 
-    /*
-
-    this.player.update(dt);
-
-    var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
-    player_status.textContent = info;
-
-    this.renderer.render();
-    */
+  askWhoAre(list){
+    var message = new Message(Types.Messages.WHO, list);
+    message.send();
   }
 }

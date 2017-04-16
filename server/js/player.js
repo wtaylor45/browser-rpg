@@ -16,9 +16,6 @@ module.exports = Player = Character.extend({
     this.server = server;
     this.connection = connection;
 
-    // This player's id, just use connection ID
-    this.id = connection.id;
-
     // Create this player using the Character super class
     this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
 
@@ -45,6 +42,9 @@ module.exports = Player = Character.extend({
       if(message.type == Types.Messages.MOVE){
         self.queuedInputs.push(message.data);
       }
+      else if(message.type == Types.Messages.WHO){
+        self.server.sendBatchSpawns(this);
+      }
     });
 
     // When the player disconnects
@@ -60,6 +60,7 @@ module.exports = Player = Character.extend({
    * Apply all inputs that have been queued
    */
   applyQueuedInputs: function(){
+    var lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
       var input = this.queuedInputs.shift();
       var vector = input.vector;
@@ -69,6 +70,11 @@ module.exports = Player = Character.extend({
 
       this.lastProcessedInput = input.seq;
     }
+
+    if(this.x > lastPos[0]) this.direction = Types.Directions.RIGHT;
+    if(this.x < lastPos[0]) this.direction = Types.Directions.LEFT;
+    if(this.y > lastPos[1]) this.direction = Types.Directions.DOWN;
+    if(this.y < lastPos[1]) this.direction = Types.Directions.UP;
 
     // Broadcast our new position
     this.broadcast(new Messages.Move(this));

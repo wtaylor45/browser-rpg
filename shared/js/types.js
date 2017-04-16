@@ -16,7 +16,10 @@ Types = {
     LOGOUT: 1,
     MOVE: 2,
     SPAWN: 3,
-    ATTACK: 4
+    ATTACK: 4,
+    LIST: 5,
+    WHO: 6,
+    DESPAWN: 7
   },
 
   Entities: {
@@ -29,6 +32,30 @@ Types = {
     LEFT: 3,
     RIGHT: 2
   }
+}
+
+var speciesList = {
+  player: [Types.Entities.PLAYER, "player"],
+
+  getGenus: function(species){
+    return speciesList[species][1];
+  }
+}
+
+Types.speciesAsString = function(species){
+  for(var s in speciesList) {
+    if(speciesList[s][0] === species) {
+        return s;
+    }
+}
+}
+
+Types.isPlayer = function(species){
+  return speciesList.getGenus[species] == "player";
+}
+
+Types.isCharacter = function(species){
+  return Types.isPlayer(species);
 }
 
 if(!(typeof exports === 'undefined')){

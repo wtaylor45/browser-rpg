@@ -9,8 +9,9 @@ var db = mongojs('browserpg', ['account', 'counters']);
 
 // Require needed node modules
 var _ = require('underscore');
-var Entity = require('./entity')
+var Entity = require('./entity');
 var Player = require('./player.js');
+var Messages = require('./message');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -21,7 +22,7 @@ module.exports = GameServer;
 function GameServer(){
   var self = this;
   // Initialization
-  this.players = {};
+  this.players = {}
   this.entities = {};
 
   // Messages, index by player it is going to
@@ -43,10 +44,13 @@ function GameServer(){
    */
   this.onLogin = function(player){
     // Add player to the list of players
-    self.players[player.id] = player;
+    this.entities[player.id] = player;
 
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
+
+    self.pushEntityIDs(player);
+    self.tellOthersSpawned(player);
 
     // What to do when this player broadcasts a message
     // TODO: Change to only broadcast to certain group
@@ -133,8 +137,11 @@ function GameServer(){
    */
   this.disconnect = function(id){
     // TODO: Logout if the player is logged in
+    this.tellOthersDespawned(id);
     delete global.SOCKET_LIST[id];
     delete this.players[id];
+    delete this.entities[id];
+    delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
   }
 
@@ -155,5 +162,42 @@ function GameServer(){
   this.getConnection = function(id){
     if(this.players[id])
       return this.players[id].connection;
+  }
+
+  this.pushEntityIDs = function(player){
+    var entities = _.pluck(this.entities, "id");
+
+    var message = new Messages.List(entities);
+    this.addMessageToOutbox(player, message.serialize());
+  }
+
+  this.tellOthersSpawned = function(player){
+    for(var i in this.outgoingMessages){
+      var message = new Messages.Spawn(player);
+      this.outgoingMessages[i].push(message.serialize());
+    }
+  }
+
+  this.tellOthersDespawned = function(id){
+    var message = new Messages.Despawn(id);
+    for(var i in this.players){
+      this.addMessageToOutbox(this.players[i], message.serialize());
+    }
+  }
+
+  this.sendBatchSpawns = function(player){
+    var list = this.entities;
+    var self = this;
+
+    _.each(list, function(entity){
+      if(entity.id != player.id){
+        var message = new Messages.Spawn(entity);
+        self.addMessageToOutbox(player, message.serialize());
+      }
+    });
+  }
+
+  this.addMessageToOutbox = function(player, message){
+    this.outgoingMessages[player.id].push(message);
   }
 }

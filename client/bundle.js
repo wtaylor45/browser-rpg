@@ -121,8 +121,8 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species){
-    super(id, species);
+  constructor(id, species, w, h, x, y){
+    super(id, species, w, h, x, y);
 
     var self = this;
 
@@ -167,7 +167,6 @@ module.exports = Character = class Character extends Entity{
       this.walk(Types.Directions.LEFT);
       return;
     }
-
     this.idle();
   }
 
@@ -177,9 +176,9 @@ module.exports = Character = class Character extends Entity{
 
   walk(direction){
     this.setDirection(direction);
-
+    this.lastPos = [this.x, this.y];
     var self = this;
-    this.animate('walk', this.walkSpeed, 1);
+    this.animate('walk', this.walkSpeed, 0);
   }
 }
 
@@ -194,12 +193,12 @@ var Types = require('../../shared/js/types'),
     Sprite = require('./sprite');
 
 module.exports = Entity = class Entity{
-  constructor(id, species, width, height){
+  constructor(id, species, width, height, x, y){
     this.id = id;
     this.species = species;
 
-    this.x = 0;
-    this.y = 0;
+    this.x = x || 0;
+    this.y = y || 0;
 
     this.direction = Types.Directions.DOWN;
 
@@ -228,6 +227,7 @@ module.exports = Entity = class Entity{
 
   setDirection(direction){
     this.direction =  direction;
+    console.log(this.direction)
   }
 
   setSprite(sprite){
@@ -259,7 +259,7 @@ module.exports = Entity = class Entity{
     var rowOffset = 0;
 
     if(_.indexOf(directionBased, name) >= 0){
-      name += '_' + this.direction
+      name += '_' + this.direction;
     }
 
     if(this.currentAnimation && this.currentAnimation.name === name){
@@ -292,7 +292,8 @@ var Input = require('./input'),
     Renderer = require('./renderer'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
-    Socket = require('./socket');
+    Socket = require('./socket'),
+    _ = require('underscore');
 
 /**
  * The client instance of the game
@@ -316,6 +317,7 @@ module.exports = Game = class Game{
 
     // List of all entities to be drawn
     this.entities = {}
+    this.entitiesToPrune = {};
 
     this.FPS = 60;
 
@@ -351,6 +353,15 @@ module.exports = Game = class Game{
     this.entities[player.id] = player;
   }
 
+  pruneEntities(){
+    console.log(this.entitiesToPrune.length);
+    _.each(this.entitiesToPrune, function(entity){
+      delete this.entities[entity.id];
+    });
+
+    this.obsoleteEntities = {};
+  }
+
   /**
    * Read messages sent from the server since last update
    */
@@ -361,10 +372,64 @@ module.exports = Game = class Game{
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
           this.player.onMove(message);
+        }else{
+          // Other entity
+          this.receiveMove(message);
         }
+      }
+      else if(message.type == Types.Messages.LIST){
+        this.receiveEntityList(message.list);
+      }
+      else if(message.type == Types.Messages.SPAWN){
+        if(message.id !== this.player.id)
+          this.receiveSpawn(message);
+      }
+      else if(message.type == Types.Messages.DESPAWN){
+        this.receiveDespawn(message);
       }
       this.mailbox.splice(i,1);
     }
+  }
+
+  receiveEntityList(list){
+    var entityIds = _.pluck(this.entites, 'id');
+    var alreadySeen = _.intersection(this.entityIds, list);
+    var notSeen = _.difference(list, alreadySeen);
+    var self = this;
+
+    this.entitiesToPrune = _.reject(this.entities, function(entity){
+      return _.contains(this.alreadySeen, entity) || entity.id == self.player.id;
+    });
+
+    this.pruneEntities();
+
+    if(_.size(notSeen) > 0){
+      this.askWhoAre(notSeen);
+    }
+  }
+
+  receiveMove(message){
+    var entity = this.entities[message.id];
+
+    if(!entity){
+      return;
+    }
+
+    entity.setPos(message.x, message.y);
+  }
+
+  receiveSpawn(message){
+    this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
+    var entity = this.entities[message.id];
+
+    entity.setDirection(message.direction);
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+    entity.setSprite(sprite);
+    entity.idle();
+  }
+
+  receiveDespawn(message){
+    delete this.entities[message.id];
   }
 
   /**
@@ -378,20 +443,15 @@ module.exports = Game = class Game{
 
     if(this.running)
       window.requestAnimationFrame(this.tick.bind(this));
+  }
 
-    /*
-
-    this.player.update(dt);
-
-    var info = "Non-acknowledged inputs: " + this.player.pending_inputs.length;
-    player_status.textContent = info;
-
-    this.renderer.render();
-    */
+  askWhoAre(list){
+    var message = new Message(Types.Messages.WHO, list);
+    message.send();
   }
 }
 
-},{"../../shared/js/types":18,"./input":6,"./renderer":9,"./socket":10,"./updater":13}],6:[function(require,module,exports){
+},{"../../shared/js/types":18,"./input":6,"./renderer":9,"./socket":10,"./updater":13,"underscore":17}],6:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -2495,7 +2555,10 @@ Types = {
     LOGOUT: 1,
     MOVE: 2,
     SPAWN: 3,
-    ATTACK: 4
+    ATTACK: 4,
+    LIST: 5,
+    WHO: 6,
+    DESPAWN: 7
   },
 
   Entities: {
@@ -2508,6 +2571,30 @@ Types = {
     LEFT: 3,
     RIGHT: 2
   }
+}
+
+var speciesList = {
+  player: [Types.Entities.PLAYER, "player"],
+
+  getGenus: function(species){
+    return speciesList[species][1];
+  }
+}
+
+Types.speciesAsString = function(species){
+  for(var s in speciesList) {
+    if(speciesList[s][0] === species) {
+        return s;
+    }
+}
+}
+
+Types.isPlayer = function(species){
+  return speciesList.getGenus[species] == "player";
+}
+
+Types.isCharacter = function(species){
+  return Types.isPlayer(species);
 }
 
 if(!(typeof exports === 'undefined')){

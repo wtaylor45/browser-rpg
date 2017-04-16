@@ -8,12 +8,12 @@ var Types = require('../../shared/js/types'),
     Sprite = require('./sprite');
 
 module.exports = Entity = class Entity{
-  constructor(id, species, width, height){
+  constructor(id, species, width, height, x, y){
     this.id = id;
     this.species = species;
 
-    this.x = 0;
-    this.y = 0;
+    this.x = x || 0;
+    this.y = y || 0;
 
     this.direction = Types.Directions.DOWN;
 
@@ -42,6 +42,7 @@ module.exports = Entity = class Entity{
 
   setDirection(direction){
     this.direction =  direction;
+    console.log(this.direction)
   }
 
   setSprite(sprite){
@@ -73,7 +74,7 @@ module.exports = Entity = class Entity{
     var rowOffset = 0;
 
     if(_.indexOf(directionBased, name) >= 0){
-      name += '_' + this.direction
+      name += '_' + this.direction;
     }
 
     if(this.currentAnimation && this.currentAnimation.name === name){
