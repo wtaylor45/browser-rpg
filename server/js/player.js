@@ -60,6 +60,7 @@ module.exports = Player = Character.extend({
    * Apply all inputs that have been queued
    */
   applyQueuedInputs: function(){
+    var lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
       var input = this.queuedInputs.shift();
       var vector = input.vector;
@@ -69,6 +70,11 @@ module.exports = Player = Character.extend({
 
       this.lastProcessedInput = input.seq;
     }
+
+    if(this.x > lastPos[0]) this.direction = Types.Directions.RIGHT;
+    if(this.x < lastPos[0]) this.direction = Types.Directions.LEFT;
+    if(this.y > lastPos[1]) this.direction = Types.Directions.DOWN;
+    if(this.y < lastPos[1]) this.direction = Types.Directions.UP;
 
     // Broadcast our new position
     this.broadcast(new Messages.Move(this));

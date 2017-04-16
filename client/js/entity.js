@@ -42,6 +42,7 @@ module.exports = Entity = class Entity{
 
   setDirection(direction){
     this.direction =  direction;
+    console.log(this.direction)
   }
 
   setSprite(sprite){
@@ -73,7 +74,7 @@ module.exports = Entity = class Entity{
     var rowOffset = 0;
 
     if(_.indexOf(directionBased, name) >= 0){
-      name += '_' + this.direction
+      name += '_' + this.direction;
     }
 
     if(this.currentAnimation && this.currentAnimation.name === name){

@@ -139,7 +139,7 @@ module.exports = Game = class Game{
   receiveSpawn(message){
     this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
     var entity = this.entities[message.id];
-
+    console.log(message.direction)
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
     entity.setSprite(sprite);
@@ -148,7 +148,6 @@ module.exports = Game = class Game{
 
   receiveDespawn(message){
     delete this.entities[message.id];
-    console.log(message.id, 'deleted');
   }
 
   /**
