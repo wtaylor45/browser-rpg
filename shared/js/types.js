@@ -18,7 +18,8 @@ Types = {
     SPAWN: 3,
     ATTACK: 4,
     LIST: 5,
-    WHO: 6
+    WHO: 6,
+    DESPAWN: 7
   },
 
   Entities: {
@@ -39,6 +40,14 @@ var speciesList = {
   getGenus: function(species){
     return speciesList[species][1];
   }
+}
+
+Types.speciesAsString = function(species){
+  for(var s in speciesList) {
+    if(speciesList[s][0] === species) {
+        return s;
+    }
+}
 }
 
 Types.isPlayer = function(species){

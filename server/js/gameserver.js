@@ -50,6 +50,7 @@ function GameServer(){
     self.outgoingMessages[player.id] = [];
 
     self.pushEntityIDs(player);
+    self.tellOthersSpawned(player);
 
     // What to do when this player broadcasts a message
     // TODO: Change to only broadcast to certain group
@@ -136,9 +137,11 @@ function GameServer(){
    */
   this.disconnect = function(id){
     // TODO: Logout if the player is logged in
+    this.tellOthersDespawned(id);
     delete global.SOCKET_LIST[id];
     delete this.players[id];
     delete this.entities[id];
+    delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
   }
 
@@ -166,6 +169,32 @@ function GameServer(){
 
     var message = new Messages.List(entities);
     this.addMessageToOutbox(player, message.serialize());
+  }
+
+  this.tellOthersSpawned = function(player){
+    for(var i in this.outgoingMessages){
+      var message = new Messages.Spawn(player);
+      this.outgoingMessages[i].push(message.serialize());
+    }
+  }
+
+  this.tellOthersDespawned = function(id){
+    var message = new Messages.Despawn(id);
+    for(var i in this.players){
+      this.addMessageToOutbox(this.players[i], message.serialize());
+    }
+  }
+
+  this.sendBatchSpawns = function(player){
+    var list = this.entities;
+    var self = this;
+
+    _.each(list, function(entity){
+      if(entity.id != player.id){
+        var message = new Messages.Spawn(entity);
+        self.addMessageToOutbox(player, message.serialize());
+      }
+    });
   }
 
   this.addMessageToOutbox = function(player, message){

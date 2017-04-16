@@ -49,3 +49,33 @@ Messages.List = Message.extend({
           }
   }
 });
+
+Messages.Spawn = Message.extend({
+  init: function(entity){
+    this.entity = entity;
+  },
+
+  serialize: function(){
+    var message = {type: Types.Messages.SPAWN};
+    var state = this.entity.getState();
+
+    for(var i in state){
+      message[i] = state[i];
+    }
+
+    return message;
+  }
+});
+
+Messages.Despawn = Message.extend({
+  init: function(id){
+    this.id = id;
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.DESPAWN,
+      id: this.id
+    }
+  }
+});

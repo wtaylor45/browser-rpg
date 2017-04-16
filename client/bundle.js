@@ -122,8 +122,8 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species){
-    super(id, species);
+  constructor(id, species, w, h, x, y){
+    super(id, species, w, h, x, y);
 
     var self = this;
 
@@ -168,7 +168,6 @@ module.exports = Character = class Character extends Entity{
       this.walk(Types.Directions.LEFT);
       return;
     }
-
     this.idle();
   }
 
@@ -195,12 +194,12 @@ var Types = require('../../shared/js/types'),
     Sprite = require('./sprite');
 
 module.exports = Entity = class Entity{
-  constructor(id, species, width, height){
+  constructor(id, species, width, height, x, y){
     this.id = id;
     this.species = species;
 
-    this.x = 0;
-    this.y = 0;
+    this.x = x || 0;
+    this.y = y || 0;
 
     this.direction = Types.Directions.DOWN;
 
@@ -355,6 +354,7 @@ module.exports = Game = class Game{
   }
 
   pruneEntities(){
+    console.log(this.entitiesToPrune.length);
     _.each(this.entitiesToPrune, function(entity){
       delete this.entities[entity.id];
     });
@@ -379,6 +379,13 @@ module.exports = Game = class Game{
       }
       else if(message.type == Types.Messages.LIST){
         this.receiveEntityList(message.list);
+      }
+      else if(message.type == Types.Messages.SPAWN){
+        if(message.id !== this.player.id)
+          this.receiveSpawn(message);
+      }
+      else if(message.type == Types.Messages.DESPAWN){
+        this.receiveDespawn(message);
       }
       this.mailbox.splice(i,1);
     }
@@ -411,6 +418,21 @@ module.exports = Game = class Game{
     entity.setPos(message.x, message.y);
   }
 
+  receiveSpawn(message){
+    this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
+    var entity = this.entities[message.id];
+
+    entity.setDirection(message.direction);
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+    entity.setSprite(sprite);
+    entity.idle();
+  }
+
+  receiveDespawn(message){
+    delete this.entities[message.id];
+    console.log(message.id, 'deleted');
+  }
+
   /**
    * The logic to run every loop
    *
@@ -427,7 +449,6 @@ module.exports = Game = class Game{
   askWhoAre(list){
     var message = new Message(Types.Messages.WHO, list);
     message.send();
-    console.log('asked');
   }
 }
 
@@ -2537,7 +2558,8 @@ Types = {
     SPAWN: 3,
     ATTACK: 4,
     LIST: 5,
-    WHO: 6
+    WHO: 6,
+    DESPAWN: 7
   },
 
   Entities: {
@@ -2558,6 +2580,14 @@ var speciesList = {
   getGenus: function(species){
     return speciesList[species][1];
   }
+}
+
+Types.speciesAsString = function(species){
+  for(var s in speciesList) {
+    if(speciesList[s][0] === species) {
+        return s;
+    }
+}
 }
 
 Types.isPlayer = function(species){

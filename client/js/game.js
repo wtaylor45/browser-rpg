@@ -72,6 +72,7 @@ module.exports = Game = class Game{
   }
 
   pruneEntities(){
+    console.log(this.entitiesToPrune.length);
     _.each(this.entitiesToPrune, function(entity){
       delete this.entities[entity.id];
     });
@@ -96,6 +97,13 @@ module.exports = Game = class Game{
       }
       else if(message.type == Types.Messages.LIST){
         this.receiveEntityList(message.list);
+      }
+      else if(message.type == Types.Messages.SPAWN){
+        if(message.id !== this.player.id)
+          this.receiveSpawn(message);
+      }
+      else if(message.type == Types.Messages.DESPAWN){
+        this.receiveDespawn(message);
       }
       this.mailbox.splice(i,1);
     }
@@ -128,6 +136,21 @@ module.exports = Game = class Game{
     entity.setPos(message.x, message.y);
   }
 
+  receiveSpawn(message){
+    this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
+    var entity = this.entities[message.id];
+
+    entity.setDirection(message.direction);
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+    entity.setSprite(sprite);
+    entity.idle();
+  }
+
+  receiveDespawn(message){
+    delete this.entities[message.id];
+    console.log(message.id, 'deleted');
+  }
+
   /**
    * The logic to run every loop
    *
@@ -144,6 +167,5 @@ module.exports = Game = class Game{
   askWhoAre(list){
     var message = new Message(Types.Messages.WHO, list);
     message.send();
-    console.log('asked');
   }
 }

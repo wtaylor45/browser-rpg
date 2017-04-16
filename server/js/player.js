@@ -16,9 +16,6 @@ module.exports = Player = Character.extend({
     this.server = server;
     this.connection = connection;
 
-    // This player's id, just use connection ID
-    this.id = connection.id;
-
     // Create this player using the Character super class
     this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
 
@@ -45,8 +42,8 @@ module.exports = Player = Character.extend({
       if(message.type == Types.Messages.MOVE){
         self.queuedInputs.push(message.data);
       }
-      else if(message.type == Types.Message.WHO){
-        console.log('who?');
+      else if(message.type == Types.Messages.WHO){
+        self.server.sendBatchSpawns(this);
       }
     });
 
