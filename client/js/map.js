@@ -23,6 +23,7 @@ module.exports = Map = class Map{
     this.img = new createjs.Bitmap(maps[this.name]['img']);
 
     this.collisionLayer = this.findLayerByName(this.collisionName);
+    this.collisionData = this.collisionLayer.data;
     this.tileWidth = json.tilewidth;
     this.tileHeight = json.tileheight;
     this.width = this.tileWidth*json.width;
@@ -39,4 +40,39 @@ module.exports = Map = class Map{
     }
   }
 
+  worldPosToTileIndex(x, y){
+    var tileX = Math.floor(x/this.tileWidth);
+    var tileY = Math.floor(y/this.tileHeight);
+
+    return tileX + tileY * (this.height/this.tileheight);
+  }
+
+  isColliding(x, y){
+    if(x <= 0 || y <= 0){
+      return true;
+    }
+
+    var index = this.worldPosToTileIndex(x, y);
+
+    return this.collisionData[index] > 0;
+  }
+
+  nearestTiles(entity){
+    var index = 0;
+
+    var x = entity.x;
+    var y = entity.y;
+    var rangeX = entity.width;
+    var rangeY = entity.height;
+
+    var nearestTiles = [];
+    for(var i=x-rangeX;i<=x+rangeX;i+=rangeX){
+      for(var j=y-rangeY;j<=y+rangeY;j+=rangeY){
+        nearestTiles[index] = [i, j];
+        index++;
+      }
+    }
+    
+    return nearestTiles;
+  }
 }

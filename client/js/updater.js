@@ -30,6 +30,15 @@ module.exports = Updater = class Updater{
   }
 
   updateCharacter(entity){
+    var map = this.game.currentMap
+    _.each(map.nearestTiles(entity), function(index){
+      console.log('Checking')
+      if(map.isColliding(index[0], index[1])){
+        entity.setPos(entity.lastPos[0], entity.lastPos[1]);
+        console.log('collision');
+      }
+    });
+
     entity.updateMovement();
   }
 
