@@ -59,6 +59,5 @@ module.exports = Animation = class Animation{
   setIterations(iters, onEnd){
     this.iterations = iters;
     this.onEnd = onEnd;
-    this.reset();
   }
 }

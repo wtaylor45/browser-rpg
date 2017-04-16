@@ -60,7 +60,6 @@ module.exports = Animation = class Animation{
   setIterations(iters, onEnd){
     this.iterations = iters;
     this.onEnd = onEnd;
-    this.reset();
   }
 }
 
@@ -177,9 +176,9 @@ module.exports = Character = class Character extends Entity{
 
   walk(direction){
     this.setDirection(direction);
-
+    this.lastPos = [this.x, this.y];
     var self = this;
-    this.animate('walk', this.walkSpeed, 1);
+    this.animate('walk', this.walkSpeed, 0);
   }
 }
 
@@ -422,7 +421,7 @@ module.exports = Game = class Game{
   receiveSpawn(message){
     this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
     var entity = this.entities[message.id];
-    console.log(message.direction)
+
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
     entity.setSprite(sprite);
