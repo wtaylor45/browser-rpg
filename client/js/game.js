@@ -11,7 +11,8 @@ var Input = require('./input'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    Map = require('./map');
 
 /**
  * The client instance of the game
@@ -54,6 +55,8 @@ module.exports = Game = class Game{
     this.started = true;
     this.running = true;
     this.renderer = new Renderer(this, "canvas");
+    this.currentMap = new Map('septoria')
+    this.renderer.setMap(this.currentMap.img);
     this.updater = new Updater(this);
     Input.init();
 
@@ -72,7 +75,6 @@ module.exports = Game = class Game{
   }
 
   pruneEntities(){
-    console.log(this.entitiesToPrune.length);
     _.each(this.entitiesToPrune, function(entity){
       delete this.entities[entity.id];
     });

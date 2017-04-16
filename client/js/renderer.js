@@ -5,6 +5,8 @@ module.exports = Renderer = class Renderer{
     this.game = game;
     this.stage = new createjs.Stage(canvas);
 
+    this.map = null;
+
     this.FPS = 60;
     this.tileSize = 8;
 
@@ -24,6 +26,11 @@ module.exports = Renderer = class Renderer{
 
   getHeight(){
     return this.stage.canvas.height;
+  }
+
+  setMap(map){
+    if(map)
+      this.map = map;
   }
 
   createCamera(){
@@ -86,6 +93,12 @@ module.exports = Renderer = class Renderer{
     }
   }
 
+  drawMap(){
+    if(this.map){
+      this.stage.addChild(this.map);
+    }
+  }
+
   drawEntities(){
     var self = this;
     var entities = this.game.entities;
@@ -97,7 +110,7 @@ module.exports = Renderer = class Renderer{
 
   render(){
     this.stage.removeAllChildren();
-
+    this.drawMap();
     this.drawEntities();
 
     this.drawFPS();
