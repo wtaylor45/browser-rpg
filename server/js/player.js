@@ -6,7 +6,8 @@
 var cls = require('./lib/class'),
     Types = require('../../shared/js/types'),
     Character = require('./character'),
-    Messages = require('./message');
+    Messages = require('./message'),
+    _ = require('underscore');
 
 module.exports = Player = Character.extend({
   init: function(connection, server){
@@ -60,7 +61,7 @@ module.exports = Player = Character.extend({
    * Apply all inputs that have been queued
    */
   applyQueuedInputs: function(){
-    var lastPos = [this.x, this.y]
+    this.lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
       var input = this.queuedInputs.shift();
       var vector = input.vector;
@@ -71,13 +72,10 @@ module.exports = Player = Character.extend({
       this.lastProcessedInput = input.seq;
     }
 
-    if(this.x > lastPos[0]) this.direction = Types.Directions.RIGHT;
-    if(this.x < lastPos[0]) this.direction = Types.Directions.LEFT;
-    if(this.y > lastPos[1]) this.direction = Types.Directions.DOWN;
-    if(this.y < lastPos[1]) this.direction = Types.Directions.UP;
-
-    // Broadcast our new position
-    this.broadcast(new Messages.Move(this));
+    if(this.x > this.lastPos[0]) this.direction = Types.Directions.RIGHT;
+    if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
+    if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
+    if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
   },
 
   /**
@@ -85,8 +83,24 @@ module.exports = Player = Character.extend({
    */
   update: function(){
     // Check if there are any inputs to apply
-    if(this.queuedInputs.length > 0)
+    if(this.queuedInputs.length > 0){
       this.applyQueuedInputs();
+      this.checkCollisions();
+
+      // Broadcast our new position
+      this.broadcast(new Messages.Move(this));
+    }
+  },
+
+  checkCollisions: function(){
+    var self = this;
+    var map = this.server.maps[this.map];
+
+    _.each(map.nearestTiles(this), function(index){
+      if(map.isColliding(index[0], index[1])){
+        self.setPosition(self.lastPos[0], self.lastPos[1]);
+      }
+    });
   },
 
   /**

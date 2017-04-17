@@ -3,7 +3,8 @@
  * Created on: 4/5/17
  */
 
- var cls = require('./lib/class');
+ var cls = require('./lib/class'),
+     Map = require('./map');
 
 module.exports = Entity = cls.Class.extend({
   /**
@@ -24,6 +25,8 @@ module.exports = Entity = cls.Class.extend({
     this.y = y;
     this.width = width;
     this.height = height;
+
+    this.map = null;
   },
 
   /**
