@@ -690,8 +690,8 @@ module.exports = Map = class Map{
     var rangeY = entity.height;
 
     var nearestTiles = [];
-    for(var i=x-rangeX;i<=x+rangeX;i+=rangeX){
-      for(var j=y-rangeY;j<=y+rangeY;j+=rangeY){
+    for(var i=x;i<x+rangeX;i+=this.tileWidth){
+      for(var j=y+rangeY/2;j<y+rangeY;j+=this.tileHeight){
         nearestTiles[index] = [i, j];
         index++;
       }
@@ -938,9 +938,12 @@ module.exports = Renderer = class Renderer{
   }
 
   drawBoundingBox(entity){
-    var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(entity.x, entity.y, entity.width, entity.height);
-    var shape = new createjs.Shape(graphics);
-    this.stage.addChild(shape)
+    var self = this;
+    _.each(entity.nearestTiles, function(tile){
+      var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(tile[0], tile[1], 16, 16);
+      var shape = new createjs.Shape(graphics);
+      self.stage.addChild(shape)
+    })
   }
 
   drawMap(){
@@ -1064,8 +1067,9 @@ module.exports = Updater = class Updater{
   updatePlayer(dt){
     var player = this.game.player;
     player.update(dt);
-    var map = this.game.currentMap
-    _.each(map.nearestTiles(player), function(index){
+    var map = this.game.currentMap;
+    player.nearestTiles = map.nearestTiles(player);
+    _.each(player.nearestTiles, function(index){
       if(map.isColliding(index[0], index[1])){
         player.setPos(player.lastPos[0], player.lastPos[1]);
       }

@@ -65,8 +65,8 @@ module.exports = Map = class Map{
     var rangeY = entity.height;
 
     var nearestTiles = [];
-    for(var i=x-rangeX;i<=x+rangeX;i+=rangeX){
-      for(var j=y-rangeY;j<=y+rangeY;j+=rangeY){
+    for(var i=x;i<x+rangeX;i+=this.tileWidth){
+      for(var j=y+rangeY/2;j<y+rangeY;j+=this.tileHeight){
         nearestTiles[index] = [i, j];
         index++;
       }

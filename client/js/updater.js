@@ -19,8 +19,9 @@ module.exports = Updater = class Updater{
   updatePlayer(dt){
     var player = this.game.player;
     player.update(dt);
-    var map = this.game.currentMap
-    _.each(map.nearestTiles(player), function(index){
+    var map = this.game.currentMap;
+    player.nearestTiles = map.nearestTiles(player);
+    _.each(player.nearestTiles, function(index){
       if(map.isColliding(index[0], index[1])){
         player.setPos(player.lastPos[0], player.lastPos[1]);
       }

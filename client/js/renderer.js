@@ -96,9 +96,12 @@ module.exports = Renderer = class Renderer{
   }
 
   drawBoundingBox(entity){
-    var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(entity.x, entity.y, entity.width, entity.height);
-    var shape = new createjs.Shape(graphics);
-    this.stage.addChild(shape)
+    var self = this;
+    _.each(entity.nearestTiles, function(tile){
+      var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(tile[0], tile[1], 16, 16);
+      var shape = new createjs.Shape(graphics);
+      self.stage.addChild(shape)
+    })
   }
 
   drawMap(){
