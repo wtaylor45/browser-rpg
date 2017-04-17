@@ -17,8 +17,8 @@ module.exports = Player = class Player extends Character{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(id, sprite){
-    super(id, Types.Entities.PLAYER)
+  constructor(id, sprite, width, height){
+    super(id, Types.Entities.PLAYER, width, height)
 
     // Player movement variables
     this.speed = 10;

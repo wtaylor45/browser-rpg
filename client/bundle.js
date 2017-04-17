@@ -181,7 +181,7 @@ module.exports = App = class App{
    */
   onConnected(id){
     if(this.game){
-      this.game.setPlayer(new Player(id, 0));
+      this.game.setPlayer(new Player(id, 0, 32, 64));
       this.start();
     }
   }
@@ -247,7 +247,6 @@ module.exports = Character = class Character extends Entity{
 
   walk(direction){
     this.setDirection(direction);
-    this.lastPos = [this.x, this.y];
 
     var self = this;
     this.animate('walk', this.walkSpeed, 0);
@@ -661,7 +660,7 @@ module.exports = Map = class Map{
   findLayerByName(name){
     for(var i in this.json.layers){
       if(this.json.layers[i].name == name){
-        return this.json.layers[i].name;
+        return this.json.layers[i];
       }
     }
   }
@@ -670,17 +669,16 @@ module.exports = Map = class Map{
     var tileX = Math.floor(x/this.tileWidth);
     var tileY = Math.floor(y/this.tileHeight);
 
-    return tileX + tileY * (this.height/this.tileheight);
+    return tileX + tileY * (this.height/this.tileHeight);
   }
 
   isColliding(x, y){
-    if(x <= 0 || y <= 0){
-      return true;
+    var index = this.worldPosToTileIndex(x, y);
+    if(this.collisionData){
+      return this.collisionData[index] > 0;
     }
 
-    var index = this.worldPosToTileIndex(x, y);
-
-    return this.collisionData[index] > 0;
+    return false;
   }
 
   nearestTiles(entity){
@@ -698,7 +696,7 @@ module.exports = Map = class Map{
         index++;
       }
     }
-    console.log(nearestTiles);
+
     return nearestTiles;
   }
 }
@@ -759,8 +757,8 @@ module.exports = Player = class Player extends Character{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(id, sprite){
-    super(id, Types.Entities.PLAYER)
+  constructor(id, sprite, width, height){
+    super(id, Types.Entities.PLAYER, width, height)
 
     // Player movement variables
     this.speed = 10;
@@ -934,7 +932,15 @@ module.exports = Renderer = class Renderer{
       sprite.image.x = entity.x;
       sprite.image.y = entity.y;
       stage.addChild(sprite.image);
+
+      if(entity == this.game.player) this.drawBoundingBox(entity);
     }
+  }
+
+  drawBoundingBox(entity){
+    var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(entity.x, entity.y, entity.width, entity.height);
+    var shape = new createjs.Shape(graphics);
+    this.stage.addChild(shape)
   }
 
   drawMap(){
@@ -1051,34 +1057,33 @@ module.exports = Updater = class Updater{
     this.lastTime = currentTime;
 
     this.game.readServerMessages();
-    this.updatePlayer(dt);
     this.updateEntities(dt);
 
   }
 
   updatePlayer(dt){
-    this.game.player.update(dt);
+    var player = this.game.player;
+    player.update(dt);
+    var map = this.game.currentMap
+    _.each(map.nearestTiles(player), function(index){
+      if(map.isColliding(index[0], index[1])){
+        player.setPos(player.lastPos[0], player.lastPos[1]);
+      }
+    });
   }
 
   updateEntities(dt){
     var self = this;
     _.each(this.game.entities, function(entity){
-      if(entity instanceof Character) self.updateCharacter(entity);
+      if(entity instanceof Character) self.updateCharacter(entity, dt);
       self.updateAnimation(entity, dt);
     });
   }
 
-  updateCharacter(entity){
-    var map = this.game.currentMap
-    _.each(map.nearestTiles(entity), function(index){
-      console.log('Checking')
-      if(map.isColliding(index[0], index[1])){
-        entity.setPos(entity.lastPos[0], entity.lastPos[1]);
-        console.log('collision');
-      }
-    });
-
+  updateCharacter(entity, dt){
+    if(entity == this.game.player) this.updatePlayer(dt);
     entity.updateMovement();
+    entity.lastPos = [entity.x, entity.y];
   }
 
   updateAnimation(entity, dt){

@@ -90,7 +90,15 @@ module.exports = Renderer = class Renderer{
       sprite.image.x = entity.x;
       sprite.image.y = entity.y;
       stage.addChild(sprite.image);
+
+      if(entity == this.game.player) this.drawBoundingBox(entity);
     }
+  }
+
+  drawBoundingBox(entity){
+    var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(entity.x, entity.y, entity.width, entity.height);
+    var shape = new createjs.Shape(graphics);
+    this.stage.addChild(shape)
   }
 
   drawMap(){

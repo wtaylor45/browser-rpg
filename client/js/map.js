@@ -35,7 +35,7 @@ module.exports = Map = class Map{
   findLayerByName(name){
     for(var i in this.json.layers){
       if(this.json.layers[i].name == name){
-        return this.json.layers[i].name;
+        return this.json.layers[i];
       }
     }
   }
@@ -44,17 +44,16 @@ module.exports = Map = class Map{
     var tileX = Math.floor(x/this.tileWidth);
     var tileY = Math.floor(y/this.tileHeight);
 
-    return tileX + tileY * (this.height/this.tileheight);
+    return tileX + tileY * (this.height/this.tileHeight);
   }
 
   isColliding(x, y){
-    if(x <= 0 || y <= 0){
-      return true;
+    var index = this.worldPosToTileIndex(x, y);
+    if(this.collisionData){
+      return this.collisionData[index] > 0;
     }
 
-    var index = this.worldPosToTileIndex(x, y);
-
-    return this.collisionData[index] > 0;
+    return false;
   }
 
   nearestTiles(entity){
@@ -72,7 +71,7 @@ module.exports = Map = class Map{
         index++;
       }
     }
-    
+
     return nearestTiles;
   }
 }
