@@ -12,25 +12,36 @@ module.exports = Updater = class Updater{
     this.lastTime = currentTime;
 
     this.game.readServerMessages();
-    this.updatePlayer(dt);
     this.updateEntities(dt);
 
   }
 
   updatePlayer(dt){
-    this.game.player.update(dt);
+    var player = this.game.player;
+    player.update(dt);
+    /*var map = this.game.currentMap;
+    var nearestTiles = map.nearestTilePositions(player);
+    player.corners = nearestTiles;
+    if(map.isColliding(nearestTiles)){
+      player.setPos(player.lastPos[0], player.y);
+    }
+    if(map.isColliding(nearestTiles)){
+      player.setPos(player.x, player.lastPos[1]);
+    }*/
   }
 
   updateEntities(dt){
     var self = this;
     _.each(this.game.entities, function(entity){
-      if(entity instanceof Character) self.updateCharacter(entity);
+      if(entity instanceof Character) self.updateCharacter(entity, dt);
       self.updateAnimation(entity, dt);
     });
   }
 
-  updateCharacter(entity){
+  updateCharacter(entity, dt){
+    if(entity == this.game.player) this.updatePlayer(dt);
     entity.updateMovement();
+    entity.lastPos = [entity.x, entity.y];
   }
 
   updateAnimation(entity, dt){

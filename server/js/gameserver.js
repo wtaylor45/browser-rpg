@@ -12,6 +12,7 @@ var _ = require('underscore');
 var Entity = require('./entity');
 var Player = require('./player.js');
 var Messages = require('./message');
+var Map = require('./map');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -44,13 +45,15 @@ function GameServer(){
    */
   this.onLogin = function(player){
     // Add player to the list of players
-    this.entities[player.id] = player;
+    self.entities[player.id] = player;
 
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
     self.pushEntityIDs(player);
     self.tellOthersSpawned(player);
+
+    self.maps['septoria'].addEntity(player);
 
     // What to do when this player broadcasts a message
     // TODO: Change to only broadcast to certain group
@@ -66,6 +69,8 @@ function GameServer(){
    */
   this.init = function(){
     this.started = true;
+
+    this.maps = this.createMaps();
 
     // ∆t variables
     var lastTime = new Date().getTime();
@@ -127,7 +132,8 @@ function GameServer(){
     console.log('Client', client.id, 'connected.');
 
     this.players[client.id] = new Player(client, this);
-    client.emit('connected', client.id);
+    var message = {id: client.id, width: this.players[client.id].width, height: this.players[client.id].height};
+    client.emit('connected', message);
   }
 
   /**
@@ -199,5 +205,14 @@ function GameServer(){
 
   this.addMessageToOutbox = function(player, message){
     this.outgoingMessages[player.id].push(message);
+  }
+
+  this.createMaps = function(){
+    var maps = {};
+    for(var i in Map.mapData){
+      maps[i] = new Map(i);
+    }
+
+    return maps;
   }
 }

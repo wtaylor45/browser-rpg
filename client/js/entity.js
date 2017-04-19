@@ -5,7 +5,8 @@
 
 var Types = require('../../shared/js/types'),
     _ = require('underscore'),
-    Sprite = require('./sprite');
+    Sprite = require('./sprite'),
+    Game = require('./game');
 
 module.exports = Entity = class Entity{
   constructor(id, species, width, height, x, y){

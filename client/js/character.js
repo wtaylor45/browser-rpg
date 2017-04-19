@@ -57,7 +57,7 @@ module.exports = Character = class Character extends Entity{
 
   walk(direction){
     this.setDirection(direction);
-    this.lastPos = [this.x, this.y];
+
     var self = this;
     this.animate('walk', this.walkSpeed, 0);
   }

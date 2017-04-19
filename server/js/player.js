@@ -6,7 +6,8 @@
 var cls = require('./lib/class'),
     Types = require('../../shared/js/types'),
     Character = require('./character'),
-    Messages = require('./message');
+    Messages = require('./message'),
+    _ = require('underscore');
 
 module.exports = Player = Character.extend({
   init: function(connection, server){
@@ -17,7 +18,7 @@ module.exports = Player = Character.extend({
     this.connection = connection;
 
     // Create this player using the Character super class
-    this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
+    this._super(this.connection.id, "player", Types.Entities.PLAYER, 210, 205,32,48);
 
     // Is the player in game yet
     this.inGame = false;
@@ -60,24 +61,29 @@ module.exports = Player = Character.extend({
    * Apply all inputs that have been queued
    */
   applyQueuedInputs: function(){
-    var lastPos = [this.x, this.y]
+    this.lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
+      var map = this.server.maps[this.map];
       var input = this.queuedInputs.shift();
       var vector = input.vector;
 
       this.x += vector.x*input.pressTime*this.speed;
+      if(map.isColliding(map.nearestTilePositions(this))){
+        this.x = this.lastPos[0];
+      }
+
       this.y += vector.y*input.pressTime*this.speed;
+      if(map.isColliding(map.nearestTilePositions(this))){
+        this.y = this.lastPos[1];
+      }
 
       this.lastProcessedInput = input.seq;
     }
 
-    if(this.x > lastPos[0]) this.direction = Types.Directions.RIGHT;
-    if(this.x < lastPos[0]) this.direction = Types.Directions.LEFT;
-    if(this.y > lastPos[1]) this.direction = Types.Directions.DOWN;
-    if(this.y < lastPos[1]) this.direction = Types.Directions.UP;
-
-    // Broadcast our new position
-    this.broadcast(new Messages.Move(this));
+    if(this.x > this.lastPos[0]) this.direction = Types.Directions.RIGHT;
+    if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
+    if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
+    if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
   },
 
   /**
@@ -85,8 +91,18 @@ module.exports = Player = Character.extend({
    */
   update: function(){
     // Check if there are any inputs to apply
-    if(this.queuedInputs.length > 0)
+    if(this.queuedInputs.length > 0){
       this.applyQueuedInputs();
+      this.checkCollisions();
+
+      // Broadcast our new position
+      this.broadcast(new Messages.Move(this));
+    }
+  },
+
+  checkCollisions: function(){
+    var self = this;
+
   },
 
   /**

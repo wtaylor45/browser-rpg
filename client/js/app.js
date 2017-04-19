@@ -42,9 +42,9 @@ module.exports = App = class App{
   /**
    * When the server confirms the connection
    */
-  onConnected(id){
+  onConnected(message){
     if(this.game){
-      this.game.setPlayer(new Player(id, 0));
+      this.game.setPlayer(new Player(message.id, 0, message.width, message.height));
       this.start();
     }
   }

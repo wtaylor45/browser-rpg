@@ -18,6 +18,12 @@
 </head>
 <body>
   <canvas id="canvas" width="800" height="500"></canvas>
+  <script>
+  var ctx = document.getElementById('canvas').getContext('2d');
+  ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+  ctx.msImageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false;
+  </script>
   <div id='player_status'>hello!</div>
 </body>
 </html>
