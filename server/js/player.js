@@ -18,7 +18,7 @@ module.exports = Player = Character.extend({
     this.connection = connection;
 
     // Create this player using the Character super class
-    this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, 32, 64);
+    this._super(this.connection.id, "player", Types.Entities.PLAYER, 210, 205,32,48);
 
     // Is the player in game yet
     this.inGame = false;
@@ -63,11 +63,19 @@ module.exports = Player = Character.extend({
   applyQueuedInputs: function(){
     this.lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
+      var map = this.server.maps[this.map];
       var input = this.queuedInputs.shift();
       var vector = input.vector;
 
       this.x += vector.x*input.pressTime*this.speed;
+      if(map.isColliding(map.nearestTilePositions(this))){
+        this.x = this.lastPos[0];
+      }
+
       this.y += vector.y*input.pressTime*this.speed;
+      if(map.isColliding(map.nearestTilePositions(this))){
+        this.y = this.lastPos[1];
+      }
 
       this.lastProcessedInput = input.seq;
     }
@@ -94,13 +102,7 @@ module.exports = Player = Character.extend({
 
   checkCollisions: function(){
     var self = this;
-    var map = this.server.maps[this.map];
 
-    _.each(map.nearestTiles(this), function(index){
-      if(map.isColliding(index[0], index[1])){
-        self.setPosition(self.lastPos[0], self.lastPos[1]);
-      }
-    });
   },
 
   /**

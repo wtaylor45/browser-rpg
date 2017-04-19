@@ -4,7 +4,6 @@ module.exports = Renderer = class Renderer{
   constructor(game, canvas){
     this.game = game;
     this.stage = new createjs.Stage(canvas);
-
     this.map = null;
 
     this.FPS = 60;
@@ -14,6 +13,9 @@ module.exports = Renderer = class Renderer{
     this.frameCount = 0;
     this.MAX_FPS = this.FPS;
     this.realFPS = 0;
+    this.renderScale = 2;
+
+    this.stage.scaleX = this.stage.scaleY = this.renderScale;
 
     this.font = "Macondo";
 
@@ -42,7 +44,7 @@ module.exports = Renderer = class Renderer{
 
     if(text && x && y){
       var textToDraw = new createjs.Text(text);
-      var font = (fontSize || "20px") + " " + this.font;
+      var font = (fontSize || "10px") + " " + this.font;
       textToDraw.font = font;
       textToDraw.x = x;
       textToDraw.y = y;
@@ -89,6 +91,8 @@ module.exports = Renderer = class Renderer{
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
       sprite.image.x = entity.x;
       sprite.image.y = entity.y;
+      sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
+      sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
       if(entity == this.game.player) this.drawBoundingBox(entity);
@@ -97,16 +101,20 @@ module.exports = Renderer = class Renderer{
 
   drawBoundingBox(entity){
     var self = this;
-    _.each(entity.nearestTiles, function(tile){
-      var graphics = new createjs.Graphics().beginStroke("#ff0000").drawRect(tile[0], tile[1], 16, 16);
-      var shape = new createjs.Shape(graphics);
+    var graphics = new createjs.Graphics().beginStroke("#ffff00").drawRect(entity.x, entity.y, entity.width, entity.height);
+    var shape = new createjs.Shape(graphics);
+    self.stage.addChild(shape)
+    _.each(entity.corners, function(tile){
+      graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(tile[0], tile[1], 2, 2);
+      shape = new createjs.Shape(graphics);
       self.stage.addChild(shape)
     })
   }
 
   drawMap(){
     if(this.map){
-      this.stage.addChild(this.map);
+      //this.map.img.scaleX = this.map.img.scaleY = this.renderScale;
+      this.stage.addChild(this.map.img);
     }
   }
 

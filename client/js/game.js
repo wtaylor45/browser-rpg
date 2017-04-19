@@ -56,7 +56,7 @@ module.exports = Game = class Game{
     this.running = true;
     this.renderer = new Renderer(this, "canvas");
     this.currentMap = new Map('septoria')
-    this.renderer.setMap(this.currentMap.img);
+    this.renderer.setMap(this.currentMap);
     this.updater = new Updater(this);
     Input.init();
 
@@ -72,6 +72,7 @@ module.exports = Game = class Game{
   setPlayer(player){
     this.player = player;
     this.entities[player.id] = player;
+    this.player.setGame(this);
   }
 
   pruneEntities(){

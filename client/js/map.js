@@ -1,5 +1,7 @@
+var _ = require('underscore');
+
 var maps = {
-  septoria: {json: require('../assets/maps/septoria.json'), img: 'client/assets/maps/septoria.bmp'}
+  septoria: {json: require('../../shared/maps/septoria.json'), img: 'client/assets/maps/septoria.bmp'}
 }
 
 module.exports = Map = class Map{
@@ -32,6 +34,27 @@ module.exports = Map = class Map{
     this.isLoaded = true;
   }
 
+  loadTilesets(){
+    var tilesetsData = this.json.tilesets;
+    var tilesets = {};
+    _.each(tilesetsData, function(tileset){
+      tilesets[tileset.name] = new createjs.Bitmap(tilesetsData.image);
+    });
+
+    return tilesets;
+  }
+
+  getTilesetData(name){
+    for(var i in this.json.tilesets){
+      var tileset = this.json.tilesets[i];
+      if(tileset.name == name) return tileset;
+    }
+  }
+
+  getTilesetImage(name){
+    return this.tilesets[name];
+  }
+
   findLayerByName(name){
     for(var i in this.json.layers){
       if(this.json.layers[i].name == name){
@@ -47,31 +70,33 @@ module.exports = Map = class Map{
     return tileX + tileY * (this.height/this.tileHeight);
   }
 
-  isColliding(x, y){
-    var index = this.worldPosToTileIndex(x, y);
-    if(this.collisionData){
-      return this.collisionData[index] > 0;
-    }
+  isColliding(coords){
+    var self = this;
+    var collisions = false;
+    _.each(coords, function(pos){
+      var x = pos[0];
+      var y = pos[1];
+      var index = self.worldPosToTileIndex(x, y);
+      if(self.collisionData[index] > 0) collisions = true;
+    });
 
-    return false;
+    return collisions;
   }
 
-  nearestTiles(entity){
+  nearestTilePositions(entity){
     var index = 0;
 
-    var x = entity.x;
-    var y = entity.y;
-    var rangeX = entity.width;
-    var rangeY = entity.height;
+    var leftX = entity.x;
+    var topY = entity.y+entity.height/2;
+    var rightX = entity.x + entity.width;
+    var bottomY = entity.y + entity.height;
 
-    var nearestTiles = [];
-    for(var i=x;i<x+rangeX;i+=this.tileWidth){
-      for(var j=y+rangeY/2;j<y+rangeY;j+=this.tileHeight){
-        nearestTiles[index] = [i, j];
-        index++;
-      }
-    }
+    var corners = [];
+    corners[0] = [leftX, topY];
+    corners[1] = [rightX, topY];
+    corners[2] = [leftX, bottomY];
+    corners[3] = [rightX, bottomY];
 
-    return nearestTiles;
+    return corners;
   }
 }

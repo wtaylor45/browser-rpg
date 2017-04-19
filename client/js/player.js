@@ -32,15 +32,28 @@ module.exports = Player = class Player extends Character{
     this.idle();
   }
 
+  setGame(game){
+    this.game = game;
+  }
+
   /**
    * Apply the given input to the character
    *
    * @param {Object} input  The input to be applied
    */
   applyInput(input){
+    var map = this.game.currentMap;
     // Update the player x and y based on the movement vector
     this.x += input.vector.x*input.pressTime*this.speed;
+    this.corners = map.nearestTilePositions(this);
+    if(map.isColliding(this.corners)){
+      this.x = this.lastPos[0];
+    }
     this.y += input.vector.y*input.pressTime*this.speed;
+    this.corners = map.nearestTilePositions(this);
+    if(map.isColliding(this.corners)){
+      this.y = this.lastPos[1];
+    }
   }
 
   onMove(message){
