@@ -40,7 +40,9 @@ module.exports = Entity = cls.Class.extend({
       id: this.id,
       species: this.species,
       x: this.x,
-      y: this.y
+      y: this.y,
+      w: this.width,
+      h: this.height
     }
   },
 

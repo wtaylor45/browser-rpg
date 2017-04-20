@@ -9,7 +9,7 @@ var Types = require('../../shared/js/types'),
     Game = require('./game');
 
 module.exports = Entity = class Entity{
-  constructor(id, species, width, height, x, y){
+  constructor(id, species, x, y, width, height){
     this.id = id;
     this.species = species;
 

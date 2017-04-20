@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    Camera = require('./camera');
 
 module.exports = Renderer = class Renderer{
   constructor(game, canvas){
@@ -19,7 +20,7 @@ module.exports = Renderer = class Renderer{
 
     this.font = "Macondo";
 
-    this.numCalls = 0;
+    this.createCamera();
   }
 
   getWidth(){
@@ -37,6 +38,7 @@ module.exports = Renderer = class Renderer{
 
   createCamera(){
     this.camera = new Camera(this);
+    this.camera.follow(this.game.player);
   }
 
   drawText(text, x, y, centered, color, strokeColor, fontSize){
@@ -89,32 +91,38 @@ module.exports = Renderer = class Renderer{
           height = sprite.height;
 
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
-      sprite.image.x = entity.x;
-      sprite.image.y = entity.y;
+      sprite.image.x = entity.x - this.camera.x;
+      sprite.image.y = entity.y - this.camera.y;
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity == this.game.player) this.drawBoundingBox(entity);
+      if(entity == this.game.player){} //this.drawBoundingBox(entity);
     }
   }
 
   drawBoundingBox(entity){
     var self = this;
-    var graphics = new createjs.Graphics().beginStroke("#ffff00").drawRect(entity.x, entity.y, entity.width, entity.height);
+    var graphics = new createjs.Graphics().beginStroke("#ffff00").drawRect(entity.x+this.map.tileWidth/2, entity.y+entity.height/2, entity.width-this.map.tileWidth, entity.height/2);
     var shape = new createjs.Shape(graphics);
     self.stage.addChild(shape)
-    _.each(entity.corners, function(tile){
-      graphics = new createjs.Graphics().beginFill("#ff0000").drawRect(tile[0], tile[1], 2, 2);
-      shape = new createjs.Shape(graphics);
-      self.stage.addChild(shape)
-    })
   }
 
-  drawMap(){
-    if(this.map){
-      //this.map.img.scaleX = this.map.img.scaleY = this.renderScale;
-      this.stage.addChild(this.map.img);
+  drawMapLow(){
+    if(this.map && this.camera){
+      var image = this.map.lowImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight)
+      this.stage.addChild(image);
+    }
+  }
+
+  drawMapHigh(){
+    if(this.map && this.camera){
+      var image = this.map.highImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight);
+      this.stage.addChild(image);
     }
   }
 
@@ -129,9 +137,10 @@ module.exports = Renderer = class Renderer{
 
   render(){
     this.stage.removeAllChildren();
-    this.drawMap();
-    this.drawEntities();
 
+    this.drawMapLow();
+    this.drawEntities();
+    this.drawMapHigh();
     this.drawFPS();
     this.stage.update();
   }

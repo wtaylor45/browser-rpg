@@ -1,7 +1,7 @@
 var _ = require('underscore');
 
 var maps = {
-  septoria: {json: require('../../shared/maps/septoria.json'), img: 'client/assets/maps/septoria.bmp'}
+  septoria: {json: require('../../shared/maps/septoria.json'), lowImage: 'client/assets/maps/septoria.bmp', highImage: 'client/assets/maps/septoria-high.png'}
 }
 
 module.exports = Map = class Map{
@@ -22,8 +22,8 @@ module.exports = Map = class Map{
 
     var json = this.json;
 
-    this.img = new createjs.Bitmap(maps[this.name]['img']);
-
+    this.lowImage = new createjs.Bitmap(maps[this.name]['lowImage']);
+    this.highImage = new createjs.Bitmap(maps[this.name]['highImage'])
     this.collisionLayer = this.findLayerByName(this.collisionName);
     this.collisionData = this.collisionLayer.data;
     this.tileWidth = json.tilewidth;

@@ -132,7 +132,14 @@ function GameServer(){
     console.log('Client', client.id, 'connected.');
 
     this.players[client.id] = new Player(client, this);
-    var message = {id: client.id, width: this.players[client.id].width, height: this.players[client.id].height};
+    var player = this.players[client.id];
+    var message = {
+      id: client.id,
+      width: player.width,
+      height: player.height,
+      x: player.x,
+      y: player.y
+    }
     client.emit('connected', message);
   }
 
