@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    Camera = require('./camera');
+    Camera = require('./camera'),
+    App = require('./app');
 
 module.exports = Renderer = class Renderer{
   constructor(game, canvas){
@@ -21,6 +22,16 @@ module.exports = Renderer = class Renderer{
     this.font = "Macondo";
 
     this.createCamera();
+
+    this.options = {
+      SHOW_FPS: false,
+      DRAW_BOUNDING_BOX: false
+    }
+  }
+
+  setOption(option, state){
+    this.options[option] = state;
+
   }
 
   getWidth(){
@@ -97,7 +108,8 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity == this.game.player){} //this.drawBoundingBox(entity);
+      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
+        this.drawBoundingBox(entity);
     }
   }
 
@@ -144,7 +156,7 @@ module.exports = Renderer = class Renderer{
     this.drawMapLow();
     this.drawEntities();
     this.drawMapHigh();
-    this.drawFPS();
+    if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
 }
