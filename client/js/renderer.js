@@ -142,7 +142,6 @@ module.exports = Renderer = class Renderer{
     this.drawEntities();
     this.drawMapHigh();
     this.drawFPS();
-
     this.stage.update();
   }
 }
