@@ -140,7 +140,7 @@ module.exports = Game = class Game{
   }
 
   receiveSpawn(message){
-    this.entities[message.id] = new Character(message.id, message.species, message.w, message.h, message.x, message.y);
+    this.entities[message.id] = new Character(message.id, message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
 
     entity.setDirection(message.direction);

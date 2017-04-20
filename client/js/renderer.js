@@ -93,6 +93,7 @@ module.exports = Renderer = class Renderer{
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
       sprite.image.x = entity.x - this.camera.x;
       sprite.image.y = entity.y - this.camera.y;
+      console.log(entity.width, sprite.width)
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
