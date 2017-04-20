@@ -2,8 +2,8 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species, w, h, x, y){
-    super(id, species, w, h, x, y);
+  constructor(id, species, x,y, w, h){
+    super(id, species, x, y, w, h);
 
     var self = this;
 

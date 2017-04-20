@@ -44,7 +44,7 @@ module.exports = App = class App{
    */
   onConnected(message){
     if(this.game){
-      this.game.setPlayer(new Player(message.id, 0, message.width, message.height));
+      this.game.setPlayer(new Player(message.id, 0, message.x, message.y, message.width, message.height));
       this.start();
     }
   }
