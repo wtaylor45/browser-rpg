@@ -693,15 +693,34 @@ module.exports = Map = class Map{
 
   isColliding(coords){
     var self = this;
-    var collisions = false;
-    _.each(coords, function(pos){
-      var x = pos[0];
-      var y = pos[1];
-      var index = self.worldPosToTileIndex(x, y);
-      if(self.collisionData[index] > 0) collisions = true;
-    });
 
-    return collisions;
+    if(this.checkCollisions(coords[0], coords[1])) return true;
+    if(this.checkCollisions(coords[0], coords[2])) return true;
+    if(this.checkCollisions(coords[1], coords[3])) return true;
+    if(this.checkCollisions(coords[2], coords[3])) return true;
+
+    return false;
+  }
+
+  checkCollisions(pos1, pos2){
+    var x1 = pos1[0],
+        x2 = pos2[0],
+        y1 = pos1[1],
+        y2 = pos2[1];
+
+    while(x1 < x2){
+      var index = this.worldPosToTileIndex(x1, y1);
+      if(this.collisionData[index] > 0) return true
+      x1 += this.tileWidth;
+    }
+
+    while(y1 <= y2){
+      var index = this.worldPosToTileIndex(x1, y1);
+      if(this.collisionData[index] > 0) return true
+      y1 += this.tileHeight;
+    }
+
+    return false;
   }
 
   nearestTilePositions(entity){
@@ -967,7 +986,6 @@ module.exports = Renderer = class Renderer{
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
       sprite.image.x = entity.x - this.camera.x;
       sprite.image.y = entity.y - this.camera.y;
-      console.log(entity.width, sprite.width)
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
@@ -978,7 +996,10 @@ module.exports = Renderer = class Renderer{
 
   drawBoundingBox(entity){
     var self = this;
-    var graphics = new createjs.Graphics().beginStroke("#ffff00").drawRect(entity.x+this.map.tileWidth/2, entity.y+entity.height/2, entity.width-this.map.tileWidth, entity.height/2);
+    var graphics = new createjs.Graphics()
+      .beginStroke("#ffff00")
+      .drawRect(entity.x+this.map.tileWidth/2, entity.y+entity.height/2,
+        entity.width-this.map.tileWidth, entity.height/2);
     var shape = new createjs.Shape(graphics);
     self.stage.addChild(shape)
   }

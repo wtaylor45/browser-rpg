@@ -103,7 +103,10 @@ module.exports = Renderer = class Renderer{
 
   drawBoundingBox(entity){
     var self = this;
-    var graphics = new createjs.Graphics().beginStroke("#ffff00").drawRect(entity.x+this.map.tileWidth/2, entity.y+entity.height/2, entity.width-this.map.tileWidth, entity.height/2);
+    var graphics = new createjs.Graphics()
+      .beginStroke("#ffff00")
+      .drawRect(entity.x+this.map.tileWidth/2, entity.y+entity.height/2,
+        entity.width-this.map.tileWidth, entity.height/2);
     var shape = new createjs.Shape(graphics);
     self.stage.addChild(shape)
   }

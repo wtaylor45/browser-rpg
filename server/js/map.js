@@ -49,16 +49,34 @@ module.exports = Map = class Map{
 
   isColliding(coords){
     var self = this;
-    var collisions = false;
-    for(var i in coords){
-      var pos = coords[i];
-      var x = pos[0];
-      var y = pos[1];
-      var index = self.worldPosToTileIndex(x, y);
-      if(self.collisionData[index] > 0) return true;
+
+    if(this.checkCollisions(coords[0], coords[1])) return true;
+    if(this.checkCollisions(coords[0], coords[2])) return true;
+    if(this.checkCollisions(coords[1], coords[3])) return true;
+    if(this.checkCollisions(coords[2], coords[3])) return true;
+
+    return false;
+  }
+
+  checkCollisions(pos1, pos2){
+    var x1 = pos1[0],
+        x2 = pos2[0],
+        y1 = pos1[1],
+        y2 = pos2[1];
+
+    while(x1 < x2){
+      var index = this.worldPosToTileIndex(x1, y1);
+      if(this.collisionData[index] > 0) return true;
+      x1 += this.tileWidth;
     }
 
-    return collisions;
+    while(y1 <= y2){
+      var index = this.worldPosToTileIndex(x1, y1);
+      if(this.collisionData[index] > 0) return true;
+      y1 += this.tileHeight;
+    }
+
+    return false
   }
 
   nearestTilePositions(entity){
