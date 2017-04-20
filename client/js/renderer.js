@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    Camera = require('./camera');
 
 module.exports = Renderer = class Renderer{
   constructor(game, canvas){
@@ -19,7 +20,7 @@ module.exports = Renderer = class Renderer{
 
     this.font = "Macondo";
 
-    this.numCalls = 0;
+    this.createCamera();
   }
 
   getWidth(){
@@ -37,6 +38,7 @@ module.exports = Renderer = class Renderer{
 
   createCamera(){
     this.camera = new Camera(this);
+    this.camera.follow(this.game.player);
   }
 
   drawText(text, x, y, centered, color, strokeColor, fontSize){
@@ -89,8 +91,8 @@ module.exports = Renderer = class Renderer{
           height = sprite.height;
 
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
-      sprite.image.x = entity.x;
-      sprite.image.y = entity.y;
+      sprite.image.x = entity.x - this.camera.x;
+      sprite.image.y = entity.y - this.camera.y;
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
@@ -107,15 +109,20 @@ module.exports = Renderer = class Renderer{
   }
 
   drawMapLow(){
-    if(this.map){
-      //this.map.img.scaleX = this.map.img.scaleY = this.renderScale;
-      this.stage.addChild(this.map.lowImage);
+    if(this.map && this.camera){
+      var image = this.map.lowImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight)
+      this.stage.addChild(image);
     }
   }
 
   drawMapHigh(){
-    if(this.map){
-      this.stage.addChild(this.map.highImage);
+    if(this.map && this.camera){
+      var image = this.map.highImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight);
+      this.stage.addChild(image);
     }
   }
 
@@ -134,8 +141,8 @@ module.exports = Renderer = class Renderer{
     this.drawMapLow();
     this.drawEntities();
     this.drawMapHigh();
-
     this.drawFPS();
+
     this.stage.update();
   }
 }

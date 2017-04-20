@@ -116,7 +116,68 @@ module.exports = App = class App{
   }
 }
 
-},{"./game":5,"./player":9,"./socket":11}],3:[function(require,module,exports){
+},{"./game":6,"./player":10,"./socket":12}],3:[function(require,module,exports){
+
+
+module.exports = Camera = class Camera{
+  constructor(renderer){
+    this.renderer = renderer;
+    this.x = 0;
+    this.y = 0;
+    this.viewportWidth = renderer.stage.canvas.width/renderer.renderScale;
+    this.viewportHeight = renderer.stage.canvas.height/renderer.renderScale;
+    this.xDeadZone = 0;
+    this.yDeadZone = 0;
+  }
+
+  follow(entity){
+    this.entity = entity;
+  }
+
+  moveTo(x, y){
+    this.x = x;
+    this.y = y;
+  }
+
+  lookAt(entity){
+    if(entity){
+      this.x = entity.x;
+      this.y = entity.y;
+    }
+  }
+
+  isVisible(x, y){
+    return (Math.abs(this.y - y) <= this.viewportHeight/this.renderer.renderScale
+    && Math.abs(this.x - x) <= this.viewportWidth/this.renderer.renderScale)
+  }
+
+  setViewportSize(width, height){
+    this.viewportWidth = width;
+    this.viewportHeight = height;
+  }
+
+  update(){
+    if(this.entity){
+      if(this.entity.x - this.x  + this.xDeadZone > this.viewportWidth/2){
+			  this.x = this.entity.x - (this.viewportWidth/2 - this.xDeadZone);
+      }
+			else if(this.entity.x/2  - this.xDeadZone < this.x){
+			   this.x = this.entity.x/2  - this.xDeadZone;
+         console.log(true)
+       }
+
+      if(this.entity.y - this.y + this.yDeadZone > this.viewportHeight/2)
+        this.y = this.entity.y - (this.viewportHeight/2 - this.yDeadZone);
+      else if(this.entity.y/2 - this.yDeadZone < this.y)
+        this.y = this.entity.y/2 - this.yDeadZone;
+    }
+
+    if(this.x < 0) this.x = 0;
+    if(this.y < 0) this.y = 0;
+  }
+}
+
+},{}],4:[function(require,module,exports){
 var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
@@ -182,7 +243,7 @@ module.exports = Character = class Character extends Entity{
   }
 }
 
-},{"../../shared/js/types":19,"./entity":4}],4:[function(require,module,exports){
+},{"../../shared/js/types":20,"./entity":5}],5:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/9/17
@@ -280,7 +341,7 @@ module.exports = Entity = class Entity{
   }
 }
 
-},{"../../shared/js/types":19,"./game":5,"./sprite":12,"underscore":18}],5:[function(require,module,exports){
+},{"../../shared/js/types":20,"./game":6,"./sprite":13,"underscore":19}],6:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -455,7 +516,7 @@ module.exports = Game = class Game{
   }
 }
 
-},{"../../shared/js/types":19,"./input":6,"./map":7,"./renderer":10,"./socket":11,"./updater":14,"underscore":18}],6:[function(require,module,exports){
+},{"../../shared/js/types":20,"./input":7,"./map":8,"./renderer":11,"./socket":12,"./updater":15,"underscore":19}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -552,7 +613,7 @@ Input.init = function(){
   }
 }
 
-},{"../../shared/js/types":19}],7:[function(require,module,exports){
+},{"../../shared/js/types":20}],8:[function(require,module,exports){
 var _ = require('underscore');
 
 var maps = {
@@ -656,7 +717,7 @@ module.exports = Map = class Map{
   }
 }
 
-},{"../../shared/maps/septoria.json":20,"underscore":18}],8:[function(require,module,exports){
+},{"../../shared/maps/septoria.json":21,"underscore":19}],9:[function(require,module,exports){
 /**
  * @author Will Taylor
  *
@@ -692,7 +753,7 @@ module.exports = Message = class Message{
   }
 }
 
-},{"./socket":11}],9:[function(require,module,exports){
+},{"./socket":12}],10:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/2/17
@@ -805,8 +866,9 @@ module.exports = Player = class Player extends Character{
   }
 }
 
-},{"./character":3,"./message":8}],10:[function(require,module,exports){
-var _ = require('underscore');
+},{"./character":4,"./message":9}],11:[function(require,module,exports){
+var _ = require('underscore'),
+    Camera = require('./camera');
 
 module.exports = Renderer = class Renderer{
   constructor(game, canvas){
@@ -827,7 +889,7 @@ module.exports = Renderer = class Renderer{
 
     this.font = "Macondo";
 
-    this.numCalls = 0;
+    this.createCamera();
   }
 
   getWidth(){
@@ -845,6 +907,7 @@ module.exports = Renderer = class Renderer{
 
   createCamera(){
     this.camera = new Camera(this);
+    this.camera.follow(this.game.player);
   }
 
   drawText(text, x, y, centered, color, strokeColor, fontSize){
@@ -897,8 +960,8 @@ module.exports = Renderer = class Renderer{
           height = sprite.height;
 
       sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
-      sprite.image.x = entity.x;
-      sprite.image.y = entity.y;
+      sprite.image.x = entity.x - this.camera.x;
+      sprite.image.y = entity.y - this.camera.y;
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
@@ -915,15 +978,20 @@ module.exports = Renderer = class Renderer{
   }
 
   drawMapLow(){
-    if(this.map){
-      //this.map.img.scaleX = this.map.img.scaleY = this.renderScale;
-      this.stage.addChild(this.map.lowImage);
+    if(this.map && this.camera){
+      var image = this.map.lowImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight)
+      this.stage.addChild(image);
     }
   }
 
   drawMapHigh(){
-    if(this.map){
-      this.stage.addChild(this.map.highImage);
+    if(this.map && this.camera){
+      var image = this.map.highImage;
+      image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
+        this.camera.viewportWidth, this.camera.viewportHeight);
+      this.stage.addChild(image);
     }
   }
 
@@ -942,13 +1010,13 @@ module.exports = Renderer = class Renderer{
     this.drawMapLow();
     this.drawEntities();
     this.drawMapHigh();
-
     this.drawFPS();
+
     this.stage.update();
   }
 }
 
-},{"underscore":18}],11:[function(require,module,exports){
+},{"./camera":3,"underscore":19}],12:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -967,7 +1035,7 @@ Socket.on = function(evnt, callback){
   });
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var sprites = require('./sprites').init(),
     Animation = require('./animation');
 
@@ -1003,7 +1071,7 @@ module.exports = Sprite = class Sprite{
   }
 }
 
-},{"./animation":1,"./sprites":13}],13:[function(require,module,exports){
+},{"./animation":1,"./sprites":14}],14:[function(require,module,exports){
 var _ = require('underscore'),
     paths = [
       require("../sprites/player.json"),
@@ -1022,7 +1090,7 @@ module.exports = Sprites = {
   }
 };
 
-},{"../sprites/ogre.json":16,"../sprites/player.json":17,"underscore":18}],14:[function(require,module,exports){
+},{"../sprites/ogre.json":17,"../sprites/player.json":18,"underscore":19}],15:[function(require,module,exports){
 var _ = require('underscore')
 
 module.exports = Updater = class Updater{
@@ -1038,7 +1106,8 @@ module.exports = Updater = class Updater{
 
     this.game.readServerMessages();
     this.updateEntities(dt);
-
+    if(this.game.renderer.camera)
+      this.game.renderer.camera.update();
   }
 
   updatePlayer(dt){
@@ -1069,7 +1138,7 @@ module.exports = Updater = class Updater{
   }
 }
 
-},{"underscore":18}],15:[function(require,module,exports){
+},{"underscore":19}],16:[function(require,module,exports){
 "use strict"
 
 var App = require('./js/app');
@@ -1078,7 +1147,7 @@ $(document).ready(function(){
   var app = new App();
 });
 
-},{"./js/app":2}],16:[function(require,module,exports){
+},{"./js/app":2}],17:[function(require,module,exports){
 module.exports={
   "id": "ogre",
   "width": 32,
@@ -1096,7 +1165,7 @@ module.exports={
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports={
   "id": "player",
   "width": 48,
@@ -1142,7 +1211,7 @@ module.exports={
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2692,7 +2761,7 @@ module.exports={
   }
 }.call(this));
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/6/17
@@ -2757,7 +2826,7 @@ if(!(typeof exports === 'undefined')){
   module.exports = Types;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports={ "height":50,
  "layers":[
         {
@@ -2879,4 +2948,4 @@ module.exports={ "height":50,
  "version":1,
  "width":50
 }
-},{}]},{},[15]);
+},{}]},{},[16]);

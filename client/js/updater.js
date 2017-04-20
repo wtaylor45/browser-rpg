@@ -13,7 +13,8 @@ module.exports = Updater = class Updater{
 
     this.game.readServerMessages();
     this.updateEntities(dt);
-
+    if(this.game.renderer.camera)
+      this.game.renderer.camera.update();
   }
 
   updatePlayer(dt){
