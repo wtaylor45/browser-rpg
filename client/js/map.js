@@ -1,15 +1,16 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    Types = require('../../shared/js/types');
 
 var maps = {
   septoria: {json: require('../../shared/maps/septoria.json'), lowImage: 'client/assets/maps/septoria.bmp', highImage: 'client/assets/maps/septoria-high.png'}
 }
 
 module.exports = Map = class Map{
-  constructor(name, collisionLayer){
+  constructor(name, collisionLayer, doorID){
     this.name = name;
     this.json = maps[name]['json'];
     this.collisionName = collisionLayer || 'collision';
-
+    this.doorID = doorID || 665;
     this.isLoaded = false;
 
     this.loadJSON();
@@ -70,6 +71,10 @@ module.exports = Map = class Map{
     return tileX + tileY * (this.height/this.tileHeight);
   }
 
+  isDoor(id){
+    return id >= this.doorID;
+  }
+
   isColliding(coords){
     var self = this;
 
@@ -89,14 +94,24 @@ module.exports = Map = class Map{
 
     while(x1 < x2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] > 0) return true
+      if(this.collisionData[index] > 0){
+        if(this.isDoor(this.collisionData[index])){
+          return Types.Collisions.DOOR;
+        }
+        return Types.Collisions.WALL;
+      }
       x1 += this.tileWidth;
     }
 
     while(y1 <= y2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] > 0) return true
-      y1 += this.tileHeight;
+      if(this.collisionData[index] > 0){
+        if(this.isDoor(this.collisionData[index])){
+          return Types.Collisions.DOOR;
+        }
+        return Types.Collisions.WALL;
+      }
+      y1 += this.tileWidth;
     }
 
     return false;

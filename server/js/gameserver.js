@@ -218,6 +218,7 @@ function GameServer(){
     var maps = {};
     for(var i in Map.mapData){
       maps[i] = new Map(i);
+      console.log('Created', i)
     }
 
     return maps;

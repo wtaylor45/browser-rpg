@@ -68,13 +68,23 @@ module.exports = Player = Character.extend({
       var vector = input.vector;
 
       this.x += vector.x*input.pressTime*this.speed;
-      if(map.isColliding(map.nearestTilePositions(this))){
-        this.x = this.lastPos[0];
+      var collision = map.isColliding(map.nearestTilePositions(this));
+      if(collision >= 0){
+        if(collision == Types.Collisions.WALL){
+          this.x = this.lastPos[0];
+        }else{
+          this.handleCollision(collision);
+        }
       }
 
       this.y += vector.y*input.pressTime*this.speed;
-      if(map.isColliding(map.nearestTilePositions(this))){
-        this.y = this.lastPos[1];
+      var collision = map.isColliding(map.nearestTilePositions(this));
+      if(collision >= 0){
+        if(collision == Types.Collisions.WALL){
+          this.y = this.lastPos[1];
+        }else{
+          this.handleCollision(collision);
+        }
       }
 
       this.lastProcessedInput = input.seq;
@@ -84,6 +94,20 @@ module.exports = Player = Character.extend({
     if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
     if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
     if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
+  },
+
+  handleCollision: function(collision){
+    switch(collision){
+      case Types.Collisions.DOOR:
+        var map = this.server.maps[this.map];
+        var mapName = map.whichDoor(this.x, this.y+this.height/2);
+        this.switchMap(mapName);
+    }
+  },
+
+  switchMap: function(name){
+    this.map = name;
+    this.broadcast(new Messages.Spawn(this));
   },
 
   /**

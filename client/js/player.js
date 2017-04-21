@@ -43,14 +43,27 @@ module.exports = Player = class Player extends Character{
    */
   applyInput(input){
     var map = this.game.currentMap;
-    // Update the player x and y based on the movement vector
-    this.x += input.vector.x*input.pressTime*this.speed;
-    if(map.isColliding(map.nearestTilePositions(this))){
-      this.x = this.lastPos[0];
+    this.x += vector.x*input.pressTime*this.speed;
+    var collision = map.isColliding(map.nearestTilePositions(this));
+    if(collision){
+      if(collision == Types.Collisions.WALL){
+        this.x = this.lastPos[0];
+      }else{
+        this.handleCollision(collision);
+      }
     }
-    this.y += input.vector.y*input.pressTime*this.speed;
-    if(map.isColliding(map.nearestTilePositions(this))){
+
+    this.y += vector.y*input.pressTime*this.speed;
+    var collision = map.isColliding(map.nearestTilePositions(this));
+    if(collision == Types.Collisions.WALL){
       this.y = this.lastPos[1];
+    }else{
+      this.handleCollision(collision);
+    }
+  }
+
+  handleCollision(collision){
+    switch(collision){
     }
   }
 

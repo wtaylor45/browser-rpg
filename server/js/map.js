@@ -1,14 +1,17 @@
 var path = require('path'),
     fs = require('fs'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    Types = require('../../shared/js/types');
 
 module.exports = Map = class Map{
-  constructor(name, collisionLayer){
+  constructor(name, collisionLayer, doorID){
     this.isLoaded = false;
     this.name = name;
     this.collisionID = collisionLayer || 'collision';
 
     this.entities = {};
+
+    this.doorID = doorID || 665;
 
     this.loadMap(Map.mapData[name]);
   }
@@ -22,6 +25,26 @@ module.exports = Map = class Map{
     this.tileHeight = map.tileheight;
     this.width = this.tileWidth*map.width;
     this.height = this.tileHeight*map.height;
+
+    this.doors = this.loadDoors();
+  }
+
+  loadDoors(){
+    var doorLayer = this.getLayerByName("doors").objects;
+
+    var doors = [];
+
+    for(var i in doorLayer){
+      doors[i] = {
+        map: doorLayer[i].name,
+        x1: doorLayer[i].x,
+        y1: doorLayer[i].y,
+        x2: doorLayer[i].x + doorLayer[i].width,
+        y2: doorLayer[i].y + doorLayer[i].height,
+      }
+    }
+
+    return doors
   }
 
   addEntity(entity){
@@ -47,15 +70,23 @@ module.exports = Map = class Map{
     return tileX + tileY * (this.height/this.tileHeight);
   }
 
+  isDoor(id){
+    return id >= this.doorID;
+  }
+
   isColliding(coords){
     var self = this;
 
-    if(this.checkCollisions(coords[0], coords[1])) return true;
-    if(this.checkCollisions(coords[0], coords[2])) return true;
-    if(this.checkCollisions(coords[1], coords[3])) return true;
-    if(this.checkCollisions(coords[2], coords[3])) return true;
+    var collision = this.checkCollisions(coords[0], coords[1]);
+    if(collision >= 0) return collision;
+    collision = this.checkCollisions(coords[0], coords[2]);
+    if(collision >= 0) return collision;
+    collision = this.checkCollisions(coords[1], coords[3])
+    if(collision >= 0) return collision;
+    collision = this.checkCollisions(coords[2], coords[3])
+    if(collision >= 0) return collision;
 
-    return false;
+    return -1;
   }
 
   checkCollisions(pos1, pos2){
@@ -66,17 +97,27 @@ module.exports = Map = class Map{
 
     while(x1 < x2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] > 0) return true;
+      if(this.collisionData[index] > 0){
+        if(this.isDoor(this.collisionData[index])){
+          return Types.Collisions.DOOR;
+        }
+        return Types.Collisions.WALL;
+      }
       x1 += this.tileWidth;
     }
 
     while(y1 <= y2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] > 0) return true;
-      y1 += this.tileHeight;
+      if(this.collisionData[index] > 0){
+        if(this.isDoor(this.collisionData[index])){
+          return Types.Collisions.DOOR;
+        }
+        return Types.Collisions.WALL;
+      }
+      y1 += this.tileWidth;
     }
 
-    return false
+    return -1;
   }
 
   nearestTilePositions(entity){
@@ -95,8 +136,24 @@ module.exports = Map = class Map{
 
     return corners;
   }
+
+  whichDoor(x, y){
+    for(var i in this.doors){
+      var dLeftX = this.doors[i].x1,
+          dTopY = this.doors[i].y1,
+          dRightX = this.doors[i].x2,
+          dBottomY = this.doors[i].y2;
+
+      if(x >= dLeftX && x <= dRightX){
+        if(y >= dTopY && y <= dBottomY){
+          return this.doors[i].map;
+        }
+      }
+    }
+  }
 }
 
 Map.mapData = {
-  septoria: require('../../shared/maps/septoria.json')
+  septoria: require('../../shared/maps/septoria.json'),
+  map0: require('../../shared/maps/map0.json')
 }

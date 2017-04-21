@@ -31,6 +31,11 @@ Types = {
     DOWN: 0,
     LEFT: 3,
     RIGHT: 2
+  },
+
+  Collisions: {
+    DOOR: 0,
+    WALL: 1
   }
 }
 
