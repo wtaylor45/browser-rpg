@@ -4,14 +4,11 @@ var path = require('path'),
     Types = require('../../shared/js/types');
 
 module.exports = Map = class Map{
-  constructor(name, collisionLayer, doorID){
+  constructor(name, collisionLayer){
     this.isLoaded = false;
     this.name = name;
-    this.collisionID = collisionLayer || 'collision';
 
     this.entities = {};
-
-    this.doorID = doorID || 665;
 
     this.loadMap(Map.mapData[name]);
   }
@@ -19,14 +16,18 @@ module.exports = Map = class Map{
   loadMap(map){
     this.json = map;
     if(!this.json) return;
-    this.collisionLayer = this.getLayerByName(this.collisionID);
-    this.collisionData = this.collisionLayer.data;
+    var collisionLayer = this.getLayerWithProperty('collision');
+    var collisionTiles = this.getTilesetWithProp('properties');
+    this.collisionData = collisionLayer ? collisionLayer.data : [];
+    this.collisionId = collisionTiles ? this.getTileIdWithProperty('collision', collisionTiles) : -1;
+    this.doorId = collisionTiles ? this.getTileIdWithProperty('door', collisionTiles) : -1;
     this.tileWidth = map.tilewidth;
     this.tileHeight = map.tileheight;
     this.width = this.tileWidth*map.width;
     this.height = this.tileHeight*map.height;
 
     this.doors = this.loadDoors();
+    this.entrances = this.loadEntrances();
   }
 
   loadDoors(){
@@ -35,21 +36,40 @@ module.exports = Map = class Map{
     var doors = [];
 
     for(var i in doorLayer){
+      var door = doorLayer[i];
+      var doorInfo = door.name.split('_');
       doors[i] = {
-        map: doorLayer[i].name,
-        x1: doorLayer[i].x,
-        y1: doorLayer[i].y,
-        x2: doorLayer[i].x + doorLayer[i].width,
-        y2: doorLayer[i].y + doorLayer[i].height,
+        map: doorInfo[0],
+        entrance: doorInfo[1],
+        x1: door.x,
+        y1: door.y,
+        x2: door.x + door.width,
+        y2: door.y + door.height,
       }
     }
 
     return doors
   }
 
+  loadEntrances(){
+    var entrances = {};
+
+    var entranceObjects = this.getLayerByName('entrances').objects;
+    for(var i in entranceObjects){
+      var entrance = entranceObjects[i];
+      entrances[entrance.name] = {x: entrance.x, y: entrance.y};
+    }
+
+    return entrances;
+  }
+
   addEntity(entity){
     this.entities[entity.id] = entity;
     entity.map = this.name;
+  }
+
+  removeEntity(id){
+    delete this.entities[id];
   }
 
   getLayerByName(name){
@@ -71,7 +91,8 @@ module.exports = Map = class Map{
   }
 
   isDoor(id){
-    return id >= this.doorID;
+    if(this.doorId >= 0)
+      return id == this.doorId;
   }
 
   isColliding(coords){
@@ -108,7 +129,7 @@ module.exports = Map = class Map{
 
     while(y1 <= y2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] > 0){
+      if(this.collisionData[index] == this.collisionId){
         if(this.isDoor(this.collisionData[index])){
           return Types.Collisions.DOOR;
         }
@@ -146,10 +167,45 @@ module.exports = Map = class Map{
 
       if(x >= dLeftX && x <= dRightX){
         if(y >= dTopY && y <= dBottomY){
-          return this.doors[i].map;
+          return [this.doors[i].map, this.doors[i].entrance];
         }
       }
     }
+  }
+
+  getEntrancePosition(id){
+    var entrance = this.entrances[id];
+    return [entrance.x, entrance.y];
+  }
+
+  getTilesetProperties(tileset){
+    return tile;
+  }
+
+  getLayerWithProperty(name){
+    for(var i in this.json.layers){
+      var layer = this.json.layers[i];
+      if(!layer.properties) continue;
+      if(layer.properties[name]) return layer;
+    }
+  }
+
+  getTilesetWithProp(prop){
+    for(var i in this.json.tilesets){
+      var tileset = this.json.tilesets[i];
+      if(!tileset.properties) continue;
+      if(tileset.properties[prop]) return tileset;
+    }
+  }
+
+  getTileIdWithProperty(prop, tileset){
+    var properties = tileset.tileproperties;
+
+    for(var i in properties){
+      if(properties[i][prop]) return parseInt(i)+tileset.firstgid;
+    }
+
+    return false;
   }
 }
 

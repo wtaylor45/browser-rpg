@@ -50,16 +50,17 @@ function GameServer(){
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
+    self.maps['septoria'].addEntity(player);
+
     self.pushEntityIDs(player);
     self.tellOthersSpawned(player);
-
-    self.maps['septoria'].addEntity(player);
 
     // What to do when this player broadcasts a message
     // TODO: Change to only broadcast to certain group
     player.onBroadcast(function(message){
-      for(var i in self.players){
-        self.outgoingMessages[self.players[i].id].push(message.serialize());
+      var group = self.maps[player.map].entities;
+      for(var i in group){
+        self.outgoingMessages[group[i].id].push(message.serialize());
       }
     });
   }
@@ -151,9 +152,13 @@ function GameServer(){
   this.disconnect = function(id){
     // TODO: Logout if the player is logged in
     this.tellOthersDespawned(id);
+
+    var player = this.players[id];
+
     delete global.SOCKET_LIST[id];
     delete this.players[id];
     delete this.entities[id];
+    delete this.maps[player.map].entities[id];
     delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
   }
@@ -178,16 +183,20 @@ function GameServer(){
   }
 
   this.pushEntityIDs = function(player){
-    var entities = _.pluck(this.entities, "id");
+    if(!player.map) return;
+
+    var group = this.maps[player.map].entities;
+    var entities = _.pluck(group, "id");
 
     var message = new Messages.List(entities);
     this.addMessageToOutbox(player, message.serialize());
   }
 
   this.tellOthersSpawned = function(player){
-    for(var i in this.outgoingMessages){
+    var group = this.maps[player.map].entities;
+    for(var i in group){
       var message = new Messages.Spawn(player);
-      this.outgoingMessages[i].push(message.serialize());
+      this.addMessageToOutbox(group[i], message.serialize());
     }
   }
 
@@ -198,13 +207,12 @@ function GameServer(){
     }
   }
 
-  this.sendBatchSpawns = function(player){
-    var list = this.entities;
+  this.sendBatchSpawns = function(player, list){
     var self = this;
-
-    _.each(list, function(entity){
-      if(entity.id != player.id){
-        var message = new Messages.Spawn(entity);
+    var group = this.maps[player.map].entities;
+    _.each(list, function(id){
+      if(id != player.id){
+        var message = new Messages.Spawn(group[id]);
         self.addMessageToOutbox(player, message.serialize());
       }
     });

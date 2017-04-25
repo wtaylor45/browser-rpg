@@ -38,16 +38,6 @@ module.exports = Player = Character.extend({
     // What to do when broadcasting, set by server on login
     this.broadcastCallback = null;
 
-    // Listen for and handle messages from this player's client
-    this.connection.on('message', function(message){
-      if(message.type == Types.Messages.MOVE){
-        self.queuedInputs.push(message.data);
-      }
-      else if(message.type == Types.Messages.WHO){
-        self.server.sendBatchSpawns(this);
-      }
-    });
-
     // When the player disconnects
     this.connection.on('disconnect', function(){
       server.disconnect(this.id);
@@ -55,6 +45,16 @@ module.exports = Player = Character.extend({
 
     // Tell the server the player has logged on
     server.onLogin(this);
+
+    // Listen for and handle messages from this player's client
+    this.connection.on('message', function(message){
+      if(message.type == Types.Messages.MOVE){
+        self.queuedInputs.push(message.data);
+      }
+      else if(message.type == Types.Messages.WHO){
+        self.server.sendBatchSpawns(self, message.data);
+      }
+    });
   },
 
   /**
@@ -100,14 +100,24 @@ module.exports = Player = Character.extend({
     switch(collision){
       case Types.Collisions.DOOR:
         var map = this.server.maps[this.map];
-        var mapName = map.whichDoor(this.x, this.y+this.height/2);
-        this.switchMap(mapName);
+        var door = map.whichDoor(this.x, this.y+this.height/2);
+        this.switchMap(door[0], door[1]);
     }
   },
 
-  switchMap: function(name){
-    this.map = name;
-    this.broadcast(new Messages.Spawn(this));
+  switchMap: function(name, entrance){
+    // Tell players on this map that you are no longer there
+    this.server.tellOthersDespawned(this.id);
+    this.server.maps[this.map].removeEntity(this.id);
+    this.server.maps[name].addEntity(this);
+    var pos = this.server.maps[name].getEntrancePosition(entrance);
+    this.setPosition(pos[0], pos[1]);
+
+    // Tell players on the map that you have arrived
+    this.server.tellOthersSpawned(this)
+
+    // Get list of this map's entities
+    this.server.pushEntityIDs(this);
   },
 
   /**
