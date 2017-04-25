@@ -38,6 +38,14 @@
          "height":50,
          "name":"collision",
          "opacity":0.5,
+         "properties":
+            {
+             "collision":true
+            },
+         "propertytypes":
+            {
+             "collision":"bool"
+            },
          "type":"tilelayer",
          "visible":true,
          "width":50,
@@ -50,7 +58,7 @@
          "name":"high",
          "opacity":1,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":50,
          "x":0,
          "y":0
@@ -63,9 +71,19 @@
                 {
                  "height":16,
                  "id":1,
-                 "name":"map0",
+                 "name":"map0_0",
+                 "properties":
+                    {
+                     "entrance_id":0,
+                     "map":"map0"
+                    },
+                 "propertytypes":
+                    {
+                     "entrance_id":"int",
+                     "map":"string"
+                    },
                  "rotation":0,
-                 "type":"",
+                 "type":"Door",
                  "visible":true,
                  "width":64,
                  "x":224,
@@ -77,8 +95,39 @@
          "width":50,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":50,
+         "name":"entrances",
+         "objects":[
+                {
+                 "height":16,
+                 "id":5,
+                 "name":"0",
+                 "properties":
+                    {
+                     "id":0
+                    },
+                 "propertytypes":
+                    {
+                     "id":"int"
+                    },
+                 "rotation":0,
+                 "type":"Entrance",
+                 "visible":true,
+                 "width":16,
+                 "x":240,
+                 "y":192
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":50,
+         "x":0,
+         "y":0
         }],
- "nextobjectid":4,
+ "nextobjectid":32,
  "orientation":"orthogonal",
  "renderorder":"left-down",
  "tileheight":16,
@@ -131,9 +180,41 @@
          "imagewidth":32,
          "margin":0,
          "name":"collision",
+         "properties":
+            {
+             "properties":true
+            },
+         "propertytypes":
+            {
+             "properties":"bool"
+            },
          "spacing":0,
          "tilecount":2,
          "tileheight":16,
+         "tileproperties":
+            {
+             "0":
+                {
+                 "collision":true,
+                 "door":false
+                },
+             "1":
+                {
+                 "door":true
+                }
+            },
+         "tilepropertytypes":
+            {
+             "0":
+                {
+                 "collision":"bool",
+                 "door":"bool"
+                },
+             "1":
+                {
+                 "door":"bool"
+                }
+            },
          "tilewidth":16
         }, 
         {

@@ -37,10 +37,11 @@ module.exports = Character = Entity.extend({
    */
   getState: function(){
     var state = this.getDefaultState();
-    
-    state['direction'] = this.direction;
-    if(this.target) state['target'] = this.target;
 
+    state['direction'] = this.direction;
+    if(this.map) state['map'] = this.map;
+    if(this.target) state['target'] = this.target;
+    
     return state;
   }
 });

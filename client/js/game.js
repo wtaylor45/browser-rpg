@@ -55,7 +55,7 @@ module.exports = Game = class Game{
     this.started = true;
     this.running = true;
     this.renderer = new Renderer(this, "canvas");
-    this.currentMap = new Map('septoria')
+    this.currentMap = new Map('septoria');
     this.renderer.setMap(this.currentMap);
     this.updater = new Updater(this);
     Input.init();
@@ -104,6 +104,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.SPAWN){
         if(message.id !== this.player.id)
           this.receiveSpawn(message);
+        else{
+          this.switchMap(message);
+        }
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -140,6 +143,9 @@ module.exports = Game = class Game{
   }
 
   receiveSpawn(message){
+    if(this.entities[message.id]){
+
+    }
     this.entities[message.id] = new Character(message.id, message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
 
@@ -150,7 +156,8 @@ module.exports = Game = class Game{
   }
 
   receiveDespawn(message){
-    delete this.entities[message.id];
+    if(message.id != this.player.id)
+      delete this.entities[message.id];
   }
 
   /**
@@ -169,5 +176,14 @@ module.exports = Game = class Game{
   askWhoAre(list){
     var message = new Message(Types.Messages.WHO, list);
     message.send();
+  }
+
+  switchMap(message){
+    if(message.map && message.map != this.currentMap.name){
+      console.log(message);
+      this.currentMap = new Map(message.map);
+      this.player.setPos(message.x, message.y);
+      this.renderer.setMap(this.currentMap);
+    }
   }
 }

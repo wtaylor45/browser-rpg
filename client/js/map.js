@@ -2,7 +2,8 @@ var _ = require('underscore'),
     Types = require('../../shared/js/types');
 
 var maps = {
-  septoria: {json: require('../../shared/maps/septoria.json'), lowImage: 'client/assets/maps/septoria.bmp', highImage: 'client/assets/maps/septoria-high.png'}
+  septoria: {json: require('../../shared/maps/septoria.json'), lowImage: 'client/assets/maps/septoria.bmp', highImage: 'client/assets/maps/septoria-high.png'},
+  map0: {json: require('../../shared/maps/map0.json'), lowImage: 'client/assets/maps/map0.png', highImage: 'client/assets/maps/map0-high.png'}
 }
 
 module.exports = Map = class Map{
