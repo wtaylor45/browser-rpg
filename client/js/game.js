@@ -76,11 +76,11 @@ module.exports = Game = class Game{
   }
 
   pruneEntities(){
+    var self = this;
     _.each(this.entitiesToPrune, function(entity){
-      delete this.entities[entity.id];
+      delete self.entities[entity.id];
     });
-
-    this.obsoleteEntities = {};
+    this.entitiesToPrune = {};
   }
 
   /**
@@ -116,7 +116,7 @@ module.exports = Game = class Game{
   }
 
   receiveEntityList(list){
-    var entityIds = _.pluck(this.entites, 'id');
+    var entityIds = _.pluck(this.entities, 'id');
     var alreadySeen = _.intersection(this.entityIds, list);
     var notSeen = _.difference(list, alreadySeen);
     var self = this;
@@ -144,7 +144,7 @@ module.exports = Game = class Game{
 
   receiveSpawn(message){
     if(this.entities[message.id]){
-
+      return;
     }
     this.entities[message.id] = new Character(message.id, message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
@@ -179,8 +179,8 @@ module.exports = Game = class Game{
   }
 
   switchMap(message){
+    console.log('woo')
     if(message.map && message.map != this.currentMap.name){
-      console.log(message);
       this.currentMap = new Map(message.map);
       this.player.setPos(message.x, message.y);
       this.renderer.setMap(this.currentMap);

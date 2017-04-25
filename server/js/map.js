@@ -118,7 +118,7 @@ module.exports = Map = class Map{
 
     while(x1 < x2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] == this.collisionId){
+      if(this.collisionData[index] > 0){
         if(this.isDoor(this.collisionData[index])){
           return Types.Collisions.DOOR;
         }

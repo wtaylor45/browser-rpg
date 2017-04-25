@@ -7,11 +7,9 @@ var maps = {
 }
 
 module.exports = Map = class Map{
-  constructor(name, collisionLayer, doorID){
+  constructor(name){
     this.name = name;
     this.json = maps[name]['json'];
-    this.collisionName = collisionLayer || 'collision';
-    this.doorID = doorID || 665;
     this.isLoaded = false;
 
     this.loadJSON();
@@ -26,8 +24,13 @@ module.exports = Map = class Map{
 
     this.lowImage = new createjs.Bitmap(maps[this.name]['lowImage']);
     this.highImage = new createjs.Bitmap(maps[this.name]['highImage'])
-    this.collisionLayer = this.findLayerByName(this.collisionName);
-    this.collisionData = this.collisionLayer.data;
+
+    var collisionLayer = this.getLayerWithProperty('collision');
+    var collisionTiles = this.getTilesetWithProp('properties');
+    this.collisionData = collisionLayer ? collisionLayer.data : [];
+    this.collisionId = collisionTiles ? this.getTileIdWithProperty('collision', collisionTiles) : -1;
+    this.doorId = collisionTiles ? this.getTileIdWithProperty('door', collisionTiles) : -1;
+
     this.tileWidth = json.tilewidth;
     this.tileHeight = json.tileheight;
     this.width = this.tileWidth*json.width;
@@ -72,10 +75,6 @@ module.exports = Map = class Map{
     return tileX + tileY * (this.height/this.tileHeight);
   }
 
-  isDoor(id){
-    return id >= this.doorID;
-  }
-
   isColliding(coords){
     var self = this;
 
@@ -96,10 +95,8 @@ module.exports = Map = class Map{
     while(x1 < x2){
       var index = this.worldPosToTileIndex(x1, y1);
       if(this.collisionData[index] > 0){
-        if(this.isDoor(this.collisionData[index])){
-          return Types.Collisions.DOOR;
-        }
-        return Types.Collisions.WALL;
+        if(this.collisionData[index] == this.collisionId)
+          return Types.Collisions.WALL;
       }
       x1 += this.tileWidth;
     }
@@ -107,10 +104,8 @@ module.exports = Map = class Map{
     while(y1 <= y2){
       var index = this.worldPosToTileIndex(x1, y1);
       if(this.collisionData[index] > 0){
-        if(this.isDoor(this.collisionData[index])){
-          return Types.Collisions.DOOR;
-        }
-        return Types.Collisions.WALL;
+        if(this.collisionData[index] == this.collisionId)
+          return Types.Collisions.WALL;
       }
       y1 += this.tileWidth;
     }
@@ -133,5 +128,31 @@ module.exports = Map = class Map{
     corners[3] = [rightX, bottomY];
 
     return corners;
+  }
+
+  getLayerWithProperty(name){
+    for(var i in this.json.layers){
+      var layer = this.json.layers[i];
+      if(!layer.properties) continue;
+      if(layer.properties[name]) return layer;
+    }
+  }
+
+  getTilesetWithProp(prop){
+    for(var i in this.json.tilesets){
+      var tileset = this.json.tilesets[i];
+      if(!tileset.properties) continue;
+      if(tileset.properties[prop]) return tileset;
+    }
+  }
+
+  getTileIdWithProperty(prop, tileset){
+    var properties = tileset.tileproperties;
+
+    for(var i in properties){
+      if(properties[i][prop]) return parseInt(i)+tileset.firstgid;
+    }
+
+    return false;
   }
 }
