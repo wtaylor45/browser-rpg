@@ -26,9 +26,12 @@ module.exports = Entity = class Entity{
     this.sprite = null;
     this.animations = null;
     this.currentAnimation = null;
+
+    this.canMove = true;
   }
 
   setPos(x, y){
+    if(!this.canMove) return;
     this.lastPos = [this.x, this.y];
     this.x = x;
     this.y = y;
@@ -92,5 +95,13 @@ module.exports = Entity = class Entity{
         self.idle();
       })
     }
+  }
+
+  freeze(){
+    this.canMove = false;
+  }
+
+  unfreeze(){
+    this.canMove = true;
   }
 }

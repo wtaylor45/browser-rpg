@@ -102,14 +102,14 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id !== this.player.id)
+        if(message.id != this.player.id)
           this.receiveSpawn(message);
-        else{
-          this.switchMap(message);
-        }
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
+      }
+      else if(message.type == Types.Messages.TRANSITION){
+        this.switchMap(message);
       }
       this.mailbox.splice(i,1);
     }
@@ -179,11 +179,15 @@ module.exports = Game = class Game{
   }
 
   switchMap(message){
-    console.log('woo')
     if(message.map && message.map != this.currentMap.name){
-      this.currentMap = new Map(message.map);
-      this.player.setPos(message.x, message.y);
-      this.renderer.setMap(this.currentMap);
+      this.player.freeze();
+      this.renderer.fadeTo(500, 'black', function(){
+        this.currentMap = new Map(message.map);
+        this.player.unfreeze();
+        this.player.setPos(message.x, message.y);
+        this.renderer.setMap(this.currentMap);
+        this.renderer.fadeFrom(200, 'black');
+      }.bind(this));
     }
   }
 }

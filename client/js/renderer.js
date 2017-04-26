@@ -23,6 +23,8 @@ module.exports = Renderer = class Renderer{
 
     this.createCamera();
 
+    this.transitions = []
+
     this.options = {
       SHOW_FPS: false,
       DRAW_BOUNDING_BOX: false
@@ -150,13 +152,92 @@ module.exports = Renderer = class Renderer{
     });
   }
 
+  updateTransition(){
+    if(this.transitions.length == 0) return;
+    var effect = this.transitions[0];
+    effect.tick();
+    if(effect.isDone){
+      this.transitions.shift();
+    }
+    this.stage.addChild(effect.shape);
+  }
+
   render(){
     this.stage.removeAllChildren();
-
     this.drawMapLow();
     this.drawEntities();
     this.drawMapHigh();
+    this.updateTransition();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
+  }
+
+  fadeToFrom(duration, color, callback){
+    var self = this;
+    this.fadeTo(duration/2, color, function(){
+      self.fadeFrom(duration/2, color, callback)
+    });
+  }
+
+  fadeTo(duration, color, callback){
+    var color = color || 'black';
+    var duration = duration || 500;
+    var graphics = new createjs.Graphics()
+      .beginFill("#000")
+      .drawRect(0,0,this.getWidth(),this.getHeight());
+    var shape = new createjs.Shape(graphics);
+    shape.alpha = 0;
+    this.transitions.push(new Fade(shape, duration, callback));
+  }
+
+  fadeFrom(duration, color, callback){
+    var color = color || 'black';
+    var duration = duration || 500;
+    var graphics = new createjs.Graphics()
+      .beginFill("#000")
+      .drawRect(0,0,this.getWidth(),this.getHeight());
+    var shape = new createjs.Shape(graphics);
+    shape.alpha = 1;
+    this.transitions.push(new Fade(shape, duration, callback));
+  }
+}
+
+class Fade {
+  constructor(shape, duration, callback){
+    this.dur = duration;
+    this.current = 0;
+    this.shape = shape;
+    this.rate = shape.alpha>0 ? 1/this.dur * -1 : 1/this.dur;
+
+    this.isDone = false;
+
+    this.lastTime = Date.now();
+
+    this.callback = callback;
+    this.started = false;
+
+    console.log('fade ready')
+  }
+
+  tick(){
+    if(!this.started){
+      this.started = true;
+      console.log('fade started')
+      this.lastTime = Date.now();
+    }
+    var now = Date.now();
+    var dt = now - this.lastTime;
+    this.lastTime = now;
+
+    if(this.current >= this.dur){
+      this.isDone = true;
+      console.log('fade done')
+      if(this.callback) this.callback();
+      return;
+    }
+
+    this.shape.alpha += this.rate * dt;
+
+    this.current += dt;
   }
 }

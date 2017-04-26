@@ -277,9 +277,12 @@ module.exports = Entity = class Entity{
     this.sprite = null;
     this.animations = null;
     this.currentAnimation = null;
+
+    this.canMove = true;
   }
 
   setPos(x, y){
+    if(!this.canMove) return;
     this.lastPos = [this.x, this.y];
     this.x = x;
     this.y = y;
@@ -343,6 +346,14 @@ module.exports = Entity = class Entity{
         self.idle();
       })
     }
+  }
+
+  freeze(){
+    this.canMove = false;
+  }
+
+  unfreeze(){
+    this.canMove = true;
   }
 }
 
@@ -451,14 +462,14 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id !== this.player.id)
+        if(message.id != this.player.id)
           this.receiveSpawn(message);
-        else{
-          this.switchMap(message);
-        }
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
+      }
+      else if(message.type == Types.Messages.TRANSITION){
+        this.switchMap(message);
       }
       this.mailbox.splice(i,1);
     }
@@ -528,11 +539,15 @@ module.exports = Game = class Game{
   }
 
   switchMap(message){
-    console.log('woo')
     if(message.map && message.map != this.currentMap.name){
-      this.currentMap = new Map(message.map);
-      this.player.setPos(message.x, message.y);
-      this.renderer.setMap(this.currentMap);
+      this.player.freeze();
+      this.renderer.fadeTo(500, 'black', function(){
+        this.currentMap = new Map(message.map);
+        this.player.unfreeze();
+        this.player.setPos(message.x, message.y);
+        this.renderer.setMap(this.currentMap);
+        this.renderer.fadeFrom(200, 'black');
+      }.bind(this));
     }
   }
 }
@@ -734,6 +749,8 @@ module.exports = Map = class Map{
       if(this.collisionData[index] > 0){
         if(this.collisionData[index] == this.collisionId)
           return Types.Collisions.WALL;
+        if(this.collisionData[index] == this.doorId)
+          return Types.Collisions.DOOR;
       }
       x1 += this.tileWidth;
     }
@@ -875,6 +892,8 @@ module.exports = Player = class Player extends Character{
    * @param {Object} input  The input to be applied
    */
   applyInput(input){
+    if(!this.canMove) return;
+
     var map = this.game.currentMap;
     this.x += vector.x*input.pressTime*this.speed;
     var collision = map.isColliding(map.nearestTilePositions(this));
@@ -981,6 +1000,8 @@ module.exports = Renderer = class Renderer{
     this.font = "Macondo";
 
     this.createCamera();
+
+    this.transitions = []
 
     this.options = {
       SHOW_FPS: false,
@@ -1109,14 +1130,93 @@ module.exports = Renderer = class Renderer{
     });
   }
 
+  updateTransition(){
+    if(this.transitions.length == 0) return;
+    var effect = this.transitions[0];
+    effect.tick();
+    if(effect.isDone){
+      this.transitions.shift();
+    }
+    this.stage.addChild(effect.shape);
+  }
+
   render(){
     this.stage.removeAllChildren();
-
     this.drawMapLow();
     this.drawEntities();
     this.drawMapHigh();
+    this.updateTransition();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
+  }
+
+  fadeToFrom(duration, color, callback){
+    var self = this;
+    this.fadeTo(duration/2, color, function(){
+      self.fadeFrom(duration/2, color, callback)
+    });
+  }
+
+  fadeTo(duration, color, callback){
+    var color = color || 'black';
+    var duration = duration || 500;
+    var graphics = new createjs.Graphics()
+      .beginFill("#000")
+      .drawRect(0,0,this.getWidth(),this.getHeight());
+    var shape = new createjs.Shape(graphics);
+    shape.alpha = 0;
+    this.transitions.push(new Fade(shape, duration, callback));
+  }
+
+  fadeFrom(duration, color, callback){
+    var color = color || 'black';
+    var duration = duration || 500;
+    var graphics = new createjs.Graphics()
+      .beginFill("#000")
+      .drawRect(0,0,this.getWidth(),this.getHeight());
+    var shape = new createjs.Shape(graphics);
+    shape.alpha = 1;
+    this.transitions.push(new Fade(shape, duration, callback));
+  }
+}
+
+class Fade {
+  constructor(shape, duration, callback){
+    this.dur = duration;
+    this.current = 0;
+    this.shape = shape;
+    this.rate = shape.alpha>0 ? 1/this.dur * -1 : 1/this.dur;
+
+    this.isDone = false;
+
+    this.lastTime = Date.now();
+
+    this.callback = callback;
+    this.started = false;
+
+    console.log('fade ready')
+  }
+
+  tick(){
+    if(!this.started){
+      this.started = true;
+      console.log('fade started')
+      this.lastTime = Date.now();
+    }
+    var now = Date.now();
+    var dt = now - this.lastTime;
+    this.lastTime = now;
+
+    if(this.current >= this.dur){
+      this.isDone = true;
+      console.log('fade done')
+      if(this.callback) this.callback();
+      return;
+    }
+
+    this.shape.alpha += this.rate * dt;
+
+    this.current += dt;
   }
 }
 
@@ -2887,7 +2987,8 @@ Types = {
     ATTACK: 4,
     LIST: 5,
     WHO: 6,
-    DESPAWN: 7
+    DESPAWN: 7,
+    TRANSITION: 8
   },
 
   Entities: {

@@ -97,6 +97,8 @@ module.exports = Map = class Map{
       if(this.collisionData[index] > 0){
         if(this.collisionData[index] == this.collisionId)
           return Types.Collisions.WALL;
+        if(this.collisionData[index] == this.doorId)
+          return Types.Collisions.DOOR;
       }
       x1 += this.tileWidth;
     }

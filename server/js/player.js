@@ -101,16 +101,24 @@ module.exports = Player = Character.extend({
       case Types.Collisions.DOOR:
         var map = this.server.maps[this.map];
         var door = map.whichDoor(this.x, this.y+this.height/2);
+        this.queuedInputs = []
         this.switchMap(door[0], door[1]);
+
     }
   },
 
   switchMap: function(name, entrance){
+    var pos = this.server.maps[name].getEntrancePosition(entrance);
+
+    var message = new Messages.Transition(name, pos);
+    this.server.addMessageToOutbox(this, message.serialize());
+
     // Tell players on this map that you are no longer there
     this.server.tellOthersDespawned(this.id);
     this.server.maps[this.map].removeEntity(this.id);
+
+    // Add entity to new map
     this.server.maps[name].addEntity(this);
-    var pos = this.server.maps[name].getEntrancePosition(entrance);
     this.setPosition(pos[0], pos[1]);
 
     // Tell players on the map that you have arrived

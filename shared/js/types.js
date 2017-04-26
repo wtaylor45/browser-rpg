@@ -19,7 +19,8 @@ Types = {
     ATTACK: 4,
     LIST: 5,
     WHO: 6,
-    DESPAWN: 7
+    DESPAWN: 7,
+    TRANSITION: 8
   },
 
   Entities: {

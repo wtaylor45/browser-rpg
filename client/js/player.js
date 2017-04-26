@@ -42,6 +42,8 @@ module.exports = Player = class Player extends Character{
    * @param {Object} input  The input to be applied
    */
   applyInput(input){
+    if(!this.canMove) return;
+
     var map = this.game.currentMap;
     this.x += vector.x*input.pressTime*this.speed;
     var collision = map.isColliding(map.nearestTilePositions(this));

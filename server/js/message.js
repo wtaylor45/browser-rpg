@@ -79,3 +79,19 @@ Messages.Despawn = Message.extend({
     }
   }
 });
+
+Messages.Transition = Message.extend({
+  init: function(map, pos){
+    this.map = map;
+    this.pos = pos;
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.TRANSITION,
+      map: this.map,
+      x: this.pos[0],
+      y: this.pos[1]
+    }
+  }
+})
