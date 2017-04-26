@@ -27,8 +27,11 @@ module.exports = Renderer = class Renderer{
 
     this.options = {
       SHOW_FPS: false,
-      DRAW_BOUNDING_BOX: false
+      DRAW_BOUNDING_BOX: false,
+      MOUSEOVER: true,
     }
+
+    this.stage.enableMouseOver();
   }
 
   setOption(option, state){
