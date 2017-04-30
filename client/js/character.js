@@ -12,6 +12,8 @@ module.exports = Character = class Character extends Entity{
     this.walkSpeed = 100;
     this.idleSpeed = 450;
 
+    this.drawName = false;
+
     this.health = 0;
     this.maxHealth = 0;
 
