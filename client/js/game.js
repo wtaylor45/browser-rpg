@@ -54,6 +54,8 @@ module.exports = Game = class Game{
 
     this.started = true;
     this.running = true;
+    this.setFrozen(false);
+
     this.renderer = new Renderer(this, "canvas");
     this.currentMap = new Map('septoria');
     this.renderer.setMap(this.currentMap);
@@ -171,13 +173,21 @@ module.exports = Game = class Game{
       delete this.entities[message.id];
   }
 
+  isFrozen(){
+    return this.freeze;
+  }
+
+  setFrozen(state){
+    this.freeze = state;
+  }
+
   /**
    * The logic to run every loop
    *
    * @param {number} dt Delta time, time since last loop
    */
   tick(){
-    this.updater.update();
+    if(!this.isFrozen()) this.updater.update();
     this.renderer.render();
 
     if(this.running)
@@ -191,13 +201,14 @@ module.exports = Game = class Game{
 
   switchMap(message){
     if(message.map && message.map != this.currentMap.name){
-      this.player.freeze();
+      this.setFrozen(true);
       this.renderer.fadeTo(500, 'black', function(){
         this.currentMap = new Map(message.map);
         this.player.unfreeze();
         this.player.setPos(message.x, message.y);
         this.renderer.setMap(this.currentMap);
         this.renderer.fadeFrom(200, 'black');
+        this.setFrozen(false);
       }.bind(this));
     }
   }

@@ -4,7 +4,7 @@
   "description": "An attempt to create a browser-based RPG",
   "main": "server.js",
   "dependencies": {
-    
+
   },
   "devDependencies": {
     "express": "^4.15.2",
@@ -14,7 +14,7 @@
     "uuid": "^3.0.1"
   },
   "scripts": {
-    "test": "test",
+    "test": "browserify client/main.js -o client/bundle.js && node .",
     "start": "node server.js"
   },
   "repository": {

@@ -161,12 +161,13 @@ module.exports = Renderer = class Renderer{
     var entities = this.game.entities;
 
     _.each(entities, function(entity){
-      self.drawEntity(entity);
+      if(entity.id != self.game.player.id)
+        self.drawEntity(entity);
     });
   }
 
   updateTransition(){
-    if(this.transitions.length == 0) return;
+    if(!this.isTransitioning()) return;
     var effect = this.transitions[0];
     effect.tick();
     if(effect.isDone){
@@ -175,10 +176,15 @@ module.exports = Renderer = class Renderer{
     this.stage.addChild(effect.shape);
   }
 
+  isTransitioning(){
+    return this.transitions.length > 0;
+  }
+
   render(){
     this.stage.removeAllChildren();
     this.drawMapLow();
     this.drawEntities();
+    this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
     if(this.options.SHOW_FPS) this.drawFPS();
@@ -228,14 +234,11 @@ class Fade {
 
     this.callback = callback;
     this.started = false;
-
-    console.log('fade ready')
   }
 
   tick(){
     if(!this.started){
       this.started = true;
-      console.log('fade started')
       this.lastTime = Date.now();
     }
     var now = Date.now();
@@ -244,7 +247,6 @@ class Fade {
 
     if(this.current >= this.dur){
       this.isDone = true;
-      console.log('fade done')
       if(this.callback) this.callback();
       return;
     }
