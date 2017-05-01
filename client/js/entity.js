@@ -62,6 +62,8 @@ module.exports = Entity = class Entity{
 
     this.sprite = sprite;
     this.animations = sprite.createAnimations();
+
+    var self = this;
   }
 
   getSprite(){

@@ -27,8 +27,11 @@ module.exports = Renderer = class Renderer{
 
     this.options = {
       SHOW_FPS: false,
-      DRAW_BOUNDING_BOX: false
+      DRAW_BOUNDING_BOX: false,
+      MOUSEOVER: true,
     }
+
+    this.stage.enableMouseOver();
   }
 
   setOption(option, state){
@@ -54,20 +57,24 @@ module.exports = Renderer = class Renderer{
     this.camera.follow(this.game.player);
   }
 
-  drawText(text, x, y, centered, color, strokeColor, fontSize){
+  drawText(text, x, y, fontSize, centered, color, strokeColor, strokeSize){
     var stage = this.stage;
 
     if(text && x && y){
       var textToDraw = new createjs.Text(text);
       var font = (fontSize || "10px") + " " + this.font;
       textToDraw.font = font;
+
+      if(centered){
+        textToDraw.textAlign = 'center';
+      }
       textToDraw.x = x;
       textToDraw.y = y;
       textToDraw.color = color || "#fff";
 
       if(strokeColor){
         var stroke = textToDraw.clone();
-        stroke.outline = 3;
+        stroke.outline = 3
         stroke.color = strokeColor;
         stage.addChild(stroke);
       }
@@ -88,7 +95,7 @@ module.exports = Renderer = class Renderer{
 
     this.frameCount++;
 
-    this.drawText("FPS: " + this.realFPS, 10, 10, false, "#ff0", "#000");
+    this.drawText("FPS: " + this.realFPS, 10, 10, '10px', false, "#ff0", "#000", 3);
   }
 
   drawEntity(entity){
@@ -109,6 +116,12 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
+
+      if(entity.drawName){
+        var name = Types.speciesAsString(entity.species);
+        this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-5,
+          '8px', true, '#fff', '#000', 2);
+      }
 
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
         this.drawBoundingBox(entity);

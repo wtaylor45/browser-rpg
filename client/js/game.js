@@ -151,6 +151,17 @@ module.exports = Game = class Game{
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
+
+    sprite.image.on("mouseover", function(){
+      sprite.image.shadow = new createjs.Shadow("#555555", 0,0,10);
+      entity.drawName = true;
+    });
+
+    sprite.image.on("mouseout", function(){
+      sprite.image.shadow = null;
+      entity.drawName = false;
+    });
+
     entity.setSprite(sprite);
     entity.idle();
   }
