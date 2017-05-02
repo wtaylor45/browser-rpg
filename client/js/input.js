@@ -32,6 +32,10 @@ Input.onKeyEvent = function(keyCode, val){
     case 68: // right
       state.right = val;
       break;
+
+    case 13:
+      state.enter = val;
+      break;
   }
 }
 
@@ -60,7 +64,8 @@ Input.baseState = function(){
     up: false,
     down: false,
     left: false,
-    right: false
+    right: false,
+    enter: false
   }
 }
 
@@ -86,10 +91,18 @@ Input.init = function(){
   STATE = Input.baseState();
 
   document.onkeydown = function(event){
-    Input.onKeyEvent(event.keyCode, DOWN);
+    if(Input.listen)
+      Input.onKeyEvent(event.keyCode, DOWN);
   }
 
   document.onkeyup = function(event){
-    Input.onKeyEvent(event.keyCode, UP);
+    if(Input.listen)
+      Input.onKeyEvent(event.keyCode, UP);
   }
 }
+
+Input.setListening = function(state){
+  Input.listen = state;
+}
+
+Input.listen = true;

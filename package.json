@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "description": "An attempt to create a browser-based RPG",
   "main": "server.js",
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
+    "body-parser": "^1.17.1",
     "express": "^4.15.2",
     "mongojs": "^2.4.0",
     "socket.io": "^1.7.3",

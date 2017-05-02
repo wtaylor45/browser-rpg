@@ -2,7 +2,7 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species, x,y, w, h){
+  constructor(id, name, species, x,y, w, h){
     super(id, species, x, y, w, h);
 
     var self = this;
@@ -18,6 +18,8 @@ module.exports = Character = class Character extends Entity{
     this.maxHealth = 0;
 
     this.isDead = false;
+
+    this.name = name;
   }
 
   animate(animation, speed, count, onEnd){

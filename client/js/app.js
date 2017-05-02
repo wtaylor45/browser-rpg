@@ -5,7 +5,8 @@
 
  var Game = require('./game'),
      Player = require('./player'),
-     Socket = require('./socket');
+     Socket = require('./socket'),
+     Message = require('./message');
 
  var game;
 
@@ -17,9 +18,22 @@ module.exports = App = class App{
     this.game = false;
     this.ready = false;
 
-    this.setGame(new Game());
-
     Socket.on('connected', this.onConnected.bind(this));
+
+    var username = document.getElementById('username');
+    var login = document.getElementById('login-form');
+    var loginDiv = document.getElementById('login');
+    var game = document.getElementById('game-content')
+    var self = this;
+
+    login.onsubmit = function(e){
+      e.preventDefault();
+
+      self.signIn(username.value)
+
+      loginDiv.style.display = 'none';
+      game.className = "showing"
+    }
   }
 
   /**
@@ -28,6 +42,10 @@ module.exports = App = class App{
   setGame(game){
     this.game = game;
     this.ready = true;
+  }
+
+  signIn(username){
+    Socket.emit('signin', username);
   }
 
   /**
@@ -43,8 +61,11 @@ module.exports = App = class App{
    * When the server confirms the connection
    */
   onConnected(message){
+    this.setGame(new Game());
+
     if(this.game){
-      this.game.setPlayer(new Player(message.id, 0, message.x, message.y, message.width, message.height));
+      this.game.setPlayer(new Player(message.id, message.name, 0,
+         message.x, message.y, message.width, message.height));
       this.start();
     }
   }

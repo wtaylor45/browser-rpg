@@ -17,8 +17,8 @@ module.exports = Player = class Player extends Character{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(id, sprite, x, y, width, height){
-    super(id, Types.Entities.PLAYER, x, y, width, height)
+  constructor(id, name, sprite, x, y, width, height){
+    super(id, name, Types.Entities.PLAYER, x, y, width, height);
 
     // Player movement variables
     this.speed = 10;
@@ -121,6 +121,12 @@ module.exports = Player = class Player extends Character{
 
       // Save input to validated later
       this.pending_inputs.push(input);
+    }
+
+    var chat = Input.getState().enter;
+
+    if(chat){
+      this.game.enableChat();
     }
   }
 }

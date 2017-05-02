@@ -95,3 +95,16 @@ Messages.Transition = Message.extend({
     }
   }
 })
+
+Messages.Chat = Message.extend({
+  init: function(chat){
+    this.chat = chat
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.CHAT,
+      chat: this.chat
+    }
+  }
+})

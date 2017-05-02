@@ -12,7 +12,9 @@ var Input = require('./input'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
     _ = require('underscore'),
-    Map = require('./map');
+    Map = require('./map'),
+    Input = require('./input'),
+    Message = require('./message');
 
 /**
  * The client instance of the game
@@ -43,6 +45,28 @@ module.exports = Game = class Game{
     new Socket.on('message', function(message){
       self.mailbox.push(message);
     });
+
+    document.getElementById('chatform').onsubmit = function(e){
+      e.preventDefault();
+
+      var chatinput = document.getElementById('chatinput');
+      var chat = self.player.name+": " + chatinput.value;
+      self.receiveChat(chat);
+
+      new Message(Types.Messages.CHAT, chat).send();
+
+      chatinput.blur();
+      chatinput.value = "";
+    }
+
+    document.getElementById('chatinput').onfocus = function(){
+      Input.setListening(false);
+      Input.reset();
+    }
+
+    document.getElementById('chatinput').onblur = function(){
+      Input.setListening(true);
+    }
   }
 
   /**
@@ -113,6 +137,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.TRANSITION){
         this.switchMap(message);
       }
+      else if(message.type == Types.Messages.CHAT){
+        this.receiveChat(message.chat);
+      }
       this.mailbox.splice(i,1);
     }
   }
@@ -148,19 +175,19 @@ module.exports = Game = class Game{
     if(this.entities[message.id]){
       return;
     }
-    this.entities[message.id] = new Character(message.id, message.species, message.x, message.y, message.w, message.h);
+    console.log(message)
+    this.entities[message.id] = new Character(message.id, message.name,
+      message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
 
     sprite.image.on("mouseover", function(){
-      sprite.image.shadow = new createjs.Shadow("#555555", 0,0,10);
       entity.drawName = true;
     });
 
     sprite.image.on("mouseout", function(){
-      sprite.image.shadow = null;
       entity.drawName = false;
     });
 
@@ -171,6 +198,18 @@ module.exports = Game = class Game{
   receiveDespawn(message){
     if(message.id != this.player.id)
       delete this.entities[message.id];
+  }
+
+  receiveChat(chat){
+    var chatText = document.getElementById('chat-text');
+    var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
+
+    var div = document.createElement("div");
+    div.append(chat);
+    chatText.appendChild(div);
+
+    if(isScrolledToBottom)
+      chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
   }
 
   isFrozen(){
@@ -211,5 +250,9 @@ module.exports = Game = class Game{
         this.setFrozen(false);
       }.bind(this));
     }
+  }
+
+  enableChat(){
+    document.getElementById('chatinput').focus();
   }
 }

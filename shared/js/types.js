@@ -20,7 +20,8 @@ Types = {
     LIST: 5,
     WHO: 6,
     DESPAWN: 7,
-    TRANSITION: 8
+    TRANSITION: 8,
+    CHAT: 9
   },
 
   Entities: {

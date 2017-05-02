@@ -127,15 +127,16 @@ function GameServer(){
    * Handle the connection from the given client
    * @param  {Object} client The client that has connected
    */
-  this.onConnection = function(client){
+  this.onConnection = function(client, username){
     // TODO: Handle the connection
     if(!this.started) this.init();
     console.log('Client', client.id, 'connected.');
 
-    this.players[client.id] = new Player(client, this);
+    this.players[client.id] = new Player(client, this, username);
     var player = this.players[client.id];
     var message = {
       id: client.id,
+      name: username,
       width: player.width,
       height: player.height,
       x: player.x,
@@ -189,21 +190,21 @@ function GameServer(){
     var entities = _.pluck(group, "id");
 
     var message = new Messages.List(entities);
-    this.addMessageToOutbox(player, message.serialize());
+    this.addMessageToOutbox(player.id, message.serialize());
   }
 
   this.tellOthersSpawned = function(player){
     var group = this.maps[player.map].entities;
     for(var i in group){
       var message = new Messages.Spawn(player);
-      this.addMessageToOutbox(group[i], message.serialize());
+      this.addMessageToOutbox(i, message.serialize());
     }
   }
 
   this.tellOthersDespawned = function(id){
     var message = new Messages.Despawn(id);
     for(var i in this.players){
-      this.addMessageToOutbox(this.players[i], message.serialize());
+      this.addMessageToOutbox(i, message.serialize());
     }
   }
 
@@ -213,13 +214,13 @@ function GameServer(){
     _.each(list, function(id){
       if(id != player.id){
         var message = new Messages.Spawn(group[id]);
-        self.addMessageToOutbox(player, message.serialize());
+        self.addMessageToOutbox(player.id, message.serialize());
       }
     });
   }
 
-  this.addMessageToOutbox = function(player, message){
-    this.outgoingMessages[player.id].push(message);
+  this.addMessageToOutbox = function(id, message){
+    this.outgoingMessages[id].push(message);
   }
 
   this.createMaps = function(){
@@ -230,5 +231,18 @@ function GameServer(){
     }
 
     return maps;
+  }
+
+  this.sendChatToGroup = function(player, chat){
+    var group = this.maps[player.map].entities;
+    var self = this;
+
+    var message = new Messages.Chat(chat);
+
+    _.each(group, function(entity){
+      if(entity.species !== Types.Entities.PLAYER) return;
+      if(entity.id === player.id) return;
+      self.addMessageToOutbox(entity.id, message.serialize());
+    })
   }
 }
