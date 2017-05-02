@@ -571,12 +571,10 @@ module.exports = Game = class Game{
     var sprite = new Sprite(Types.speciesAsString(entity.species));
 
     sprite.image.on("mouseover", function(){
-      sprite.image.shadow = new createjs.Shadow("#555555", 0,0,10);
       entity.drawName = true;
     });
 
     sprite.image.on("mouseout", function(){
-      sprite.image.shadow = null;
       entity.drawName = false;
     });
 
@@ -1148,12 +1146,13 @@ module.exports = Renderer = class Renderer{
     this.camera.follow(this.game.player);
   }
 
-  drawText(text, x, y, fontSize, centered, color, strokeColor, strokeSize){
+  drawText(text, x, y, font, centered, color, strokeColor, strokeSize){
     var stage = this.stage;
 
     if(text && x && y){
       var textToDraw = new createjs.Text(text);
-      var font = (fontSize || "10px") + " " + this.font;
+      var font = font || "10px " + this.font;
+
       textToDraw.font = font;
 
       if(centered){
@@ -1164,10 +1163,7 @@ module.exports = Renderer = class Renderer{
       textToDraw.color = color || "#fff";
 
       if(strokeColor){
-        var stroke = textToDraw.clone();
-        stroke.outline = 3
-        stroke.color = strokeColor;
-        stage.addChild(stroke);
+        textToDraw.shadow = new createjs.Shadow(strokeColor, 1, 1, 3)
       }
 
       stage.addChild(textToDraw);
@@ -1210,8 +1206,8 @@ module.exports = Renderer = class Renderer{
 
       if(entity.drawName){
         var name = entity.name || Types.speciesAsString(entity.species);
-        this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-5,
-          '8px', true, '#fff', '#000', 2);
+        this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-4,
+          '7px Open Sans', true, '#fff', '#000', 1);
       }
 
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
