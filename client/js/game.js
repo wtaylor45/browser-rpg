@@ -50,7 +50,7 @@ module.exports = Game = class Game{
       e.preventDefault();
 
       var chatinput = document.getElementById('chatinput');
-      var chat = chatinput.value;
+      var chat = self.player.name+": " + chatinput.value;
       self.receiveChat(chat);
 
       new Message(Types.Messages.CHAT, chat).send();
@@ -175,7 +175,8 @@ module.exports = Game = class Game{
     if(this.entities[message.id]){
       return;
     }
-    this.entities[message.id] = new Character(message.id, message.species, message.x, message.y, message.w, message.h);
+    this.entities[message.id] = new Character(message.id, message.name,
+      message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
 
     entity.setDirection(message.direction);
@@ -203,7 +204,7 @@ module.exports = Game = class Game{
   receiveChat(chat){
     var chatText = document.getElementById('chat-text');
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
-    
+
     var div = document.createElement("div");
     div.append(chat);
     chatText.appendChild(div);
