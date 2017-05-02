@@ -118,7 +118,7 @@ module.exports = Renderer = class Renderer{
       stage.addChild(sprite.image);
 
       if(entity.drawName){
-        var name = Types.speciesAsString(entity.species);
+        var name = entity.name || Types.speciesAsString(entity.species);
         this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-5,
           '8px', true, '#fff', '#000', 2);
       }

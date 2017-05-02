@@ -175,6 +175,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id]){
       return;
     }
+    console.log(message)
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];

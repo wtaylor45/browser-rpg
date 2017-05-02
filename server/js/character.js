@@ -29,6 +29,8 @@ module.exports = Character = Entity.extend({
 
     // Who is this character's target
     this.target = null;
+
+    this.name = name;
   },
 
   /**
@@ -41,6 +43,7 @@ module.exports = Character = Entity.extend({
     state['direction'] = this.direction;
     if(this.map) state['map'] = this.map;
     if(this.target) state['target'] = this.target;
+    if(this.name) state['name'] = this.name;
 
     return state;
   }

@@ -114,7 +114,7 @@ module.exports = Player = Character.extend({
     var pos = this.server.maps[name].getEntrancePosition(entrance);
 
     var message = new Messages.Transition(name, pos);
-    this.server.addMessageToOutbox(this, message.serialize());
+    this.server.addMessageToOutbox(this.id, message.serialize());
 
     // Tell players on this map that you are no longer there
     this.server.tellOthersDespawned(this.id);

@@ -63,10 +63,6 @@ Messages.Spawn = Message.extend({
       message[i] = state[i];
     }
 
-    if(this.entity instanceof Character){
-      message['name'] = this.entity.name;
-    }
-
     return message;
   }
 });
