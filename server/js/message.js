@@ -63,6 +63,10 @@ Messages.Spawn = Message.extend({
       message[i] = state[i];
     }
 
+    if(this.entity instanceof Character){
+      message['name'] = this.entity.name;
+    }
+
     return message;
   }
 });
@@ -92,6 +96,19 @@ Messages.Transition = Message.extend({
       map: this.map,
       x: this.pos[0],
       y: this.pos[1]
+    }
+  }
+})
+
+Messages.Chat = Message.extend({
+  init: function(chat){
+    this.chat = chat
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.CHAT,
+      chat: this.chat
     }
   }
 })

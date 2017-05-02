@@ -18,7 +18,7 @@ const PORT = 2000;
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/client/index.html');
 });
-app.use('/client', express.static(__dirname + '/client'))
+app.use('/client', express.static(__dirname + '/client'));
 
 // Begin listening on given port
 http.listen(PORT);
@@ -38,6 +38,7 @@ io.sockets.on('connection', function(socket){
   socket.id = uuidV1();
   global.SOCKET_LIST[socket.id] = socket;
 
-  // Send connection to game server
-  gameserver.onConnection(socket);
+  socket.on('signin', function(username){
+    gameserver.onConnection(socket, username);
+  })
 });

@@ -10,7 +10,7 @@ var cls = require('./lib/class'),
     _ = require('underscore');
 
 module.exports = Player = Character.extend({
-  init: function(connection, server){
+  init: function(connection, server, name){
     var self = this;
 
     // The server on this player's connection
@@ -18,7 +18,7 @@ module.exports = Player = Character.extend({
     this.connection = connection;
 
     // Create this player using the Character super class
-    this._super(this.connection.id, "player", Types.Entities.PLAYER, 210, 205,32,48);
+    this._super(this.connection.id, name, "player", Types.Entities.PLAYER, 210, 205,32,48);
 
     // Is the player in game yet
     this.inGame = false;
@@ -53,6 +53,9 @@ module.exports = Player = Character.extend({
       }
       else if(message.type == Types.Messages.WHO){
         self.server.sendBatchSpawns(self, message.data);
+      }
+      else if(message.type == Types.Messages.CHAT){
+        self.server.sendChatToGroup(self, message.data);
       }
     });
   },

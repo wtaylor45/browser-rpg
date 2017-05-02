@@ -71,7 +71,8 @@ module.exports = Animation = class Animation{
 
  var Game = require('./game'),
      Player = require('./player'),
-     Socket = require('./socket');
+     Socket = require('./socket'),
+     Message = require('./message');
 
  var game;
 
@@ -83,9 +84,22 @@ module.exports = App = class App{
     this.game = false;
     this.ready = false;
 
-    this.setGame(new Game());
-
     Socket.on('connected', this.onConnected.bind(this));
+
+    var username = document.getElementById('username');
+    var login = document.getElementById('login-form');
+    var loginDiv = document.getElementById('login');
+    var game = document.getElementById('game-content')
+    var self = this;
+
+    login.onsubmit = function(e){
+      e.preventDefault();
+
+      self.signIn(username.value)
+
+      loginDiv.style.display = 'none';
+      game.className = "showing"
+    }
   }
 
   /**
@@ -94,6 +108,10 @@ module.exports = App = class App{
   setGame(game){
     this.game = game;
     this.ready = true;
+  }
+
+  signIn(username){
+    Socket.emit('signin', username);
   }
 
   /**
@@ -109,14 +127,17 @@ module.exports = App = class App{
    * When the server confirms the connection
    */
   onConnected(message){
+    this.setGame(new Game());
+
     if(this.game){
-      this.game.setPlayer(new Player(message.id, 0, message.x, message.y, message.width, message.height));
+      this.game.setPlayer(new Player(message.id, message.name, 0,
+         message.x, message.y, message.width, message.height));
       this.start();
     }
   }
 }
 
-},{"./game":6,"./player":10,"./socket":12}],3:[function(require,module,exports){
+},{"./game":6,"./message":9,"./player":10,"./socket":12}],3:[function(require,module,exports){
 
 
 module.exports = Camera = class Camera{
@@ -187,7 +208,7 @@ var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity{
-  constructor(id, species, x,y, w, h){
+  constructor(id, name, species, x,y, w, h){
     super(id, species, x, y, w, h);
 
     var self = this;
@@ -203,6 +224,8 @@ module.exports = Character = class Character extends Entity{
     this.maxHealth = 0;
 
     this.isDead = false;
+
+    this.name = name;
   }
 
   animate(animation, speed, count, onEnd){
@@ -376,7 +399,9 @@ var Input = require('./input'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
     _ = require('underscore'),
-    Map = require('./map');
+    Map = require('./map'),
+    Input = require('./input'),
+    Message = require('./message');
 
 /**
  * The client instance of the game
@@ -407,6 +432,28 @@ module.exports = Game = class Game{
     new Socket.on('message', function(message){
       self.mailbox.push(message);
     });
+
+    document.getElementById('chatform').onsubmit = function(e){
+      e.preventDefault();
+
+      var chatinput = document.getElementById('chatinput');
+      var chat = chatinput.value;
+      self.receiveChat(chat);
+
+      new Message(Types.Messages.CHAT, chat).send();
+
+      chatinput.blur();
+      chatinput.value = "";
+    }
+
+    document.getElementById('chatinput').onfocus = function(){
+      Input.setListening(false);
+      Input.reset();
+    }
+
+    document.getElementById('chatinput').onblur = function(){
+      Input.setListening(true);
+    }
   }
 
   /**
@@ -477,6 +524,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.TRANSITION){
         this.switchMap(message);
       }
+      else if(message.type == Types.Messages.CHAT){
+        this.receiveChat(message.chat);
+      }
       this.mailbox.splice(i,1);
     }
   }
@@ -537,6 +587,18 @@ module.exports = Game = class Game{
       delete this.entities[message.id];
   }
 
+  receiveChat(chat){
+    var chatText = document.getElementById('chat-text');
+    var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
+    
+    var div = document.createElement("div");
+    div.append(chat);
+    chatText.appendChild(div);
+
+    if(isScrolledToBottom)
+      chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
+  }
+
   isFrozen(){
     return this.freeze;
   }
@@ -576,9 +638,13 @@ module.exports = Game = class Game{
       }.bind(this));
     }
   }
+
+  enableChat(){
+    document.getElementById('chatinput').focus();
+  }
 }
 
-},{"../../shared/js/types":20,"./input":7,"./map":8,"./renderer":11,"./socket":12,"./updater":15,"underscore":19}],7:[function(require,module,exports){
+},{"../../shared/js/types":20,"./input":7,"./map":8,"./message":9,"./renderer":11,"./socket":12,"./updater":15,"underscore":19}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -613,6 +679,10 @@ Input.onKeyEvent = function(keyCode, val){
     case 68: // right
       state.right = val;
       break;
+
+    case 13:
+      state.enter = val;
+      break;
   }
 }
 
@@ -641,7 +711,8 @@ Input.baseState = function(){
     up: false,
     down: false,
     left: false,
-    right: false
+    right: false,
+    enter: false
   }
 }
 
@@ -667,13 +738,21 @@ Input.init = function(){
   STATE = Input.baseState();
 
   document.onkeydown = function(event){
-    Input.onKeyEvent(event.keyCode, DOWN);
+    if(Input.listen)
+      Input.onKeyEvent(event.keyCode, DOWN);
   }
 
   document.onkeyup = function(event){
-    Input.onKeyEvent(event.keyCode, UP);
+    if(Input.listen)
+      Input.onKeyEvent(event.keyCode, UP);
   }
 }
+
+Input.setListening = function(state){
+  Input.listen = state;
+}
+
+Input.listen = true;
 
 },{"../../shared/js/types":20}],8:[function(require,module,exports){
 var _ = require('underscore'),
@@ -893,8 +972,8 @@ module.exports = Player = class Player extends Character{
    * Create a new player
    * @param {String} path File path of the sprite to be drawn
    */
-  constructor(id, sprite, x, y, width, height){
-    super(id, Types.Entities.PLAYER, x, y, width, height)
+  constructor(id, name, sprite, x, y, width, height){
+    super(id, name, Types.Entities.PLAYER, x, y, width, height);
 
     // Player movement variables
     this.speed = 10;
@@ -997,6 +1076,12 @@ module.exports = Player = class Player extends Character{
 
       // Save input to validated later
       this.pending_inputs.push(input);
+    }
+
+    var chat = Input.getState().enter;
+
+    if(chat){
+      this.game.enableChat();
     }
   }
 }
@@ -3029,7 +3114,8 @@ Types = {
     LIST: 5,
     WHO: 6,
     DESPAWN: 7,
-    TRANSITION: 8
+    TRANSITION: 8,
+    CHAT: 9
   },
 
   Entities: {

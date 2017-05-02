@@ -17,7 +17,7 @@ module.exports = Character = Entity.extend({
    * @param  {number} width   The width of the character
    * @param  {number} height  The height of the character
    */
-  init: function(id, genus, species, x, y, width, height){
+  init: function(id, name, genus, species, x, y, width, height){
     // Call the Entity class constructor
     this._super(id, genus, species, x, y, width, height);
 
@@ -41,7 +41,7 @@ module.exports = Character = Entity.extend({
     state['direction'] = this.direction;
     if(this.map) state['map'] = this.map;
     if(this.target) state['target'] = this.target;
-    
+
     return state;
   }
 });
