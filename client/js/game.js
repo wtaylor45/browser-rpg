@@ -50,11 +50,12 @@ module.exports = Game = class Game{
       e.preventDefault();
 
       var chatinput = document.getElementById('chatinput');
-      var chat = self.player.name+": " + chatinput.value;
-      self.receiveChat(chat);
+      if(chatinput.value != ""){
+        var chat = self.player.name+": " + chatinput.value;
+        self.receiveChat(chat, self.player.id);
 
-      new Message(Types.Messages.CHAT, chat).send();
-
+        new Message(Types.Messages.CHAT, chat).send();
+      }
       chatinput.blur();
       chatinput.value = "";
     }
@@ -138,7 +139,7 @@ module.exports = Game = class Game{
         this.switchMap(message);
       }
       else if(message.type == Types.Messages.CHAT){
-        this.receiveChat(message.chat);
+        this.receiveChat(message.chat, message.sender);
       }
       this.mailbox.splice(i,1);
     }
@@ -175,7 +176,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id]){
       return;
     }
-    console.log(message)
+
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
@@ -200,7 +201,12 @@ module.exports = Game = class Game{
       delete this.entities[message.id];
   }
 
-  receiveChat(chat){
+  receiveChat(chat, sender){
+    var entity = this.entities[sender];
+    if(!entity) return;
+
+    entity.onChat();
+
     var chatText = document.getElementById('chat-text');
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
 

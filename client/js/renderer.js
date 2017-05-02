@@ -121,9 +121,21 @@ module.exports = Renderer = class Renderer{
           '7px Open Sans', true, '#fff', '#000', 1);
       }
 
+      if(entity.chat){
+        this.drawImage(new createjs.Bitmap('client/assets/img/chat.png'),
+          entity.x+(entity.width-entity.width/4)-this.camera.x,
+          entity.y-this.camera.y);
+      }
+
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
         this.drawBoundingBox(entity);
     }
+  }
+
+  drawImage(bitmap, x, y){
+    bitmap.x = x;
+    bitmap.y = y;
+    this.stage.addChild(bitmap);
   }
 
   drawBoundingBox(entity){

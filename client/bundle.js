@@ -207,6 +207,8 @@ module.exports = Camera = class Camera{
 var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
+var chatIconTimer;
+
 module.exports = Character = class Character extends Entity{
   constructor(id, name, species, x,y, w, h){
     super(id, species, x, y, w, h);
@@ -270,6 +272,15 @@ module.exports = Character = class Character extends Entity{
 
     var self = this;
     this.animate('walk', this.walkSpeed, 0);
+  }
+
+  onChat(){
+    if(this.chat) clearTimeout(chatIconTimer);
+    this.chat = true;
+
+    chatIconTimer = setTimeout(function(){
+      this.chat = false;
+    }.bind(this), 2000);
   }
 }
 
@@ -437,11 +448,12 @@ module.exports = Game = class Game{
       e.preventDefault();
 
       var chatinput = document.getElementById('chatinput');
-      var chat = self.player.name+": " + chatinput.value;
-      self.receiveChat(chat);
+      if(chatinput.value != ""){
+        var chat = self.player.name+": " + chatinput.value;
+        self.receiveChat(chat, self.player.id);
 
-      new Message(Types.Messages.CHAT, chat).send();
-
+        new Message(Types.Messages.CHAT, chat).send();
+      }
       chatinput.blur();
       chatinput.value = "";
     }
@@ -525,7 +537,7 @@ module.exports = Game = class Game{
         this.switchMap(message);
       }
       else if(message.type == Types.Messages.CHAT){
-        this.receiveChat(message.chat);
+        this.receiveChat(message.chat, message.sender);
       }
       this.mailbox.splice(i,1);
     }
@@ -562,7 +574,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id]){
       return;
     }
-    console.log(message)
+
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
@@ -587,7 +599,12 @@ module.exports = Game = class Game{
       delete this.entities[message.id];
   }
 
-  receiveChat(chat){
+  receiveChat(chat, sender){
+    var entity = this.entities[sender];
+    if(!entity) return;
+
+    entity.onChat();
+
     var chatText = document.getElementById('chat-text');
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
 
@@ -1210,9 +1227,21 @@ module.exports = Renderer = class Renderer{
           '7px Open Sans', true, '#fff', '#000', 1);
       }
 
+      if(entity.chat){
+        this.drawImage(new createjs.Bitmap('client/assets/img/chat.png'),
+          entity.x+(entity.width-entity.width/4)-this.camera.x,
+          entity.y-this.camera.y);
+      }
+
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
         this.drawBoundingBox(entity);
     }
+  }
+
+  drawImage(bitmap, x, y){
+    bitmap.x = x;
+    bitmap.y = y;
+    this.stage.addChild(bitmap);
   }
 
   drawBoundingBox(entity){

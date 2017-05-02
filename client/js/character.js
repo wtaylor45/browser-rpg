@@ -1,6 +1,8 @@
 var Entity = require('./entity'),
     Types = require('../../shared/js/types');
 
+var chatIconTimer;
+
 module.exports = Character = class Character extends Entity{
   constructor(id, name, species, x,y, w, h){
     super(id, species, x, y, w, h);
@@ -64,5 +66,14 @@ module.exports = Character = class Character extends Entity{
 
     var self = this;
     this.animate('walk', this.walkSpeed, 0);
+  }
+
+  onChat(){
+    if(this.chat) clearTimeout(chatIconTimer);
+    this.chat = true;
+
+    chatIconTimer = setTimeout(function(){
+      this.chat = false;
+    }.bind(this), 2000);
   }
 }

@@ -237,7 +237,7 @@ function GameServer(){
     var group = this.maps[player.map].entities;
     var self = this;
 
-    var message = new Messages.Chat(chat);
+    var message = new Messages.Chat(chat, player.id);
 
     _.each(group, function(entity){
       if(entity.species !== Types.Entities.PLAYER) return;
