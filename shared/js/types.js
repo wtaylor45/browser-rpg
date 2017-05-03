@@ -39,6 +39,12 @@ Types = {
   Collisions: {
     DOOR: 0,
     WALL: 1
+  },
+
+  Permissions: {
+    GOD: 5,
+    ADMIN: 4,
+    PLEB: 3
   }
 }
 

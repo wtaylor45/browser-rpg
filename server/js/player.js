@@ -38,7 +38,7 @@ module.exports = Player = Character.extend({
     // What to do when broadcasting, set by server on login
     this.broadcastCallback = null;
 
-    this.permission = 0;
+    this.permission = Types.Permissions.GOD;
 
     // When the player disconnects
     this.connection.on('disconnect', function(){
@@ -179,13 +179,23 @@ module.exports = Player = Character.extend({
     var args = command.split(' ');
     switch(args[0]){
       case 'moveto':
-        this.moveto(args)
+        if(this.permission >= Types.Permissions.ADMIN)
+          this.moveto(args)
+        break;
+      case 'movetoplayer':
+        if(this.permission >= Types.Permissions.ADMIN)
+          this.movetoPlayer(args[1]);
+        break;
+      case 'setpermission':
+        if(this.permission >= Types.Permissions.GOD)
+          this.setPermissionPlayer(args[1], parseInt(args[2]));
         break;
     }
   },
 
   moveto: function(args){
     if(!args[1] || !args[2]) return;
+    if(this.permission > 0) return;
 
     if(args[3]){
       this.switchMap(args[3], 0);
@@ -193,5 +203,39 @@ module.exports = Player = Character.extend({
 
     this.setPosition(parseInt(args[1]), parseInt(args[2]));
     this.broadcast(new Messages.Move(this));
+  },
+
+  movetoPlayer: function(player){
+    if(player == this.name) return;
+
+    var target = this.server.findPlayer(player);
+
+    if(target){
+      var map = target.map;
+      var x = target.x;
+      var y = target.y;
+
+      if(map != this.map){
+        this.switchMap(map, 0);
+      }
+
+      this.setPosition(x, y);
+      this.broadcast(new Messages.Move(this));
+    }
+  },
+
+  setPermission: function(permission){
+    this.permission = permission;
+    console.log(permission)
+  },
+
+  setPermissionPlayer: function(player, permission){
+    if(player == this.name){
+      this.setPermission(permission);
+    }
+    else{
+      var target = this.server.findPlayer(player);
+      target.setPermission(permission);
+    }
   }
 });

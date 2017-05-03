@@ -44,9 +44,6 @@ function GameServer(){
    * @param  {Object} player The player who logged in
    */
   this.onLogin = function(player){
-    // Add player to the list of players
-    self.entities[player.id] = player;
-
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
@@ -158,7 +155,6 @@ function GameServer(){
 
     delete global.SOCKET_LIST[id];
     delete this.players[id];
-    delete this.entities[id];
     delete this.maps[player.map].entities[id];
     delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
@@ -241,8 +237,19 @@ function GameServer(){
 
     _.each(group, function(entity){
       if(entity.species !== Types.Entities.PLAYER) return;
-      
+
       self.addMessageToOutbox(entity.id, message.serialize());
     })
+  }
+
+  this.findPlayer = function(name){
+    for(var i in this.maps){
+      for(var p in this.maps[i].entities){
+        var player = this.maps[i].entities[p];
+        if(player.name == name) return player;
+      }
+    }
+    console.log(name, 'not found');
+    return;
   }
 }
