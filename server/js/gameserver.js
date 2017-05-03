@@ -13,6 +13,7 @@ var Entity = require('./entity');
 var Player = require('./player.js');
 var Messages = require('./message');
 var Map = require('./map');
+var sanitizeHtml = require('sanitize-html');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -233,6 +234,8 @@ function GameServer(){
     var group = this.maps[player.map].entities;
     var self = this;
 
+    chat = sanitizeHtml(chat, {allowedTags:[], allowedAttributes:[]});
+    
     var message = new Messages.Chat(chat, player.id);
 
     _.each(group, function(entity){
