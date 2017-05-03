@@ -33,8 +33,6 @@ UIElement.Chat = class Chat extends UIElement {
     $('#chat-container').css({
       'width': (parent.width()-parent.width()/6)+"px"
       });
-
-    console.log('resize')
   }
 
   broadcast(message){
@@ -46,10 +44,15 @@ UIElement.Chat = class Chat extends UIElement {
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
 
     var div = document.createElement("div");
-    div.append(chat);
+    div.innerHTML = chat;
     chatText.appendChild(div);
 
     if(isScrolledToBottom)
       chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
+  }
+
+  addNotification(message){
+    var text = '<i style="color:yellow">'+message+'</i>';
+    this.addMessage(text);
   }
 }

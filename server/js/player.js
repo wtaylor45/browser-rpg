@@ -195,7 +195,6 @@ module.exports = Player = Character.extend({
 
   moveto: function(args){
     if(!args[1] || !args[2]) return;
-    if(this.permission > 0) return;
 
     if(args[3]){
       this.switchMap(args[3], 0);
@@ -203,6 +202,7 @@ module.exports = Player = Character.extend({
 
     this.setPosition(parseInt(args[1]), parseInt(args[2]));
     this.broadcast(new Messages.Move(this));
+    this.server.sendNotification(this.id, "Moved to new position.");
   },
 
   movetoPlayer: function(player){
@@ -221,21 +221,24 @@ module.exports = Player = Character.extend({
 
       this.setPosition(x, y);
       this.broadcast(new Messages.Move(this));
+      this.server.sendNotification(this.id, "Moved to "+player+".");
     }
   },
 
   setPermission: function(permission){
     this.permission = permission;
-    console.log(permission)
   },
 
   setPermissionPlayer: function(player, permission){
     if(player == this.name){
       this.setPermission(permission);
+      this.server.sendNotification(this.id, "Permission set to "+permission+".");
     }
     else{
       var target = this.server.findPlayer(player);
+      if(!target) return;
       target.setPermission(permission);
+      this.server.sendNotification(this.id, player + "'s permission set to "+permission+".");
     }
   }
 });

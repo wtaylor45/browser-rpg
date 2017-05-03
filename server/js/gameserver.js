@@ -242,6 +242,12 @@ function GameServer(){
     })
   }
 
+  this.sendNotification = function(player, message){
+    var message = new Messages.Notification(message);
+
+    this.addMessageToOutbox(player, message.serialize());
+  }
+
   this.findPlayer = function(name){
     for(var i in this.maps){
       for(var p in this.maps[i].entities){

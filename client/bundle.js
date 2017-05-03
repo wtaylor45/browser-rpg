@@ -5826,6 +5826,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.CHAT){
         this.receiveChat(message.chat, message.sender);
       }
+      else if(message.type == Types.Messages.NOTIFICATION){
+        this.receiveNotification(message.message);
+      }
       this.mailbox.splice(i,1);
     }
   }
@@ -5893,6 +5896,10 @@ module.exports = Game = class Game{
     entity.onChat();
 
     this.renderer.addChat(chat);
+  }
+
+  receiveNotification(message){
+    this.renderer.addNotification(message);
   }
 
   isFrozen(){
@@ -6654,6 +6661,10 @@ module.exports = Renderer = class Renderer{
   addChat(chat){
     this.chat.addMessage(chat);
   }
+
+  addNotification(message){
+    this.chat.addNotification(message);
+  }
 }
 
 class Fade {
@@ -6805,8 +6816,6 @@ UIElement.Chat = class Chat extends UIElement {
     $('#chat-container').css({
       'width': (parent.width()-parent.width()/6)+"px"
       });
-
-    console.log('resize')
   }
 
   broadcast(message){
@@ -6818,11 +6827,16 @@ UIElement.Chat = class Chat extends UIElement {
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
 
     var div = document.createElement("div");
-    div.append(chat);
+    div.innerHTML = chat;
     chatText.appendChild(div);
 
     if(isScrolledToBottom)
       chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
+  }
+
+  addNotification(message){
+    var text = '<i style="color:yellow">'+message+'</i>';
+    this.addMessage(text);
   }
 }
 
@@ -11663,7 +11677,8 @@ Types = {
     DESPAWN: 7,
     TRANSITION: 8,
     CHAT: 9,
-    COMMAND: 10
+    COMMAND: 10,
+    NOTIFICATION: 11
   },
 
   Entities: {

@@ -22,7 +22,8 @@ Types = {
     DESPAWN: 7,
     TRANSITION: 8,
     CHAT: 9,
-    COMMAND: 10
+    COMMAND: 10,
+    NOTIFICATION: 11
   },
 
   Entities: {

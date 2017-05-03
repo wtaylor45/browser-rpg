@@ -146,6 +146,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.CHAT){
         this.receiveChat(message.chat, message.sender);
       }
+      else if(message.type == Types.Messages.NOTIFICATION){
+        this.receiveNotification(message.message);
+      }
       this.mailbox.splice(i,1);
     }
   }
@@ -213,6 +216,10 @@ module.exports = Game = class Game{
     entity.onChat();
 
     this.renderer.addChat(chat);
+  }
+
+  receiveNotification(message){
+    this.renderer.addNotification(message);
   }
 
   isFrozen(){
