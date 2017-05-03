@@ -30,13 +30,14 @@
   <div id="game-content" class="hiding">
     <canvas id="canvas"></canvas>
 
-    <div id="chat-container">
-      <div id="chat-text" style="overflow-y:scroll;">
-    	 <div style="color:#0ff;font-size:13px;">Welcome to browser-rpg!</div>
+    <div id="bottomLeft" class="section" style="position:absolute;bottom:0;">
+      <div id="chat-container">
+        <div id="chat-text" style="overflow-y:scroll;">
+        </div>
+        <form id="chatform" class ="clearfix" action="none" accept-charset="utf-8">
+          <input id="chatinput" class="gp" type="text" maxlength="100" style="width:100%">
+        </form>
       </div>
-      <form id="chatform" action="none" accept-charset="utf-8">
-        <input id="chatinput" class="gp" type="text" maxlength="100" style="width:100%">
-      </form>
     </div>
   </div>
   <script>

@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     Camera = require('./camera'),
-    App = require('./app');
+    App = require('./app'),
+    UIElement = require('./ui-element');
 
 module.exports = Renderer = class Renderer{
   constructor(game, canvas){
@@ -35,7 +36,14 @@ module.exports = Renderer = class Renderer{
 
     window.onresize = _.debounce(function(){
       this.resizeCanvas();
-    }.bind(this), 100)
+    }.bind(this), 100);
+
+    this.initUI();
+    this.resizeCanvas();
+  }
+
+  initUI(){
+    this.chat = new UIElement.Chat();
   }
 
   resizeCanvas(){
@@ -51,6 +59,10 @@ module.exports = Renderer = class Renderer{
     ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
     ctx.msImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled = false;
+
+    _.each(UIElement.LIST, function(element){
+      element.onResize();
+    });
   }
 
   setRenderScale(scale){
@@ -252,6 +264,10 @@ module.exports = Renderer = class Renderer{
     var shape = new createjs.Shape(graphics);
     shape.alpha = 1;
     this.transitions.push(new Fade(shape, duration, callback));
+  }
+
+  addChat(chat){
+    this.chat.addMessage(chat);
   }
 }
 

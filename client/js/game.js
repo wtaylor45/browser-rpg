@@ -14,7 +14,8 @@ var Input = require('./input'),
     _ = require('underscore'),
     Map = require('./map'),
     Input = require('./input'),
-    Message = require('./message');
+    Message = require('./message'),
+    sanitize = require('sanitize-html');
 
 /**
  * The client instance of the game
@@ -51,6 +52,7 @@ module.exports = Game = class Game{
 
       var chatinput = document.getElementById('chatinput');
       if(chatinput.value != ""){
+        var message = sanitize(chatinput.value);
         var chat = self.player.name+": " + chatinput.value;
         self.receiveChat(chat, self.player.id);
 
@@ -207,15 +209,7 @@ module.exports = Game = class Game{
 
     entity.onChat();
 
-    var chatText = document.getElementById('chat-text');
-    var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
-
-    var div = document.createElement("div");
-    div.append(chat);
-    chatText.appendChild(div);
-
-    if(isScrolledToBottom)
-      chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
+    this.renderer.addChat(chat);
   }
 
   isFrozen(){
