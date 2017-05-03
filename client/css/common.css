@@ -1,10 +1,6 @@
 :focus {
   outline: 0;
 }
-.ui-element {
-    position: absolute;
-    top: 0;
-}
 
 #canvas {
   position: relative;
@@ -19,7 +15,9 @@
   width: 90%;
   height: 90%;
   margin: auto;
-  margin-top: 10px
+  margin-top: 10px;
+  max-width: 1500px;
+  min-width: 500px;
 }
 div#game-content.hiding {
   display: none;
@@ -31,15 +29,19 @@ div#game-content.showing {
 
 #chat-container {
   bottom: 0;
-  position: relative;
+  display: table-row;
+  vertical-align: bottom;
+  position: absolute;
+  margin: auto;
+  width:40%;
+  height: 25%;
 }
 #chat-text {
   background-color: rgba(55,55,55,.5);
   color: white;
   font-family: 'Open Sans';
-  font-size: 11px;
+  font-size: 12px;
   padding-left: 5px;
-  position: relative;
 }
 #chat-text::-webkit-scrollbar-thumb {
   border-radius: 10px;
@@ -61,5 +63,6 @@ div#game-content.showing {
   background-color: rgba(55,55,55,.5);
   color: white;
   outline: none;
-  position: relative;
+  bottom: 0;
+  position: absolute;
 }
