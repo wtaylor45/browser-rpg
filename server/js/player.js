@@ -38,6 +38,8 @@ module.exports = Player = Character.extend({
     // What to do when broadcasting, set by server on login
     this.broadcastCallback = null;
 
+    this.permission = 0;
+
     // When the player disconnects
     this.connection.on('disconnect', function(){
       server.disconnect(this.id);
@@ -56,6 +58,9 @@ module.exports = Player = Character.extend({
       }
       else if(message.type == Types.Messages.CHAT){
         self.server.sendChatToGroup(self, message.data);
+      }
+      else if(message.type == Types.Messages.COMMAND){
+        self.parseCommand(message.data);
       }
     });
   },
@@ -167,5 +172,26 @@ module.exports = Player = Character.extend({
    */
   onBroadcast: function(callback){
     this.broadcastCallback = callback;
+  },
+
+  parseCommand: function(command){
+    var command = command.split('/')[1];
+    var args = command.split(' ');
+    switch(args[0]){
+      case 'moveto':
+        this.moveto(args)
+        break;
+    }
+  },
+
+  moveto: function(args){
+    if(!args[1] || !args[2]) return;
+
+    if(args[3]){
+      this.switchMap(args[3], 0);
+    }
+
+    this.setPosition(parseInt(args[1]), parseInt(args[2]));
+    this.broadcast(new Messages.Move(this));
   }
 });

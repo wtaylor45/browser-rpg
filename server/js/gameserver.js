@@ -241,7 +241,7 @@ function GameServer(){
 
     _.each(group, function(entity){
       if(entity.species !== Types.Entities.PLAYER) return;
-      if(entity.id === player.id) return;
+      
       self.addMessageToOutbox(entity.id, message.serialize());
     })
   }

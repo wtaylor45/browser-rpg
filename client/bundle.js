@@ -5733,10 +5733,13 @@ module.exports = Game = class Game{
       var chatinput = document.getElementById('chatinput');
       if(chatinput.value != ""){
         var message = sanitize(chatinput.value);
-        var chat = self.player.name+": " + chatinput.value;
-        self.receiveChat(chat, self.player.id);
 
-        new Message(Types.Messages.CHAT, chat).send();
+        if(message.charAt(0) == '/'){
+          new Message(Types.Messages.COMMAND, message).send();
+        }else{
+          var chat = self.player.name+": " + chatinput.value
+          new Message(Types.Messages.CHAT, chat).send();
+        }
       }
       chatinput.blur();
       chatinput.value = "";
@@ -11659,7 +11662,8 @@ Types = {
     WHO: 6,
     DESPAWN: 7,
     TRANSITION: 8,
-    CHAT: 9
+    CHAT: 9,
+    COMMAND: 10
   },
 
   Entities: {

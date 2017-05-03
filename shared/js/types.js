@@ -21,7 +21,8 @@ Types = {
     WHO: 6,
     DESPAWN: 7,
     TRANSITION: 8,
-    CHAT: 9
+    CHAT: 9,
+    COMMAND: 10
   },
 
   Entities: {
