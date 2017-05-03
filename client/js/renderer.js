@@ -269,6 +269,10 @@ module.exports = Renderer = class Renderer{
   addChat(chat){
     this.chat.addMessage(chat);
   }
+
+  addNotification(message){
+    this.chat.addNotification(message);
+  }
 }
 
 class Fade {

@@ -110,3 +110,16 @@ Messages.Chat = Message.extend({
     }
   }
 })
+
+Messages.Notification = Message.extend({
+  init: function(message){
+    this.message = message;
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.NOTIFICATION,
+      message: this.message
+    }
+  }
+})

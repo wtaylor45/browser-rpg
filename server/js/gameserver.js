@@ -13,6 +13,7 @@ var Entity = require('./entity');
 var Player = require('./player.js');
 var Messages = require('./message');
 var Map = require('./map');
+var sanitizeHtml = require('sanitize-html');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -44,9 +45,6 @@ function GameServer(){
    * @param  {Object} player The player who logged in
    */
   this.onLogin = function(player){
-    // Add player to the list of players
-    self.entities[player.id] = player;
-
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
@@ -158,7 +156,6 @@ function GameServer(){
 
     delete global.SOCKET_LIST[id];
     delete this.players[id];
-    delete this.entities[id];
     delete this.maps[player.map].entities[id];
     delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
@@ -237,12 +234,31 @@ function GameServer(){
     var group = this.maps[player.map].entities;
     var self = this;
 
+    chat = sanitizeHtml(chat, {allowedTags:[], allowedAttributes:[]});
+    
     var message = new Messages.Chat(chat, player.id);
 
     _.each(group, function(entity){
       if(entity.species !== Types.Entities.PLAYER) return;
-      if(entity.id === player.id) return;
+
       self.addMessageToOutbox(entity.id, message.serialize());
     })
+  }
+
+  this.sendNotification = function(player, message){
+    var message = new Messages.Notification(message);
+
+    this.addMessageToOutbox(player, message.serialize());
+  }
+
+  this.findPlayer = function(name){
+    for(var i in this.maps){
+      for(var p in this.maps[i].entities){
+        var player = this.maps[i].entities[p];
+        if(player.name == name) return player;
+      }
+    }
+    console.log(name, 'not found');
+    return;
   }
 }

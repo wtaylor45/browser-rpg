@@ -21,7 +21,9 @@ Types = {
     WHO: 6,
     DESPAWN: 7,
     TRANSITION: 8,
-    CHAT: 9
+    CHAT: 9,
+    COMMAND: 10,
+    NOTIFICATION: 11
   },
 
   Entities: {
@@ -38,6 +40,12 @@ Types = {
   Collisions: {
     DOOR: 0,
     WALL: 1
+  },
+
+  Permissions: {
+    GOD: 5,
+    ADMIN: 4,
+    PLEB: 3
   }
 }
 

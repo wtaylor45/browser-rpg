@@ -38,6 +38,8 @@ module.exports = Player = Character.extend({
     // What to do when broadcasting, set by server on login
     this.broadcastCallback = null;
 
+    this.permission = Types.Permissions.GOD;
+
     // When the player disconnects
     this.connection.on('disconnect', function(){
       server.disconnect(this.id);
@@ -56,6 +58,9 @@ module.exports = Player = Character.extend({
       }
       else if(message.type == Types.Messages.CHAT){
         self.server.sendChatToGroup(self, message.data);
+      }
+      else if(message.type == Types.Messages.COMMAND){
+        self.parseCommand(message.data);
       }
     });
   },
@@ -167,5 +172,73 @@ module.exports = Player = Character.extend({
    */
   onBroadcast: function(callback){
     this.broadcastCallback = callback;
+  },
+
+  parseCommand: function(command){
+    var command = command.split('/')[1];
+    var args = command.split(' ');
+    switch(args[0]){
+      case 'moveto':
+        if(this.permission >= Types.Permissions.ADMIN)
+          this.moveto(args)
+        break;
+      case 'movetoplayer':
+        if(this.permission >= Types.Permissions.ADMIN)
+          this.movetoPlayer(args[1]);
+        break;
+      case 'setpermission':
+        if(this.permission >= Types.Permissions.GOD)
+          this.setPermissionPlayer(args[1], parseInt(args[2]));
+        break;
+    }
+  },
+
+  moveto: function(args){
+    if(!args[1] || !args[2]) return;
+
+    if(args[3]){
+      this.switchMap(args[3], 0);
+    }
+
+    this.setPosition(parseInt(args[1]), parseInt(args[2]));
+    this.broadcast(new Messages.Move(this));
+    this.server.sendNotification(this.id, "Moved to new position.");
+  },
+
+  movetoPlayer: function(player){
+    if(player == this.name) return;
+
+    var target = this.server.findPlayer(player);
+
+    if(target){
+      var map = target.map;
+      var x = target.x;
+      var y = target.y;
+
+      if(map != this.map){
+        this.switchMap(map, 0);
+      }
+
+      this.setPosition(x, y);
+      this.broadcast(new Messages.Move(this));
+      this.server.sendNotification(this.id, "Moved to "+player+".");
+    }
+  },
+
+  setPermission: function(permission){
+    this.permission = permission;
+  },
+
+  setPermissionPlayer: function(player, permission){
+    if(player == this.name){
+      this.setPermission(permission);
+      this.server.sendNotification(this.id, "Permission set to "+permission+".");
+    }
+    else{
+      var target = this.server.findPlayer(player);
+      if(!target) return;
+      target.setPermission(permission);
+      this.server.sendNotification(this.id, player + "'s permission set to "+permission+".");
+    }
   }
 });
