@@ -32,6 +32,30 @@ module.exports = Renderer = class Renderer{
     }
 
     this.stage.enableMouseOver();
+
+    window.onresize = _.debounce(function(){
+      this.resizeCanvas();
+    }.bind(this), 100)
+  }
+
+  resizeCanvas(){
+    this.stage.canvas.width = $('#game-content').width();
+    this.stage.canvas.height = $('#game-content').height();
+
+    this.setRenderScale(2);
+
+    this.camera.setViewportSize(this.getWidth()/this.renderScale,
+      this.getHeight()/this.renderScale);
+
+    var ctx = this.stage.canvas.getContext('2d');
+    ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+    ctx.msImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
+  }
+
+  setRenderScale(scale){
+    this.renderScale = scale;
+    this.scaleX = this.scaleY = scale;
   }
 
   setOption(option, state){

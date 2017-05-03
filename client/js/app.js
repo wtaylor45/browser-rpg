@@ -29,10 +29,21 @@ module.exports = App = class App{
     login.onsubmit = function(e){
       e.preventDefault();
 
-      self.signIn(username.value)
-
       loginDiv.style.display = 'none';
-      game.className = "showing"
+      game.className = "showing";
+
+      var canvas = document.createElement('canvas')
+      var ctx = canvas.getContext('2d');
+      canvas.setAttribute("id", "canvas");
+      canvas.width = 800;
+      canvas.height = 500;
+      document.getElementById('game-content').appendChild(canvas);
+
+      ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+      ctx.msImageSmoothingEnabled = false;
+      ctx.imageSmoothingEnabled = false;
+
+      self.signIn(username.value)
     }
   }
 

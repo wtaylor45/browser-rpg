@@ -37,6 +37,8 @@ module.exports = Camera = class Camera{
   setViewportSize(width, height){
     this.viewportWidth = width;
     this.viewportHeight = height;
+    this.xDeadZone = this.viewportWidth/2;
+    this.yDeadZone = this.viewportHeight/2;
   }
 
   update(){

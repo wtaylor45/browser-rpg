@@ -95,10 +95,21 @@ module.exports = App = class App{
     login.onsubmit = function(e){
       e.preventDefault();
 
-      self.signIn(username.value)
-
       loginDiv.style.display = 'none';
-      game.className = "showing"
+      game.className = "showing";
+
+      var canvas = document.createElement('canvas')
+      var ctx = canvas.getContext('2d');
+      canvas.setAttribute("id", "canvas");
+      canvas.width = 800;
+      canvas.height = 500;
+      document.getElementById('game-content').appendChild(canvas);
+
+      ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+      ctx.msImageSmoothingEnabled = false;
+      ctx.imageSmoothingEnabled = false;
+
+      self.signIn(username.value)
     }
   }
 
@@ -177,6 +188,8 @@ module.exports = Camera = class Camera{
   setViewportSize(width, height){
     this.viewportWidth = width;
     this.viewportHeight = height;
+    this.xDeadZone = this.viewportWidth/2;
+    this.yDeadZone = this.viewportHeight/2;
   }
 
   update(){
@@ -1138,6 +1151,30 @@ module.exports = Renderer = class Renderer{
     }
 
     this.stage.enableMouseOver();
+
+    window.onresize = _.debounce(function(){
+      this.resizeCanvas();
+    }.bind(this), 100)
+  }
+
+  resizeCanvas(){
+    this.stage.canvas.width = $('#game-content').width();
+    this.stage.canvas.height = $('#game-content').height();
+
+    this.setRenderScale(2);
+
+    this.camera.setViewportSize(this.getWidth()/this.renderScale,
+      this.getHeight()/this.renderScale);
+
+    var ctx = this.stage.canvas.getContext('2d');
+    ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+    ctx.msImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
+  }
+
+  setRenderScale(scale){
+    this.renderScale = scale;
+    this.scaleX = this.scaleY = scale;
   }
 
   setOption(option, state){
