@@ -46,6 +46,7 @@ module.exports = Renderer = class Renderer{
     this.bottomLeft = new UIElement.BottomLeft();
     this.bottomRight = new UIElement.BottomRight();
     this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
+    this.abilityBar = new UIElement.AbilityBar('ability-container', 64, this.renderScale);
   }
 
   resizeCanvas(){
@@ -235,6 +236,7 @@ module.exports = Renderer = class Renderer{
     this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
+    this.drawAbilities();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
@@ -274,6 +276,16 @@ module.exports = Renderer = class Renderer{
 
   addNotification(message){
     this.chat.addNotification(message);
+  }
+
+  drawAbilities(){
+    var icons = this.abilityBar.getAbilityIcons();
+    for(var i in icons){
+      icons[i].x = (this.getWidth() - ((3-i)*this.abilityBar.iconSize))/this.renderScale;
+      //if(i>0) icons[i].x += this.abilityBar.offset/2;
+      icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
+      this.stage.addChild(icons[i]);
+    }
   }
 }
 

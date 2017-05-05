@@ -6422,6 +6422,7 @@ module.exports = Renderer = class Renderer{
     this.bottomLeft = new UIElement.BottomLeft();
     this.bottomRight = new UIElement.BottomRight();
     this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
+    this.abilityBar = new UIElement.AbilityBar('ability-container', 64, this.renderScale);
   }
 
   resizeCanvas(){
@@ -6611,6 +6612,7 @@ module.exports = Renderer = class Renderer{
     this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
+    this.drawAbilities();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
@@ -6650,6 +6652,16 @@ module.exports = Renderer = class Renderer{
 
   addNotification(message){
     this.chat.addNotification(message);
+  }
+
+  drawAbilities(){
+    var icons = this.abilityBar.getAbilityIcons();
+    for(var i in icons){
+      icons[i].x = (this.getWidth() - ((3-i)*this.abilityBar.iconSize))/this.renderScale;
+      //if(i>0) icons[i].x += this.abilityBar.offset/2;
+      icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
+      this.stage.addChild(icons[i]);
+    }
   }
 }
 
@@ -6836,7 +6848,8 @@ UIElement.Chat = class Chat extends UIElement {
                     </div>';
     this.chatInputHTML = '<form id="chatform" class ="clearfix" action="none" accept-charset="utf-8"> \
                       <input autocomplete="off" id="chatinput" \
-                      class="gp" type="text" maxlength="100" style="width:100%"> \
+                      class="gp" type="text" maxlength="100" style="width:100%" \
+                      placeholder="Press enter to chat..."> \
                       </form>';
 
     this.element.innerHTML += this.chatTextHTML + this.chatInputHTML;
@@ -6902,7 +6915,75 @@ UIElement.Chat = class Chat extends UIElement {
   }
 }
 
-// UIElement.AbilityBar = class AbilityBar extends UIElement
+UIElement.AbilityBar = class AbilityBar extends UIElement {
+  constructor(id, iconSize, scale){
+    super('bottomRight');
+    this.id = id;
+    this.iconSize = iconSize;
+    this.offset = 5;
+
+    this.element = document.createElement('div');
+    this.element.setAttribute('id', id);
+
+    this.barHTML = '<div id="ability-bar" style="height:100%"></div>'
+
+    this.element.innerHTML += this.barHTML;
+
+    $(this.parent).append(this.element);
+
+    this.bar = $('#ability-bar');
+
+    this.onResize();
+
+    this.ability1 = new Ability(iconSize/scale);
+    this.ability1.setImage('client/assets/icons/fireball-red-1.png');
+    this.ability2 = new Ability(iconSize/scale);
+    this.ability2.setImage('client/assets/icons/protect-sky-1.png');
+    this.ability3 = new Ability(iconSize/scale);
+    this.ability3.setImage('client/assets/icons/protect-sky-1.png');
+  }
+
+  onResize(){
+    var parent = $(this.parent);
+    var element = $('#'+this.id);
+
+    element.css({
+      'width': this.iconSize*3+this.offset+"px",
+      'height': this.iconSize+this.offset+"px"
+    })
+  }
+
+  setAbility(index, path){
+    switch(index){
+      case 1:
+        this.ability1.setImage(path);
+        break;
+    }
+  }
+
+  getAbilityIcons(){
+    return [this.ability1.getImage(), this.ability2.getImage(), this.ability3.getImage()];
+  }
+}
+
+class Ability {
+  constructor(iconSize){
+    this.iconSize = iconSize;
+    this.image = null;
+  }
+
+  setImage(path){
+    this.image = new createjs.Bitmap(path);
+    this.image.scaleX = Math.min(this.image.image.width/this.iconSize,
+     this.iconSize/this.image.image.width);
+    this.image.scaleY = Math.min(this.image.image.height/this.iconSize,
+     this.iconSize/this.image.image.height);
+  }
+
+  getImage(){
+    return this.image;
+  }
+}
 
 },{"./input.js":35}],44:[function(require,module,exports){
 var _ = require('underscore')
