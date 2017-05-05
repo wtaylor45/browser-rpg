@@ -1,0 +1,24 @@
+{
+  "id": "firespell",
+  "width": 16,
+  "height": 16,
+  "image": "client/assets/projectiles/fire.png",
+  "animations": {
+    "idle_0": {
+      "frames": 1,
+      "row": 0
+    },
+    "idle_1": {
+      "frames": 1,
+      "row": 1
+    },
+    "idle_2": {
+      "frames": 1,
+      "row": 2
+    },
+    "idle_3": {
+      "frames": 1,
+      "row": 3
+    }
+  }
+}

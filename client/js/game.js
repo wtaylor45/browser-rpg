@@ -46,33 +46,6 @@ module.exports = Game = class Game{
     new Socket.on('message', function(message){
       self.mailbox.push(message);
     });
-
-    document.getElementById('chatform').onsubmit = function(e){
-      e.preventDefault();
-
-      var chatinput = document.getElementById('chatinput');
-      if(chatinput.value != ""){
-        var message = sanitize(chatinput.value);
-
-        if(message.charAt(0) == '/'){
-          new Message(Types.Messages.COMMAND, message).send();
-        }else{
-          var chat = self.player.name+": " + chatinput.value
-          new Message(Types.Messages.CHAT, chat).send();
-        }
-      }
-      chatinput.blur();
-      chatinput.value = "";
-    }
-
-    document.getElementById('chatinput').onfocus = function(){
-      Input.setListening(false);
-      Input.reset();
-    }
-
-    document.getElementById('chatinput').onblur = function(){
-      Input.setListening(true);
-    }
   }
 
   /**
@@ -264,5 +237,16 @@ module.exports = Game = class Game{
 
   enableChat(){
     document.getElementById('chatinput').focus();
+  }
+
+  onSubmitChat(message){
+    var message = sanitize(message);
+
+    if(message.charAt(0) == '/'){
+      new Message(Types.Messages.COMMAND, message).send();
+    }else{
+      var chat = this.player.name+": " + message
+      new Message(Types.Messages.CHAT, chat).send();
+    }
   }
 }

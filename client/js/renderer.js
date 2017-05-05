@@ -43,7 +43,9 @@ module.exports = Renderer = class Renderer{
   }
 
   initUI(){
-    this.chat = new UIElement.Chat();
+    this.bottomLeft = new UIElement.BottomLeft();
+    this.bottomRight = new UIElement.BottomRight();
+    this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
   }
 
   resizeCanvas(){

@@ -5726,33 +5726,6 @@ module.exports = Game = class Game{
     new Socket.on('message', function(message){
       self.mailbox.push(message);
     });
-
-    document.getElementById('chatform').onsubmit = function(e){
-      e.preventDefault();
-
-      var chatinput = document.getElementById('chatinput');
-      if(chatinput.value != ""){
-        var message = sanitize(chatinput.value);
-
-        if(message.charAt(0) == '/'){
-          new Message(Types.Messages.COMMAND, message).send();
-        }else{
-          var chat = self.player.name+": " + chatinput.value
-          new Message(Types.Messages.CHAT, chat).send();
-        }
-      }
-      chatinput.blur();
-      chatinput.value = "";
-    }
-
-    document.getElementById('chatinput').onfocus = function(){
-      Input.setListening(false);
-      Input.reset();
-    }
-
-    document.getElementById('chatinput').onblur = function(){
-      Input.setListening(true);
-    }
   }
 
   /**
@@ -5944,6 +5917,17 @@ module.exports = Game = class Game{
 
   enableChat(){
     document.getElementById('chatinput').focus();
+  }
+
+  onSubmitChat(message){
+    var message = sanitize(message);
+
+    if(message.charAt(0) == '/'){
+      new Message(Types.Messages.COMMAND, message).send();
+    }else{
+      var chat = this.player.name+": " + message
+      new Message(Types.Messages.CHAT, chat).send();
+    }
   }
 }
 
@@ -6435,7 +6419,9 @@ module.exports = Renderer = class Renderer{
   }
 
   initUI(){
-    this.chat = new UIElement.Chat();
+    this.bottomLeft = new UIElement.BottomLeft();
+    this.bottomRight = new UIElement.BottomRight();
+    this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
   }
 
   resizeCanvas(){
@@ -6781,6 +6767,7 @@ module.exports = Sprites = {
 };
 
 },{"../sprites/ogre.json":46,"../sprites/player.json":47,"underscore":80}],43:[function(require,module,exports){
+var Input = require('./input.js');
 
 module.exports = UIElement = class UIElement {
   constructor(section){
@@ -6793,42 +6780,117 @@ module.exports = UIElement = class UIElement {
 
 var LIST = UIElement.LIST = [];
 
-UIElement.Chat = class Chat extends UIElement {
+UIElement.BottomLeft = class BottomLeft extends UIElement {
   constructor(){
+    super('game-content');
+
+    this.html = '<div id="bottomLeft" class="section" style="position:absolute;bottom:0"></div>';
+    $(this.parent).append(this.html);
+
+    this.element = $('#bottomLeft');
+
+    this.onResize();
+  }
+
+  onResize(){
+    this.element.css({
+      'width': $('#canvas').width()/2,
+      'height': $('#canvas').height()/2
+    });
+  }
+}
+
+UIElement.BottomRight = class BottomRight extends UIElement {
+  constructor(){
+    super('game-content');
+
+    this.html = '<div id="bottomRight" class="section" style="position:absolute;bottom:0"></div>';
+    $(this.parent).append(this.html);
+
+    this.element = $('#bottomRight');
+
+    this.onResize();
+  }
+
+  onResize(){
+    this.element.css({
+      'width': $('#canvas').width()/2,
+      'height': $('#canvas').height()/2,
+      'right': 0
+    });
+  }
+}
+
+UIElement.Chat = class Chat extends UIElement {
+  constructor(id, onsend){
     super('bottomLeft');
 
-    this.chatText = null;
-    this.chatInput = null;
+    this.id = id;
+
+    $(this.parent).append(this.html);
+
+    this.element = document.createElement('div');
+    this.element.setAttribute('id', id)
+
+    this.chatTextHTML = '<div id="chat-text" style="overflow-y:scroll;"> \
+                    </div>';
+    this.chatInputHTML = '<form id="chatform" class ="clearfix" action="none" accept-charset="utf-8"> \
+                      <input autocomplete="off" id="chatinput" \
+                      class="gp" type="text" maxlength="100" style="width:100%"> \
+                      </form>';
+
+    this.element.innerHTML += this.chatTextHTML + this.chatInputHTML;
+
+    $(this.parent).append(this.element);
+
+    this.chatText = $('#chat-text');
+    this.chatInput = $('#chatinput');
 
     this.onResize();
 
-    this.broadcast('Welcome to browser-rpg!')
+    this.chatInput.focus(function(){
+      Input.setListening(false);
+      Input.reset();
+    });
+
+    this.chatInput.blur(function(){
+      Input.setListening(true);
+    });
+
+    var self = this;
+    $('#chatform').submit(function(e){
+      e.preventDefault();
+
+      var message = self.chatInput.val();
+      if(message != "") onsend(message);
+
+      self.chatInput.blur();
+      self.chatInput.val("");
+    });
+
+    this.broadcast('Welcome to browser-rpg!');
   }
 
   onResize(){
     var parent = $(this.parent);
+    var element = $('#'+this.id);
 
-    parent.css({
-      'width': $('#game-content').width()/2,
-      'height': $('#game-content').height()/2
-    })
-
-    $('#chat-container').css({
+    element.css({
       'width': (parent.width()-parent.width()/6)+"px"
       });
   }
 
   broadcast(message){
-    $('#chat-text').append('<b><i style="color:aqua;">'+message+'</i></b>');
+    this.chatText.append('<b><i style="color:aqua;">'+message+'</i></b>');
   }
 
   addMessage(chat){
-    var chatText = document.getElementById('chat-text');
+    var chatText = this.chatText;
     var isScrolledToBottom = chatText.scrollHeight - chatText.clientHeight <= chatText.scrollTop + 1;
 
     var div = document.createElement("div");
     div.innerHTML = chat;
-    chatText.appendChild(div);
+    chatText.append(div);
 
     if(isScrolledToBottom)
       chatText.scrollTop = chatText.scrollHeight - chatText.clientHeight;
@@ -6840,7 +6902,9 @@ UIElement.Chat = class Chat extends UIElement {
   }
 }
 
-},{}],44:[function(require,module,exports){
+// UIElement.AbilityBar = class AbilityBar extends UIElement
+
+},{"./input.js":35}],44:[function(require,module,exports){
 var _ = require('underscore')
 
 module.exports = Updater = class Updater{
