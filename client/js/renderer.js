@@ -236,7 +236,7 @@ module.exports = Renderer = class Renderer{
     this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
-    this.drawAbilities();
+    //this.drawAbilities();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
@@ -282,7 +282,7 @@ module.exports = Renderer = class Renderer{
     var icons = this.abilityBar.getAbilityIcons();
     for(var i in icons){
       icons[i].x = (this.getWidth() - ((3-i)*this.abilityBar.iconSize))/this.renderScale;
-      //if(i>0) icons[i].x += this.abilityBar.offset/2;
+      if(i>0) icons[i].x += this.abilityBar.offset/2;
       icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
       this.stage.addChild(icons[i]);
     }

@@ -6612,7 +6612,7 @@ module.exports = Renderer = class Renderer{
     this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
-    this.drawAbilities();
+    //this.drawAbilities();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
@@ -6658,7 +6658,7 @@ module.exports = Renderer = class Renderer{
     var icons = this.abilityBar.getAbilityIcons();
     for(var i in icons){
       icons[i].x = (this.getWidth() - ((3-i)*this.abilityBar.iconSize))/this.renderScale;
-      //if(i>0) icons[i].x += this.abilityBar.offset/2;
+      if(i>0) icons[i].x += this.abilityBar.offset/2;
       icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
       this.stage.addChild(icons[i]);
     }
@@ -6920,36 +6920,32 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
     super('bottomRight');
     this.id = id;
     this.iconSize = iconSize;
-    this.offset = 5;
+    this.offset = 4;
 
-    this.element = document.createElement('div');
-    this.element.setAttribute('id', id);
+    this.barHTML = '<div id="ability-bar"></div>'
 
-    this.barHTML = '<div id="ability-bar" style="height:100%"></div>'
-
-    this.element.innerHTML += this.barHTML;
-
-    $(this.parent).append(this.element);
+    $(this.parent).append(this.barHTML);
 
     this.bar = $('#ability-bar');
 
     this.onResize();
 
-    this.ability1 = new Ability(iconSize/scale);
+    this.ability1 = new Ability(iconSize, this.offset);
     this.ability1.setImage('client/assets/icons/fireball-red-1.png');
-    this.ability2 = new Ability(iconSize/scale);
+    this.ability2 = new Ability(iconSize, this.offset);
     this.ability2.setImage('client/assets/icons/protect-sky-1.png');
-    this.ability3 = new Ability(iconSize/scale);
+    this.ability3 = new Ability(iconSize, this.offset);
     this.ability3.setImage('client/assets/icons/protect-sky-1.png');
   }
 
   onResize(){
     var parent = $(this.parent);
-    var element = $('#'+this.id);
+    var bar = $('#ability-bar');
 
-    element.css({
-      'width': this.iconSize*3+this.offset+"px",
-      'height': this.iconSize+this.offset+"px"
+    bar.css({
+      'width': this.iconSize*3+"px",
+      'height': this.iconSize+this.offset+"px",
+      'padding': this.offset/2
     })
   }
 
@@ -6966,18 +6962,39 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
   }
 }
 
-class Ability {
-  constructor(iconSize){
+class Ability extends UIElement {
+  constructor(iconSize, offset){
+    super('ability-bar');
+
     this.iconSize = iconSize;
     this.image = null;
+
+    this.offset = offset;
+
+    this.html = document.createElement('button');
+    this.html.setAttribute('class', 'ability');
+    this.html.setAttribute('onclick', 'alert("test")')
+
+    //this.html.appendChild(this.image);
+    $(this.parent).append(this.html);
+
+    this.onResize();
+  }
+
+  onResize(){
+    $(this.html).css({
+      'width': this.iconSize,
+      'height': this.iconSize
+    })
   }
 
   setImage(path){
-    this.image = new createjs.Bitmap(path);
-    this.image.scaleX = Math.min(this.image.image.width/this.iconSize,
-     this.iconSize/this.image.image.width);
-    this.image.scaleY = Math.min(this.image.image.height/this.iconSize,
-     this.iconSize/this.image.image.height);
+    this.image = path;
+    $(this.html).css({
+      'background': 'url('+this.image+')',
+      'background-size': 'cover'
+    });
+    //this.image.src = path;
   }
 
   getImage(){

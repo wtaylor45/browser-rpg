@@ -72,11 +72,16 @@ div#game-content.showing {
   padding-left: 5px;
 }
 
-#ability-container {
-  bottom: 0;
-  position: absolute;
-  right: 0;
-}
 #ability-bar {
+  position: absolute;
   background-color: rgba(0,0,0,.3);
+  bottom: 0;
+  right: 0;
+  display: table;
+  align-items: center;
+}
+.ability {
+  display: table-cell;
+  border: none;
+  pointer-events: all;
 }
