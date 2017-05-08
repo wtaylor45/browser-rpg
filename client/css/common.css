@@ -84,4 +84,5 @@ div#game-content.showing {
   display: table-cell;
   border: none;
   pointer-events: all;
+  margin: 1px;
 }

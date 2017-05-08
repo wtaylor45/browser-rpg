@@ -161,11 +161,6 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
     var parent = $(this.parent);
     var bar = $('#ability-bar');
 
-    bar.css({
-      'width': this.iconSize*3+"px",
-      'height': this.iconSize+this.offset+"px",
-      'padding': this.offset/2
-    })
   }
 
   setAbility(index, path){
@@ -192,7 +187,6 @@ class Ability extends UIElement {
 
     this.html = document.createElement('button');
     this.html.setAttribute('class', 'ability');
-    this.html.setAttribute('onclick', 'alert("test")')
 
     //this.html.appendChild(this.image);
     $(this.parent).append(this.html);
