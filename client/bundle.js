@@ -5929,6 +5929,14 @@ module.exports = Game = class Game{
       new Message(Types.Messages.CHAT, chat).send();
     }
   }
+
+  abilityActivated(ability){
+
+  }
+
+  changeAbility(index, ability){
+    this.renderer.setAbility(index, ability);
+  }
 }
 
 },{"../../shared/js/types":82,"./input":35,"./map":36,"./message":37,"./renderer":39,"./socket":40,"./updater":44,"sanitize-html":79,"underscore":80}],35:[function(require,module,exports){
@@ -5970,6 +5978,9 @@ Input.onKeyEvent = function(keyCode, val){
     case 13:
       state.enter = val;
       break;
+
+    case 49:
+      state.hotkey1 = val;
   }
 }
 
@@ -5999,7 +6010,8 @@ Input.baseState = function(){
     down: false,
     left: false,
     right: false,
-    enter: false
+    enter: false,
+    hotkey1: false
   }
 }
 
@@ -6272,6 +6284,9 @@ module.exports = Player = class Player extends Character{
     this.setSprite(new Sprite("player"));
 
     this.idle();
+
+    this.abilities = [];
+    this.setAbility(0, Types.Abilities.FIREBALL);
   }
 
   setGame(game){
@@ -6332,6 +6347,10 @@ module.exports = Player = class Player extends Character{
     }
   }
 
+  setAbility(index, ability){
+    this.abilities[index] = ability;
+  }
+
   /**
    * Update logic for the players
    *
@@ -6369,6 +6388,10 @@ module.exports = Player = class Player extends Character{
 
     if(chat){
       this.game.enableChat();
+    }
+
+    if(Input.getState().hotkey1){
+      console.log('yo!');
     }
   }
 }
@@ -6422,7 +6445,12 @@ module.exports = Renderer = class Renderer{
     this.bottomLeft = new UIElement.BottomLeft();
     this.bottomRight = new UIElement.BottomRight();
     this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
-    this.abilityBar = new UIElement.AbilityBar('ability-container', 64, this.renderScale);
+    this.abilityBar = new UIElement.AbilityBar('ability-container', 48, this.renderScale);
+    for(var i in this.game.player.abilities){
+      var ability = this.game.player.abilities[i];
+      this.setAbility(i, ability);
+      console.log(i, ability);
+    }
   }
 
   resizeCanvas(){
@@ -6612,7 +6640,6 @@ module.exports = Renderer = class Renderer{
     this.drawEntity(this.game.player);
     this.drawMapHigh();
     this.updateTransition();
-    //this.drawAbilities();
     if(this.options.SHOW_FPS) this.drawFPS();
     this.stage.update();
   }
@@ -6662,6 +6689,10 @@ module.exports = Renderer = class Renderer{
       icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
       this.stage.addChild(icons[i]);
     }
+  }
+
+  setAbility(index, ability){
+    this.abilityBar.setAbility(index, Types.abilityToIcon(ability));
   }
 }
 
@@ -6930,12 +6961,9 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
 
     this.onResize();
 
-    this.ability1 = new Ability(iconSize, this.offset);
-    this.ability1.setImage('client/assets/icons/fireball-red-1.png');
-    this.ability2 = new Ability(iconSize, this.offset);
-    this.ability2.setImage('client/assets/icons/protect-sky-1.png');
-    this.ability3 = new Ability(iconSize, this.offset);
-    this.ability3.setImage('client/assets/icons/protect-sky-1.png');
+    this.ability1 = new Ability(iconSize, this.offset, 1);
+    this.ability2 = new Ability(iconSize, this.offset, 2);
+    this.ability3 = new Ability(iconSize, this.offset, 3);
   }
 
   onResize(){
@@ -6945,10 +6973,9 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
   }
 
   setAbility(index, path){
-    switch(index){
-      case 1:
-        this.ability1.setImage(path);
-        break;
+    if(index == 0){
+      this.ability1.setImage(path);
+      console.log('called')
     }
   }
 
@@ -6958,7 +6985,7 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
 }
 
 class Ability extends UIElement {
-  constructor(iconSize, offset){
+  constructor(iconSize, offset, hotkey){
     super('ability-bar');
 
     this.iconSize = iconSize;
@@ -6968,7 +6995,10 @@ class Ability extends UIElement {
 
     this.html = document.createElement('button');
     this.html.setAttribute('class', 'ability');
-
+    this.hotkey = document.createElement('div');
+    this.hotkey.setAttribute('class', 'hotkey');
+    this.hotkey.innerHTML = hotkey;
+    this.html.appendChild(this.hotkey);
     //this.html.appendChild(this.image);
     $(this.parent).append(this.html);
 
@@ -11857,6 +11887,11 @@ Types = {
     GOD: 5,
     ADMIN: 4,
     PLEB: 3
+  },
+
+
+  Abilities: {
+    FIREBALL: 'fireball'
   }
 }
 
@@ -11866,6 +11901,10 @@ var speciesList = {
   getGenus: function(species){
     return speciesList[species][1];
   }
+}
+
+var iconList = {
+  fireball: 'fireball-red-1.png'
 }
 
 Types.speciesAsString = function(species){
@@ -11886,6 +11925,10 @@ Types.isCharacter = function(species){
 
 if(!(typeof exports === 'undefined')){
   module.exports = Types;
+}
+
+Types.abilityToIcon = function(ability){
+  return 'client/assets/icons/'+iconList[ability];
 }
 
 },{}],83:[function(require,module,exports){

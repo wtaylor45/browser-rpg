@@ -149,12 +149,9 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
 
     this.onResize();
 
-    this.ability1 = new Ability(iconSize, this.offset);
-    this.ability1.setImage('client/assets/icons/fireball-red-1.png');
-    this.ability2 = new Ability(iconSize, this.offset);
-    this.ability2.setImage('client/assets/icons/protect-sky-1.png');
-    this.ability3 = new Ability(iconSize, this.offset);
-    this.ability3.setImage('client/assets/icons/protect-sky-1.png');
+    this.ability1 = new Ability(iconSize, this.offset, 1);
+    this.ability2 = new Ability(iconSize, this.offset, 2);
+    this.ability3 = new Ability(iconSize, this.offset, 3);
   }
 
   onResize(){
@@ -164,10 +161,9 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
   }
 
   setAbility(index, path){
-    switch(index){
-      case 1:
-        this.ability1.setImage(path);
-        break;
+    if(index == 0){
+      this.ability1.setImage(path);
+      console.log('called')
     }
   }
 
@@ -177,7 +173,7 @@ UIElement.AbilityBar = class AbilityBar extends UIElement {
 }
 
 class Ability extends UIElement {
-  constructor(iconSize, offset){
+  constructor(iconSize, offset, hotkey){
     super('ability-bar');
 
     this.iconSize = iconSize;
@@ -187,7 +183,10 @@ class Ability extends UIElement {
 
     this.html = document.createElement('button');
     this.html.setAttribute('class', 'ability');
-
+    this.hotkey = document.createElement('div');
+    this.hotkey.setAttribute('class', 'hotkey');
+    this.hotkey.innerHTML = hotkey;
+    this.html.appendChild(this.hotkey);
     //this.html.appendChild(this.image);
     $(this.parent).append(this.html);
 

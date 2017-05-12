@@ -249,4 +249,12 @@ module.exports = Game = class Game{
       new Message(Types.Messages.CHAT, chat).send();
     }
   }
+
+  abilityActivated(ability){
+
+  }
+
+  changeAbility(index, ability){
+    this.renderer.setAbility(index, ability);
+  }
 }

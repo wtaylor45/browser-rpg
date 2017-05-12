@@ -30,6 +30,9 @@ module.exports = Player = class Player extends Character{
     this.setSprite(new Sprite("player"));
 
     this.idle();
+
+    this.abilities = [];
+    this.setAbility(0, Types.Abilities.FIREBALL);
   }
 
   setGame(game){
@@ -90,6 +93,10 @@ module.exports = Player = class Player extends Character{
     }
   }
 
+  setAbility(index, ability){
+    this.abilities[index] = ability;
+  }
+
   /**
    * Update logic for the players
    *
@@ -127,6 +134,10 @@ module.exports = Player = class Player extends Character{
 
     if(chat){
       this.game.enableChat();
+    }
+
+    if(Input.getState().hotkey1){
+      console.log('yo!');
     }
   }
 }

@@ -46,6 +46,11 @@ Types = {
     GOD: 5,
     ADMIN: 4,
     PLEB: 3
+  },
+
+
+  Abilities: {
+    FIREBALL: 'fireball'
   }
 }
 
@@ -55,6 +60,10 @@ var speciesList = {
   getGenus: function(species){
     return speciesList[species][1];
   }
+}
+
+var iconList = {
+  fireball: 'fireball-red-1.png'
 }
 
 Types.speciesAsString = function(species){
@@ -75,4 +84,8 @@ Types.isCharacter = function(species){
 
 if(!(typeof exports === 'undefined')){
   module.exports = Types;
+}
+
+Types.abilityToIcon = function(ability){
+  return 'client/assets/icons/'+iconList[ability];
 }
