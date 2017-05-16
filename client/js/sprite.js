@@ -5,12 +5,9 @@ module.exports = Sprite = class Sprite{
   constructor(name){
     this.name = name;
     this.loadJSON(sprites[name]);
-
-    console.log(name);
   }
 
   loadJSON(json){
-    console.log(json)
     this.id = json.id;
     this.path = json.image;
     this.animations = json.animations;

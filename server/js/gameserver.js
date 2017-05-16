@@ -58,7 +58,8 @@ function GameServer(){
     player.onBroadcast(function(message){
       var group = self.maps[player.map].entities;
       for(var i in group){
-        self.outgoingMessages[group[i].id].push(message.serialize());
+        if(group[i] instanceof Player)
+          self.outgoingMessages[i].push(message.serialize());
       }
     });
   }
@@ -93,7 +94,7 @@ function GameServer(){
    */
   this.tick = function(dt){
     // Update all players on the server
-    this.updatePlayers();
+    this.updateEntities(dt);
     // Send each player their messages
     this.sendPlayerMessages();
   }
@@ -101,10 +102,11 @@ function GameServer(){
   /**
    * Update every player on the server
    */
-  this.updatePlayers = function(){
-    for(var i in this.players){
-      var player = this.players[i];
-      player.update();
+  this.updateEntities = function(dt){
+    for(var i in this.entities){
+      var entity = this.entities[i];
+      entity.update(dt);
+      if(entity.readyToKill) delete this.entities[i];
     }
   }
 
@@ -193,8 +195,10 @@ function GameServer(){
   this.tellOthersSpawned = function(player){
     var group = this.maps[player.map].entities;
     for(var i in group){
-      var message = new Messages.Spawn(player);
-      this.addMessageToOutbox(i, message.serialize());
+      if(group[i] instanceof Player){
+        var message = new Messages.Spawn(player);
+        this.addMessageToOutbox(i, message.serialize());
+      }
     }
   }
 
@@ -235,7 +239,7 @@ function GameServer(){
     var self = this;
 
     chat = sanitizeHtml(chat, {allowedTags:[], allowedAttributes:[]});
-    
+
     var message = new Messages.Chat(chat, player.id);
 
     _.each(group, function(entity){

@@ -145,14 +145,18 @@ module.exports = Renderer = class Renderer{
         anim = entity.currentAnimation,
         stage = this.stage;
 
-    if(anim && sprite){
-      var frame = anim.currentFrame,
-          x = frame.x,
-          y = frame.y,
-          width = sprite.width,
+    if(sprite){
+      var width = sprite.width,
           height = sprite.height;
 
-      sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
+      if(anim){
+        var frame = anim.currentFrame || 0,
+            x = frame.x || 0,
+            y = frame.y || 0;
+
+        sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
+      }
+
       sprite.image.x = entity.x - this.camera.x;
       sprite.image.y = entity.y - this.camera.y;
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);

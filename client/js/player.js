@@ -33,6 +33,11 @@ module.exports = Player = class Player extends Character{
 
     this.abilities = [];
     this.setAbility(0, Types.Abilities.FIREBALL);
+
+    var self = this;
+    document.onmousemove = function(e){
+      self.angle = Math.atan2(e.pageX- self.x, - (e.pageY- self.y) )*(180/Math.PI);
+    }
   }
 
   setGame(game){
@@ -137,7 +142,16 @@ module.exports = Player = class Player extends Character{
     }
 
     if(Input.getState().hotkey1){
-      console.log('yo!');
+      this.fireAbility(0);
     }
+  }
+
+  fireAbility(index){
+    var ability = this.abilities[index];
+
+    if(!ability) return;
+
+    var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
+    message.send();
   }
 }

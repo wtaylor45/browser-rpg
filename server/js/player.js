@@ -7,18 +7,19 @@ var cls = require('./lib/class'),
     Types = require('../../shared/js/types'),
     Character = require('./character'),
     Messages = require('./message'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    Projectile = require('./projectile')
 
-module.exports = Player = Character.extend({
-  init: function(connection, server, name){
+module.exports = Player = class Player extends Character {
+  constructor(connection, server, name){
+    // Create this player using the Character super class
+    super(connection.id, name, "player", Types.Entities.PLAYER, 210, 205,32,48);
+
     var self = this;
 
     // The server on this player's connection
     this.server = server;
     this.connection = connection;
-
-    // Create this player using the Character super class
-    this._super(this.connection.id, name, "player", Types.Entities.PLAYER, 210, 205,32,48);
 
     // Is the player in game yet
     this.inGame = false;
@@ -62,13 +63,16 @@ module.exports = Player = Character.extend({
       else if(message.type == Types.Messages.COMMAND){
         self.parseCommand(message.data);
       }
+      else if(message.type == Types.Messages.ABILITY){
+        self.handleAbility(message.data[0], message.data[1]);
+      }
     });
-  },
+  }
 
   /**
    * Apply all inputs that have been queued
    */
-  applyQueuedInputs: function(){
+  applyQueuedInputs(){
     this.lastPos = [this.x, this.y]
     for(var i=0;i<this.queuedInputs.length;i++){
       var map = this.server.maps[this.map];
@@ -102,9 +106,9 @@ module.exports = Player = Character.extend({
     if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
     if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
     if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
-  },
+  }
 
-  handleCollision: function(collision){
+  handleCollision(collision){
     switch(collision){
       case Types.Collisions.DOOR:
         var map = this.server.maps[this.map];
@@ -113,9 +117,9 @@ module.exports = Player = Character.extend({
         this.switchMap(door[0], door[1]);
 
     }
-  },
+  }
 
-  switchMap: function(name, entrance){
+  switchMap(name, entrance){
     var pos = this.server.maps[name].getEntrancePosition(entrance);
 
     var message = new Messages.Transition(name, pos);
@@ -134,12 +138,12 @@ module.exports = Player = Character.extend({
 
     // Get list of this map's entities
     this.server.pushEntityIDs(this);
-  },
+  }
 
   /**
    * Update loop to run every server update
    */
-  update: function(){
+  update(dt){
     // Check if there are any inputs to apply
     if(this.queuedInputs.length > 0){
       this.applyQueuedInputs();
@@ -148,33 +152,33 @@ module.exports = Player = Character.extend({
       // Broadcast our new position
       this.broadcast(new Messages.Move(this));
     }
-  },
+  }
 
-  checkCollisions: function(){
+  checkCollisions(){
     var self = this;
 
-  },
+  }
 
   /**
    * Broadcast a message to the other players on the server
    * @param  {Object} message The message to broadcast
    */
-  broadcast: function(message){
+  broadcast(message){
     // Make sure there is a callback function
     if(this.broadcastCallback){
       this.broadcastCallback(message);
     }
-  },
+  }
 
   /**
    * Set the broadcast callback for this player
    * @param  {Function} callback The function to set as the callback
    */
-  onBroadcast: function(callback){
+  onBroadcast(callback){
     this.broadcastCallback = callback;
-  },
+  }
 
-  parseCommand: function(command){
+  parseCommand(command){
     var command = command.split('/')[1];
     var args = command.split(' ');
     switch(args[0]){
@@ -191,9 +195,9 @@ module.exports = Player = Character.extend({
           this.setPermissionPlayer(args[1], parseInt(args[2]));
         break;
     }
-  },
+  }
 
-  moveto: function(args){
+  moveto(args){
     if(!args[1] || !args[2]) return;
 
     if(args[3]){
@@ -203,9 +207,9 @@ module.exports = Player = Character.extend({
     this.setPosition(parseInt(args[1]), parseInt(args[2]));
     this.broadcast(new Messages.Move(this));
     this.server.sendNotification(this.id, "Moved to new position.");
-  },
+  }
 
-  movetoPlayer: function(player){
+  movetoPlayer(player){
     if(player == this.name) return;
 
     var target = this.server.findPlayer(player);
@@ -223,13 +227,13 @@ module.exports = Player = Character.extend({
       this.broadcast(new Messages.Move(this));
       this.server.sendNotification(this.id, "Moved to "+player+".");
     }
-  },
+  }
 
-  setPermission: function(permission){
+  setPermission(permission){
     this.permission = permission;
-  },
+  }
 
-  setPermissionPlayer: function(player, permission){
+  setPermissionPlayer(player, permission){
     if(player == this.name){
       this.setPermission(permission);
       this.server.sendNotification(this.id, "Permission set to "+permission+".");
@@ -241,4 +245,10 @@ module.exports = Player = Character.extend({
       this.server.sendNotification(this.id, player + "'s permission set to "+permission+".");
     }
   }
-});
+
+  handleAbility(ability, angle){
+    var ability = Projectile.builder[ability](angle, this);
+    this.server.maps[this.map].addEntity(ability);
+    this.server.tellOthersSpawned(ability);
+  }
+}

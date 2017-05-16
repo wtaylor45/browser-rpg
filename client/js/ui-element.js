@@ -206,7 +206,6 @@ class Ability extends UIElement {
       'background': 'url('+this.image+')',
       'background-size': 'cover'
     });
-    //this.image.src = path;
   }
 
   getImage(){

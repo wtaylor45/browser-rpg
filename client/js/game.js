@@ -158,6 +158,22 @@ module.exports = Game = class Game{
       return;
     }
 
+    if(Types.isCharacter(message.species)) this.spawnCharacter(message);
+    else if(Types.isProjectile(message.species)) this.spawnProjectile(message);
+
+  }
+
+  spawnProjectile(message){
+    this.entities[message.id] = new Entity(message.id, message.species,
+      message.x, message.y, message.w, message.h);
+    var entity = this.entities[message.id];
+
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+
+    entity.setSprite(sprite);
+  }
+
+  spawnCharacter(message){
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];

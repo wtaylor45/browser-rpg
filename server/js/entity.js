@@ -6,7 +6,7 @@
  var cls = require('./lib/class'),
      Map = require('./map');
 
-module.exports = Entity = cls.Class.extend({
+module.exports = Entity = class Entity {
   /**
    * Initialize this entity
    * @param  {number} id      the UUID of this entity
@@ -17,7 +17,7 @@ module.exports = Entity = cls.Class.extend({
    * @param  {number} width   The width of the entity
    * @param  {number} height  The height of the entity
    */
-  init: function(id, genus, species, x, y, width, height){
+  constructor(id, genus, species, x, y, width, height){
     this.id = id;
     this.genus = genus;
     this.species = species;
@@ -25,9 +25,9 @@ module.exports = Entity = cls.Class.extend({
     this.y = y;
     this.width = width;
     this.height = height;
-
+    this.spawned = false;
     this.map = null;
-  },
+  }
 
   /**
    * Get the most basic state of this entity.
@@ -35,7 +35,7 @@ module.exports = Entity = cls.Class.extend({
    *
    * Meant to be called in subclasses' getState() functions
    */
-  getDefaultState: function(){
+  getDefaultState(){
     return {
       id: this.id,
       species: this.species,
@@ -44,7 +44,7 @@ module.exports = Entity = cls.Class.extend({
       w: this.width,
       h: this.height
     }
-  },
+  }
 
   /**
    * Return this entity's state
@@ -52,17 +52,25 @@ module.exports = Entity = cls.Class.extend({
    *
    * Meant to be overriden by subclasses
    */
-  getState: function(){
+  getState(){
     return this.getDefaultState();
-  },
+  }
+
+  spawn(){
+    return new Message.Spawn(this);
+  }
 
   /**
    * Set the x and y coordiante of this entity
    * @param {number} x The y coordinate to set to
    * @param {number} y The y coordinate to set to
    */
-  setPosition: function(x, y){
+  setPosition(x, y){
     this.x = x;
     this.y = y;
   }
-});
+
+  update(){
+
+  }
+}

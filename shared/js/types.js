@@ -23,11 +23,13 @@ Types = {
     TRANSITION: 8,
     CHAT: 9,
     COMMAND: 10,
-    NOTIFICATION: 11
+    NOTIFICATION: 11,
+    ABILITY: 12
   },
 
   Entities: {
-    PLAYER: 0
+    PLAYER: 0,
+    FIREBALL: 1
   },
 
   Directions: {
@@ -56,14 +58,16 @@ Types = {
 
 var speciesList = {
   player: [Types.Entities.PLAYER, "player"],
-
-  getGenus: function(species){
-    return speciesList[species][1];
-  }
+  fireball: [Types.Entities.FIREBALL, "projectile"],
 }
 
 var iconList = {
   fireball: 'fireball-red-1.png'
+}
+
+Types.getGenus = function(species){
+  console.log(species)
+  return speciesList[species][1];
 }
 
 Types.speciesAsString = function(species){
@@ -71,15 +75,19 @@ Types.speciesAsString = function(species){
     if(speciesList[s][0] === species) {
         return s;
     }
-}
+  }
 }
 
 Types.isPlayer = function(species){
-  return speciesList.getGenus[species] == "player";
+  return Types.getGenus(Types.speciesAsString(species)) == "player";
 }
 
 Types.isCharacter = function(species){
   return Types.isPlayer(species);
+}
+
+Types.isProjectile = function(species){
+  return Types.getGenus(Types.speciesAsString(species)) == "projectile";
 }
 
 if(!(typeof exports === 'undefined')){

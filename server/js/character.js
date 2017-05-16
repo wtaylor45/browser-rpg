@@ -6,7 +6,7 @@
 var cls = require('./lib/class'),
     Types = require('../../shared/js/types')
 
-module.exports = Character = Entity.extend({
+module.exports = Character = class Character extends Entity {
   /**
    * Initialize the character
    * @param  {number} id      the UUID of this character
@@ -17,9 +17,9 @@ module.exports = Character = Entity.extend({
    * @param  {number} width   The width of the character
    * @param  {number} height  The height of the character
    */
-  init: function(id, name, genus, species, x, y, width, height){
+  constructor(id, name, genus, species, x, y, width, height){
     // Call the Entity class constructor
-    this._super(id, genus, species, x, y, width, height);
+    super(id, genus, species, x, y, width, height);
 
     // What direction is this character facing
     this.direction = Types.Directions.DOWN;
@@ -31,13 +31,13 @@ module.exports = Character = Entity.extend({
     this.target = null;
 
     this.name = name;
-  },
+  }
 
   /**
    * Get this character's current state
    * @return {Object} This character's current state
    */
-  getState: function(){
+  getState(){
     var state = this.getDefaultState();
 
     state['direction'] = this.direction;
@@ -47,4 +47,4 @@ module.exports = Character = Entity.extend({
 
     return state;
   }
-});
+}

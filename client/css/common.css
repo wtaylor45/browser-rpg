@@ -91,6 +91,7 @@ div#game-content.showing {
   text-shadow: 1px 1px #000;
   font-size: 0.8em;
   padding-bottom: 40px;
+  background-color: rgba(0,0,0,.1);
 }
 .ability:hover {
   outline-color: #fff;
