@@ -120,24 +120,7 @@ module.exports = Player = class Player extends Character {
   }
 
   switchMap(name, entrance){
-    var pos = this.server.maps[name].getEntrancePosition(entrance);
-
-    var message = new Messages.Transition(name, pos);
-    this.server.addMessageToOutbox(this.id, message.serialize());
-
-    // Tell players on this map that you are no longer there
-    this.server.tellOthersDespawned(this.id);
-    this.server.maps[this.map].removeEntity(this.id);
-
-    // Add entity to new map
-    this.server.maps[name].addEntity(this);
-    this.setPosition(pos[0], pos[1]);
-
-    // Tell players on the map that you have arrived
-    this.server.tellOthersSpawned(this)
-
-    // Get list of this map's entities
-    this.server.pushEntityIDs(this);
+    this.server.moveEntityToMap(this, name, entrance);
   }
 
   /**

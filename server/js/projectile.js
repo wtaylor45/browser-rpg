@@ -24,6 +24,10 @@ module.exports = Projectile = class Projectile extends Entity{
       this.readyToKill = true;
     }
   }
+
+  distanceTraveled(){
+    return this.distanceTo(this.initX, this.initY);
+  }
 }
 
 Projectile.Fireball = class Fireball extends Projectile{

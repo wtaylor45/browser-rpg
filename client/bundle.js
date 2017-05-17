@@ -5789,6 +5789,7 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.SPAWN){
         if(message.id != this.player.id)
           this.receiveSpawn(message);
+          console.log(message)
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -11964,7 +11965,7 @@ var iconList = {
 }
 
 Types.getGenus = function(species){
-  console.log(species)
+  var species = Types.speciesAsString(species);
   return speciesList[species][1];
 }
 
@@ -11977,7 +11978,7 @@ Types.speciesAsString = function(species){
 }
 
 Types.isPlayer = function(species){
-  return Types.getGenus(Types.speciesAsString(species)) == "player";
+  return Types.getGenus(species) == "player";
 }
 
 Types.isCharacter = function(species){
@@ -11985,7 +11986,7 @@ Types.isCharacter = function(species){
 }
 
 Types.isProjectile = function(species){
-  return Types.getGenus(Types.speciesAsString(species)) == "projectile";
+  return Types.getGenus(species) == "projectile";
 }
 
 if(!(typeof exports === 'undefined')){

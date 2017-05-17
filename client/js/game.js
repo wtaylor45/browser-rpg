@@ -109,6 +109,7 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.SPAWN){
         if(message.id != this.player.id)
           this.receiveSpawn(message);
+          console.log(message)
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);

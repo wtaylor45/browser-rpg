@@ -52,6 +52,7 @@ Messages.List = Message.extend({
 
 Messages.Spawn = Message.extend({
   init: function(entity){
+    if(!entity) throw "No entity assined to Spawn message.";
     this.entity = entity;
   },
 

@@ -27,6 +27,8 @@ module.exports = Entity = class Entity {
     this.height = height;
     this.spawned = false;
     this.map = null;
+
+    this.moveCallback;
   }
 
   /**
@@ -60,6 +62,17 @@ module.exports = Entity = class Entity {
     return new Message.Spawn(this);
   }
 
+  onMove(func){
+    this.moveCallback = func;
+  }
+
+  moveTo(x, y){
+    this.setPosition(x, y);
+    if(this.moveCallback){
+      this.moveCallback();
+    }
+  }
+
   /**
    * Set the x and y coordiante of this entity
    * @param {number} x The y coordinate to set to
@@ -70,7 +83,13 @@ module.exports = Entity = class Entity {
     this.y = y;
   }
 
-  update(){
+  update(dt){
+  }
 
+  distanceTo(x1, y1){
+    var x = this.x - x1;
+    var y = this.y - y1;
+
+    return Math.sqrt(x*x + y*y);
   }
 }
