@@ -17,8 +17,10 @@ module.exports = Projectile = class Projectile extends Entity{
   update(dt){
     super.update(dt);
 
-    this.x += this.speed*dt;
-    this.y += this.speed*dt;
+    var x = this.x+this.speed*dt;
+    var y = this.y+this.speed*dt;
+
+    this.moveTo(x, y);
 
     if(this.distanceTraveled() > this.range){
       this.readyToKill = true;

@@ -231,7 +231,6 @@ module.exports = Player = class Player extends Character {
 
   handleAbility(ability, angle){
     var ability = Projectile.builder[ability](angle, this);
-    this.server.maps[this.map].addEntity(ability);
-    this.server.tellOthersSpawned(ability);
+    this.server.spawnEntity(ability);
   }
 }

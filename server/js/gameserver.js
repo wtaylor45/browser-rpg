@@ -105,7 +105,7 @@ function GameServer(){
   }
 
   this.onEntityMove = function(entity){
-    var message = new Message.Move(entity);
+    var message = new Messages.Move(entity);
     this.pushToGroup(entity.map, message.serialize());
   }
 
@@ -208,9 +208,7 @@ function GameServer(){
     if(!player.map) return;
 
     var group = this.groups[player.map].getAllEntities();
-    console.log(this.groups[player.map].getAllEntities())
     var entities = _.pluck(group, "id");
-    console.log(group);
     var message = new Messages.List(entities);
     this.addMessageToOutbox(player.id, message.serialize());
   }
@@ -277,6 +275,12 @@ function GameServer(){
       }
     }
     console.log(name, 'not found');
+  }
+
+  this.spawnEntity = function(entity){
+    entity.onMove(this.onEntityMove.bind(this));
+    this.groups[entity.map].addEntity(entity);
+    this.tellOthersSpawned(entity);
   }
 
   this.moveEntityToMap = function(entity, map, entrance){

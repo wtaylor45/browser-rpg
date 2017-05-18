@@ -69,7 +69,7 @@ module.exports = Entity = class Entity {
   moveTo(x, y){
     this.setPosition(x, y);
     if(this.moveCallback){
-      this.moveCallback();
+      this.moveCallback(this);
     }
   }
 
