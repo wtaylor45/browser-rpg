@@ -27,8 +27,6 @@ module.exports = Entity = class Entity {
     this.height = height;
     this.spawned = false;
     this.map = null;
-
-    this.moveCallback;
   }
 
   /**
@@ -62,8 +60,18 @@ module.exports = Entity = class Entity {
     return new Message.Spawn(this);
   }
 
+  despawn(){
+    if(this.despawnCallback){
+      this.despawnCallback(this);
+    }
+  }
+
   onMove(func){
     this.moveCallback = func;
+  }
+
+  onDespawn(callback){
+    this.despawnCallback = callback;
   }
 
   moveTo(x, y){

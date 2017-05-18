@@ -11985,6 +11985,10 @@ Types.isCharacter = function(species){
   return Types.isPlayer(species);
 }
 
+Types.isMob = function(species){
+  return Types.getGenus(species) == "mob";
+}
+
 Types.isProjectile = function(species){
   return Types.getGenus(species) == "projectile";
 }

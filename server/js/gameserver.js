@@ -49,7 +49,7 @@ function GameServer(){
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
-    self.addToGroup('septoria', player);
+    self.addEntity(player);
 
     self.pushGroupEntityIDsTo(player);
 
@@ -106,6 +106,11 @@ function GameServer(){
 
   this.onEntityMove = function(entity){
     var message = new Messages.Move(entity);
+    this.pushToGroup(entity.map, message.serialize());
+  }
+
+  this.onEntityDespawn = function(entity){
+    var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize());
   }
 
@@ -181,6 +186,13 @@ function GameServer(){
       return this.players[id].connection;
   }
 
+  this.addEntity = function(entity){
+    this.entities[entity.id] = entity;
+    if(Types.isMob(entity.species)) this.mobs[entity.id] = entity;
+    map = entity.map || 'septoria';
+    this.addToGroup(map, entity);
+  }
+
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
     var group = this.groups[groupId];
     if(!group) throw groupId, "not found!";
@@ -196,6 +208,7 @@ function GameServer(){
 
   this.addToGroup = function(groupId, entity){
     this.groups[groupId].addEntity(entity);
+    entity.map = groupId;
     this.tellOthersSpawned(entity);
   }
 
@@ -207,7 +220,7 @@ function GameServer(){
   this.pushGroupEntityIDsTo = function(player){
     if(!player.map) return;
 
-    var group = this.groups[player.map].getAllEntities();
+    var group = this.groups[player.map].entities;
     var entities = _.pluck(group, "id");
     var message = new Messages.List(entities);
     this.addMessageToOutbox(player.id, message.serialize());
@@ -217,6 +230,7 @@ function GameServer(){
     if(!entity) return;
 
     var message = new Messages.Spawn(entity);
+    console.log(entity.map);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
@@ -227,7 +241,7 @@ function GameServer(){
 
   this.sendBatchSpawns = function(player, list){
     var self = this;
-    var group = this.groups[player.map].getAllEntities();
+    var group = this.groups[player.map].entities;
     _.each(list, function(id){
       if(id != player.id){
         var message = new Messages.Spawn(group[id]);
@@ -279,6 +293,7 @@ function GameServer(){
 
   this.spawnEntity = function(entity){
     entity.onMove(this.onEntityMove.bind(this));
+    entity.onDespawn(this.onEntityDespawn.bind(this));
     this.groups[entity.map].addEntity(entity);
     this.tellOthersSpawned(entity);
   }
