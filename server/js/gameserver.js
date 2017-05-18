@@ -110,8 +110,10 @@ function GameServer(){
   }
 
   this.onEntityDespawn = function(entity){
+    this.groups[entity.map].removeEntity(entity);
+
     var message = new Messages.Despawn(entity.id);
-    this.pushToGroup(entity.map, message.serialize());
+    this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
   /**
@@ -161,8 +163,7 @@ function GameServer(){
     var player = this.players[id];
 
     delete global.SOCKET_LIST[id];
-    delete this.players[id];
-    delete this.groups[player.map].removeEntity(id);
+    this.removeEntity(player);
     delete this.outgoingMessages[id];
     console.log('Player', id, 'disconnected.');
   }
@@ -193,6 +194,14 @@ function GameServer(){
     this.addToGroup(map, entity);
   }
 
+  this.removeEntity = function(entity){
+    var entity = this.entities[entity.id];
+    if(!entity) throw "Entity "+entity.id+" not found";
+
+    entity.despawn();
+    delete this.entities[entity.id];
+  }
+
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
     var group = this.groups[groupId];
     if(!group) throw groupId, "not found!";
@@ -213,7 +222,7 @@ function GameServer(){
   }
 
   this.removeFromGroup = function(entity){
-    this.groups(entity.map);
+    this.groups[entity.map].removeEntity(entity.id);
     this.tellOthersDespawned(entity);
   }
 
@@ -299,13 +308,13 @@ function GameServer(){
   }
 
   this.moveEntityToMap = function(entity, map, entrance){
-    var pos = this.server.maps[name].getEntrancePosition(entrance);
+    var pos = this.maps[map].getEntrancePosition(entrance);
 
-    var message = new Messages.Transition(name, pos);
-    this.addMessageToOutbox(this.id, message.serialize());
+    var message = new Messages.Transition(map, pos);
+    this.addMessageToOutbox(entity.id, message.serialize());
 
     this.removeFromGroup(entity);
-    this.addToGroup(entity);
+    this.addToGroup(map, entity);
 
     entity.moveTo(pos[0], pos[1]);
 
