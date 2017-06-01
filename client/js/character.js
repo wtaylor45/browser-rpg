@@ -35,6 +35,17 @@ module.exports = Character = class Character extends Entity{
     this.direction = dir;
   }
 
+  getDirectionFromAngle(angle){
+    if(angle >= 45 && angle < 135)
+      return Types.Directions.DOWN;
+    if(135 <= angle && angle < 225)
+      return Types.Directions.LEFT;
+    if(225 <= angle && angle < 315)
+      return Types.Directions.UP;
+
+    return Types.Directions.RIGHT;
+  }
+
   updateMovement(){
     var lastPos = this.lastPos;
 

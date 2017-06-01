@@ -28,7 +28,7 @@ module.exports = Renderer = class Renderer{
 
     this.options = {
       SHOW_FPS: false,
-      DRAW_BOUNDING_BOX: false,
+      DRAW_BOUNDING_BOX: true,
       MOUSEOVER: true,
     }
 
@@ -145,6 +145,9 @@ module.exports = Renderer = class Renderer{
         anim = entity.currentAnimation,
         stage = this.stage;
 
+    entity.realX = entity.x - this.camera.x;
+    entity.realY = entity.y - this.camera.y;
+
     if(sprite){
       var width = sprite.width,
           height = sprite.height;
@@ -175,8 +178,17 @@ module.exports = Renderer = class Renderer{
           entity.y-this.camera.y);
       }
 
-      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
-        this.drawBoundingBox(entity);
+      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
+        //this.drawBoundingBox(entity);
+        var dotX = entity.clientX - entity.x
+        var dotY = - (entity.clientY-entity.y)
+        var graphics = new createjs.Graphics()
+          .beginStroke("#ffff00")
+          .drawRect(dotX, dotY,
+            5, 5);
+        var shape = new createjs.Shape(graphics);
+        this.stage.addChild(shape)
+      }
     }
   }
 

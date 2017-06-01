@@ -36,7 +36,10 @@ module.exports = Player = class Player extends Character{
 
     var self = this;
     document.onmousemove = function(e){
-      self.angle = Math.atan2(e.pageX- self.x, - (e.pageY- self.y) )*(180/Math.PI);
+      var mouseX = e.clientX - document.getElementById('canvas').getBoundingClientRect().left;
+      var mouseY = e.clientY - document.getElementById('canvas').getBoundingClientRect().top;
+      self.angle = Math.atan2(mouseX, mouseY) / Math.PI*180;
+      self.setDirection(self.getDirectionFromAngle(self.angle));
     }
   }
 

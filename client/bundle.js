@@ -5523,6 +5523,17 @@ module.exports = Character = class Character extends Entity{
     this.direction = dir;
   }
 
+  getDirectionFromAngle(angle){
+    if(angle >= 45 && angle < 135)
+      return Types.Directions.DOWN;
+    if(135 <= angle && angle < 225)
+      return Types.Directions.LEFT;
+    if(225 <= angle && angle < 315)
+      return Types.Directions.UP;
+
+    return Types.Directions.RIGHT;
+  }
+
   updateMovement(){
     var lastPos = this.lastPos;
 
@@ -6307,7 +6318,11 @@ module.exports = Player = class Player extends Character{
 
     var self = this;
     document.onmousemove = function(e){
-      self.angle = Math.atan2(e.pageX- self.x, - (e.pageY- self.y) )*(180/Math.PI);
+      var mouseX = e.clientX - document.getElementById('canvas').getBoundingClientRect().left;
+      var mouseY = e.clientY - document.getElementById('canvas').getBoundingClientRect().top;
+      self.angle = Math.atan2(mouseX, mouseY) / Math.PI*180;
+      console.log(mouseX)
+      self.setDirection(self.getDirectionFromAngle(self.angle));
     }
   }
 
@@ -6458,7 +6473,7 @@ module.exports = Renderer = class Renderer{
 
     this.options = {
       SHOW_FPS: false,
-      DRAW_BOUNDING_BOX: false,
+      DRAW_BOUNDING_BOX: true,
       MOUSEOVER: true,
     }
 
@@ -6575,6 +6590,9 @@ module.exports = Renderer = class Renderer{
         anim = entity.currentAnimation,
         stage = this.stage;
 
+    entity.realX = entity.x - this.camera.x;
+    entity.realY = entity.y - this.camera.y;
+
     if(sprite){
       var width = sprite.width,
           height = sprite.height;
@@ -6605,8 +6623,17 @@ module.exports = Renderer = class Renderer{
           entity.y-this.camera.y);
       }
 
-      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
-        this.drawBoundingBox(entity);
+      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
+        //this.drawBoundingBox(entity);
+        var dotX = entity.clientX - entity.x
+        var dotY = - (entity.clientY-entity.y)
+        var graphics = new createjs.Graphics()
+          .beginStroke("#ffff00")
+          .drawRect(dotX, dotY,
+            5, 5);
+        var shape = new createjs.Shape(graphics);
+        this.stage.addChild(shape)
+      }
     }
   }
 

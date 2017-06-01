@@ -9,7 +9,7 @@ module.exports = Projectile = class Projectile extends Entity{
     this.parent = parent;
     this.map = parent.map;
     this.speed = 15;
-
+    console.log(angle)
     this.initX = this.x;
     this.initY = this.y;
   }
@@ -17,10 +17,10 @@ module.exports = Projectile = class Projectile extends Entity{
   update(dt){
     super.update(dt);
 
-    var x = this.x+this.speed*dt;
-    var y = this.y+this.speed*dt;
+    var vx = Math.cos(this.angle/180*Math.PI) * this.speed * dt;
+    var vy = Math.sin(this.angle/180*Math.PI) * this.speed * dt;
 
-    this.moveTo(x, y);
+    this.moveTo(this.x+vx, this.y+vy);
 
     if(this.distanceTraveled() > this.range){
       this.readyToKill = true;
