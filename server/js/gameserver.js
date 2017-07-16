@@ -280,7 +280,8 @@ function GameServer(){
 
     var message = new Messages.Chat(chat, player.id);
 
-    this.pushToGroup(player.map, message.serialize);
+    this.pushToGroup(player.map, message.serialize());
+    console.log(chat, "received");
   }
 
   this.sendNotification = function(player, message){
