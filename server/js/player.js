@@ -180,14 +180,32 @@ module.exports = Player = class Player extends Character {
     }
   }
 
+  /**
+   * Command: /moveto [mapName] <x> <y>
+   */
   moveto(args){
-    if(!args[1] || !args[2]) return;
-
-    if(args[3]){
-      this.switchMap(args[3], 0);
+    // At least 2 args needed
+    if(!args[1] || !args[2]){
+      this.server.sendNotification(this.id, "Missing arguments: Correct usage: /moveto [mapName] x y");
+      return;
     }
 
-    this.setPosition(parseInt(args[1]), parseInt(args[2]));
+    if(args.length > 3){
+      if(!this.server.maps[args[1]]){
+        this.server.sendNotification(this.id, "Map " + args[1] + " not found!");
+        return;
+      }
+      this.switchMap(args[1], 0);
+      this.setPosition(parseInt(args[2]), parseInt(args[3]));
+    }else{
+      console.log(parseInt(args[1], 10))
+      if(isNaN(parseInt(args[1], 10)) || isNaN(parseInt(args[2], 10))){
+        this.server.sendNotification(this.id, "Coordinates must be a number!");
+        return;
+      }
+      this.setPosition(parseInt(args[1]), parseInt(args[2]));
+    }
+
     this.broadcast(new Messages.Move(this));
     this.server.sendNotification(this.id, "Moved to new position.");
   }

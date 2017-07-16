@@ -239,7 +239,6 @@ function GameServer(){
     if(!entity) return;
 
     var message = new Messages.Spawn(entity);
-    console.log(entity.map);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
@@ -285,8 +284,8 @@ function GameServer(){
   }
 
   this.sendNotification = function(player, message){
-    var message = new Messages.Notification(message);
-
+    var message = sanitizeHtml(message);
+    message = new Messages.Notification(message);
     this.addMessageToOutbox(player, message.serialize());
   }
 
