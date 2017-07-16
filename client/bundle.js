@@ -6315,15 +6315,6 @@ module.exports = Player = class Player extends Character{
 
     this.abilities = [];
     this.setAbility(0, Types.Abilities.FIREBALL);
-
-    var self = this;
-    document.onmousemove = function(e){
-      var mouseX = e.clientX - document.getElementById('canvas').getBoundingClientRect().left;
-      var mouseY = e.clientY - document.getElementById('canvas').getBoundingClientRect().top;
-      self.angle = Math.atan2(mouseX, mouseY) / Math.PI*180;
-      console.log(mouseX)
-      self.setDirection(self.getDirectionFromAngle(self.angle));
-    }
   }
 
   setGame(game){
