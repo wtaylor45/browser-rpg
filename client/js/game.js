@@ -66,7 +66,9 @@ module.exports = Game = class Game{
     Input.init();
 
     // Update every loop
-    this.tick();
+    var self = this;
+    setInterval(self.tick.bind(self), 1000/60);
+    this.render();
   }
 
   /**
@@ -227,10 +229,13 @@ module.exports = Game = class Game{
    */
   tick(){
     if(!this.isFrozen()) this.updater.update();
-    this.renderer.render();
+  }
 
-    if(this.running)
-      window.requestAnimationFrame(this.tick.bind(this));
+  render(){
+    if(this.running){
+      this.renderer.render();
+    }
+    window.requestAnimationFrame(this.render.bind(this));
   }
 
   askWhoAre(list){
