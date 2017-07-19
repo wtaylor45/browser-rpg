@@ -29,7 +29,9 @@ Messages.Move = Message.extend({
       type: Types.Messages.MOVE,
       id: this.entity.id,
       x: this.entity.x,
-      y: this.entity.y
+      y: this.entity.y,
+      dir: this.entity.direction,
+      time: Date.now()
     }
     if(this.entity.genus == 'player') message.lastProcessedInput = this.entity.lastProcessedInput;
 
@@ -63,6 +65,8 @@ Messages.Spawn = Message.extend({
     for(var i in state){
       message[i] = state[i];
     }
+
+    message.time = Date.now();
 
     return message;
   }

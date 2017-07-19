@@ -4,7 +4,8 @@
  */
 
  var cls = require('./lib/class'),
-     Map = require('./map');
+     Map = require('./map'),
+     Types = require('../../shared/js/types.js');
 
 module.exports = Entity = class Entity {
   /**
@@ -27,6 +28,7 @@ module.exports = Entity = class Entity {
     this.height = height;
     this.spawned = false;
     this.map = null;
+    this.direction = Types.Directions.DOWN;
   }
 
   /**

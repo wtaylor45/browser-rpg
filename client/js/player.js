@@ -91,6 +91,7 @@ module.exports = Player = class Player extends Character{
         k++;
       }
     }
+    this.lastMove = message.time;
   }
 
   setAbility(index, ability){

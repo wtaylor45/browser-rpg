@@ -258,6 +258,17 @@ function GameServer(){
     });
   }
 
+  this.sendAllUpdate = function(player){
+    var self = this;
+    var group = this.groups[player.map].entities;
+    _.each(group, function(entity){
+      if(entity.id != player.id){
+        var message = new Messages.Spawn(entity);
+        self.addMessageToOutbox(player.id, message.serialize());
+      }
+    });
+  }
+
   this.addMessageToOutbox = function(id, message){
     this.outgoingMessages[id].push(message);
   }

@@ -24,7 +24,8 @@ Types = {
     CHAT: 9,
     COMMAND: 10,
     NOTIFICATION: 11,
-    ABILITY: 12
+    ABILITY: 12,
+    ALLUPDATE: 13
   },
 
   Entities: {

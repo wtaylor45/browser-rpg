@@ -13,7 +13,6 @@ var Input = require('./input'),
     Socket = require('./socket'),
     _ = require('underscore'),
     Map = require('./map'),
-    Input = require('./input'),
     Message = require('./message'),
     sanitize = require('sanitize-html');
 
@@ -64,11 +63,40 @@ module.exports = Game = class Game{
     this.renderer.setMap(this.currentMap);
     this.updater = new Updater(this);
     Input.init();
+    document.addEventListener('visibilitychange', this.visibilityChange.bind(this));
 
     // Update every loop
     var self = this;
-    setInterval(self.tick.bind(self), 1000/60);
+    setInterval(function(){
+      self.tick();
+    }, 1000/this.FPS);
     this.render();
+  }
+
+  visibilityChange(){
+    if(!document.hidden){
+      this.requestAll = true;
+    }
+  }
+
+  /**
+   * The logic to run every loop
+   *
+   * @param {number} dt Delta time, time since last loop
+   */
+  tick(){
+    if(!this.isFrozen()) this.updater.update();
+    if(this.requestAll){
+      this.requestAllUpdates();
+      this.requestAll = false;
+    }
+  }
+
+  render(){
+    if(this.running){
+      this.renderer.render();
+    }
+    window.requestAnimationFrame(this.render.bind(this));
   }
 
   /**
@@ -99,19 +127,24 @@ module.exports = Game = class Game{
       var message = this.mailbox[i];
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
-          this.player.onMove(message);
-        }else{
+          if(message.time > this.player.lastMove){
+            this.player.onMove(message);
+          }
+        }
+        else{
           // Other entity
-          this.receiveMove(message);
+          if(message.time > this.entities[message.id].lastMove){
+            this.receiveMove(message);
+          }
         }
       }
       else if(message.type == Types.Messages.LIST){
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id)
+        if(message.id != this.player.id){
           this.receiveSpawn(message);
-          console.log(message)
+        }
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -154,16 +187,26 @@ module.exports = Game = class Game{
     }
 
     entity.setPos(message.x, message.y);
+    entity.setDirection(message.dir);
+    entity.lastMove = message.time;
   }
 
   receiveSpawn(message){
-    if(this.entities[message.id]){
+    if(this.entities[message.id] &&
+    message.time > this.entities[message.id].lastSpawn){
+      this.updateEntity(message);
       return;
     }
 
     if(Types.isCharacter(message.species)) this.spawnCharacter(message);
     else if(Types.isProjectile(message.species)) this.spawnProjectile(message);
+  }
 
+  updateEntity(data){
+    var entity = this.entities[data.id];
+    entity.x = data.x;
+    entity.y = data.y;
+    entity.lastMove = data.time;
   }
 
   spawnProjectile(message){
@@ -174,6 +217,7 @@ module.exports = Game = class Game{
     var sprite = new Sprite(Types.speciesAsString(entity.species));
 
     entity.setSprite(sprite);
+    entity.lastSpawn = message.time;
   }
 
   spawnCharacter(message){
@@ -194,6 +238,7 @@ module.exports = Game = class Game{
 
     entity.setSprite(sprite);
     entity.idle();
+    entity.lastSpawn = message.time;
   }
 
   receiveDespawn(message){
@@ -220,22 +265,6 @@ module.exports = Game = class Game{
 
   setFrozen(state){
     this.freeze = state;
-  }
-
-  /**
-   * The logic to run every loop
-   *
-   * @param {number} dt Delta time, time since last loop
-   */
-  tick(){
-    if(!this.isFrozen()) this.updater.update();
-  }
-
-  render(){
-    if(this.running){
-      this.renderer.render();
-    }
-    window.requestAnimationFrame(this.render.bind(this));
   }
 
   askWhoAre(list){
@@ -278,5 +307,10 @@ module.exports = Game = class Game{
 
   changeAbility(index, ability){
     this.renderer.setAbility(index, ability);
+  }
+
+  requestAllUpdates(){
+    new Message(Types.Messages.ALLUPDATE).send();
+    console.log('Request Sent')
   }
 }

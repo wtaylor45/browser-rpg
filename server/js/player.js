@@ -66,6 +66,9 @@ module.exports = Player = class Player extends Character {
       else if(message.type == Types.Messages.ABILITY){
         self.handleAbility(message.data[0], message.data[1]);
       }
+      else if(message.type == Types.Messages.ALLUPDATE){
+        self.server.sendAllUpdate(self);
+      }
     });
   }
 
