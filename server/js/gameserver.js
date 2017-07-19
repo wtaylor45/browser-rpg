@@ -232,7 +232,7 @@ function GameServer(){
     var group = this.groups[player.map].entities;
     var entities = _.pluck(group, "id");
     var message = new Messages.List(entities);
-    console.log("list being sent for", player.map+":",entities);
+
     this.addMessageToOutbox(player.id, message.serialize());
   }
 
@@ -293,7 +293,6 @@ function GameServer(){
     var message = new Messages.Chat(chat, player.id);
 
     this.pushToGroup(player.map, message.serialize());
-    console.log(chat, "received");
   }
 
   this.sendNotification = function(player, message){

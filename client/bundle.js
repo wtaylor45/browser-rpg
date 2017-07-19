@@ -6006,7 +6006,6 @@ module.exports = Game = class Game{
 
   requestAllUpdates(){
     new Message(Types.Messages.ALLUPDATE).send();
-    console.log('Request Sent')
   }
 }
 

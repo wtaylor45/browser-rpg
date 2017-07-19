@@ -16,8 +16,6 @@ module.exports = Group = class Group {
     this.entities[entity.id] = entity;
 
     this.size++;
-
-    console.log(entity.name, "has joined", this.id);
   }
 
   removeEntity(id){
@@ -27,8 +25,6 @@ module.exports = Group = class Group {
       if(this.players[id]) delete this.players[id];
       delete this.entities[id];
     }
-
-    console.log(entity.name, "has left", this.id);
   }
 
   update(dt){

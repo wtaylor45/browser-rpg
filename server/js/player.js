@@ -198,10 +198,13 @@ module.exports = Player = class Player extends Character {
         this.server.sendNotification(this.id, "Map " + args[1] + " not found!");
         return;
       }
+      if(isNaN(parseInt(args[1], 10)) || isNaN(parseInt(args[2], 10))){
+        this.server.sendNotification(this.id, "Coordinates must be a number!");
+        return;
+      }
       this.switchMap(args[1], 0);
       this.setPosition(parseInt(args[2]), parseInt(args[3]));
     }else{
-      console.log(parseInt(args[1], 10))
       if(isNaN(parseInt(args[1], 10)) || isNaN(parseInt(args[2], 10))){
         this.server.sendNotification(this.id, "Coordinates must be a number!");
         return;
@@ -214,7 +217,10 @@ module.exports = Player = class Player extends Character {
   }
 
   movetoPlayer(player){
-    if(player == this.name) return;
+    if(player == this.name){
+      this.server.sendNotification(this.id, "You're already there!");
+      return;
+    }
 
     var target = this.server.findPlayer(player);
 
@@ -230,6 +236,8 @@ module.exports = Player = class Player extends Character {
       this.setPosition(x, y);
       this.broadcast(new Messages.Move(this));
       this.server.sendNotification(this.id, "Moved to "+player+".");
+    }else{
+      this.server.sendNotification(this.id, "Player "+player+" not found.");
     }
   }
 
