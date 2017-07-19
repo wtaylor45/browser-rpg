@@ -1,7 +1,7 @@
 /**
- * @author Will Taylor
- * Created on: 4/7/17
- */
+* @author Will Taylor
+* Created on: 4/7/17
+*/
 
 var cls = require('./lib/class');
 
@@ -13,17 +13,17 @@ var Message = cls.Class.extend({});
 
 Messages.Move = Message.extend({
   /**
-   * Create a new message
-   * @param  {Object} entity The entity sending the message
-   */
+  * Create a new message
+  * @param  {Object} entity The entity sending the message
+  */
   init: function(entity){
     this.entity = entity;
   },
 
   /**
-   * Save and get the message contents to be sent
-   * @return {Object} The message contents
-   */
+  * Save and get the message contents to be sent
+  * @return {Object} The message contents
+  */
   serialize: function(){
     var message = {
       type: Types.Messages.MOVE,
@@ -46,9 +46,9 @@ Messages.List = Message.extend({
 
   serialize: function(){
     return {
-            type: Types.Messages.LIST,
-            list: this.ids
-          }
+      type: Types.Messages.LIST,
+      list: this.ids
+    }
   }
 });
 

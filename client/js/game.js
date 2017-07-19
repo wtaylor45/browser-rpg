@@ -133,9 +133,7 @@ module.exports = Game = class Game{
         }
         else{
           // Other entity
-          if(message.time > this.entities[message.id].lastMove){
-            this.receiveMove(message);
-          }
+          this.receiveMove(message);
         }
       }
       else if(message.type == Types.Messages.LIST){
@@ -169,7 +167,7 @@ module.exports = Game = class Game{
     var self = this;
 
     this.entitiesToPrune = _.reject(this.entities, function(entity){
-      return _.contains(this.alreadySeen, entity) || entity.id == self.player.id;
+      return _.contains(this.alreadySeen, entity.id) || entity.id == self.player.id;
     });
 
     this.pruneEntities();
@@ -183,6 +181,10 @@ module.exports = Game = class Game{
     var entity = this.entities[message.id];
 
     if(!entity){
+      return;
+    }
+
+    if(message.time < entity.lastMove){
       return;
     }
 

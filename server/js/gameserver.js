@@ -158,7 +158,6 @@ function GameServer(){
    */
   this.disconnect = function(id){
     // TODO: Logout if the player is logged in
-    //this.tellOthersDespawned(id);
 
     var player = this.players[id];
 
@@ -198,6 +197,7 @@ function GameServer(){
     var entity = this.entities[entity.id];
     if(!entity) throw "Entity "+entity.id+" not found";
 
+    this.removeFromGroup(entity);
     entity.despawn();
     delete this.entities[entity.id];
   }
@@ -232,6 +232,7 @@ function GameServer(){
     var group = this.groups[player.map].entities;
     var entities = _.pluck(group, "id");
     var message = new Messages.List(entities);
+    console.log("list being sent for", player.map+":",entities);
     this.addMessageToOutbox(player.id, message.serialize());
   }
 
@@ -243,7 +244,7 @@ function GameServer(){
   }
 
   this.tellOthersDespawned = function(entity){
-    var message = new Messages.Despawn(entity);
+    var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
@@ -330,6 +331,6 @@ function GameServer(){
     entity.moveTo(pos[0], pos[1]);
 
     // Get list of this map's entities
-    this.pushGroupEntityIDsTo(entity.id);
+    this.pushGroupEntityIDsTo(entity);
   }
 }
