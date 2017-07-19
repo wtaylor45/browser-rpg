@@ -6357,7 +6357,7 @@ module.exports = Player = class Player extends Character{
     this.idle();
 
     this.abilities = [];
-    this.setAbility(0, Types.Abilities.FIREBALL);
+    //this.setAbility(0, Types.Abilities.FIREBALL);
   }
 
   setGame(game){
@@ -6526,12 +6526,13 @@ module.exports = Renderer = class Renderer{
     this.bottomLeft = new UIElement.BottomLeft();
     this.bottomRight = new UIElement.BottomRight();
     this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
+    /*
     this.abilityBar = new UIElement.AbilityBar('ability-container', 48, this.renderScale);
     for(var i in this.game.player.abilities){
       var ability = this.game.player.abilities[i];
       this.setAbility(i, ability);
-      console.log(i, ability);
     }
+    */
   }
 
   resizeCanvas(){

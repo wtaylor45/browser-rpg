@@ -32,7 +32,7 @@ module.exports = Player = class Player extends Character{
     this.idle();
 
     this.abilities = [];
-    this.setAbility(0, Types.Abilities.FIREBALL);
+    //this.setAbility(0, Types.Abilities.FIREBALL);
   }
 
   setGame(game){
