@@ -6090,6 +6090,7 @@ Input.baseState = function(){
  * @return {Object} the current input state
  */
 Input.getState = function(){
+  if(!document.hasFocus()) Input.reset();
   return STATE;
 }
 
