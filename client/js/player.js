@@ -30,6 +30,9 @@ module.exports = Player = class Player extends Character{
     this.setSprite(new Sprite("player"));
 
     this.idle();
+
+    this.abilities = [];
+    //this.setAbility(0, Types.Abilities.FIREBALL);
   }
 
   setGame(game){
@@ -88,6 +91,11 @@ module.exports = Player = class Player extends Character{
         k++;
       }
     }
+    this.lastMove = message.time;
+  }
+
+  setAbility(index, ability){
+    this.abilities[index] = ability;
   }
 
   /**
@@ -128,5 +136,18 @@ module.exports = Player = class Player extends Character{
     if(chat){
       this.game.enableChat();
     }
+
+    if(Input.getState().hotkey1){
+      this.fireAbility(0);
+    }
+  }
+
+  fireAbility(index){
+    var ability = this.abilities[index];
+
+    if(!ability) return;
+
+    var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
+    message.send();
   }
 }

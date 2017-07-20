@@ -36,6 +36,9 @@ Input.onKeyEvent = function(keyCode, val){
     case 13:
       state.enter = val;
       break;
+
+    case 49:
+      state.hotkey1 = val;
   }
 }
 
@@ -65,7 +68,8 @@ Input.baseState = function(){
     down: false,
     left: false,
     right: false,
-    enter: false
+    enter: false,
+    hotkey1: false
   }
 }
 
@@ -74,6 +78,7 @@ Input.baseState = function(){
  * @return {Object} the current input state
  */
 Input.getState = function(){
+  if(!document.hasFocus()) Input.reset();
   return STATE;
 }
 

@@ -23,11 +23,14 @@ Types = {
     TRANSITION: 8,
     CHAT: 9,
     COMMAND: 10,
-    NOTIFICATION: 11
+    NOTIFICATION: 11,
+    ABILITY: 12,
+    ALLUPDATE: 13
   },
 
   Entities: {
-    PLAYER: 0
+    PLAYER: 0,
+    FIREBALL: 1
   },
 
   Directions: {
@@ -46,15 +49,26 @@ Types = {
     GOD: 5,
     ADMIN: 4,
     PLEB: 3
+  },
+
+
+  Abilities: {
+    FIREBALL: 'fireball'
   }
 }
 
 var speciesList = {
   player: [Types.Entities.PLAYER, "player"],
+  fireball: [Types.Entities.FIREBALL, "projectile"],
+}
 
-  getGenus: function(species){
-    return speciesList[species][1];
-  }
+var iconList = {
+  fireball: 'fireball-red-1.png'
+}
+
+Types.getGenus = function(species){
+  var species = Types.speciesAsString(species);
+  return speciesList[species][1];
 }
 
 Types.speciesAsString = function(species){
@@ -62,17 +76,29 @@ Types.speciesAsString = function(species){
     if(speciesList[s][0] === species) {
         return s;
     }
-}
+  }
 }
 
 Types.isPlayer = function(species){
-  return speciesList.getGenus[species] == "player";
+  return Types.getGenus(species) == "player";
 }
 
 Types.isCharacter = function(species){
   return Types.isPlayer(species);
 }
 
+Types.isMob = function(species){
+  return Types.getGenus(species) == "mob";
+}
+
+Types.isProjectile = function(species){
+  return Types.getGenus(species) == "projectile";
+}
+
 if(!(typeof exports === 'undefined')){
   module.exports = Types;
+}
+
+Types.abilityToIcon = function(ability){
+  return 'client/assets/icons/'+iconList[ability];
 }

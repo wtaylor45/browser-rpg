@@ -28,7 +28,7 @@ module.exports = Renderer = class Renderer{
 
     this.options = {
       SHOW_FPS: false,
-      DRAW_BOUNDING_BOX: false,
+      DRAW_BOUNDING_BOX: true,
       MOUSEOVER: true,
     }
 
@@ -46,6 +46,13 @@ module.exports = Renderer = class Renderer{
     this.bottomLeft = new UIElement.BottomLeft();
     this.bottomRight = new UIElement.BottomRight();
     this.chat = new UIElement.Chat('chat-container', this.game.onSubmitChat.bind(this.game));
+    /*
+    this.abilityBar = new UIElement.AbilityBar('ability-container', 48, this.renderScale);
+    for(var i in this.game.player.abilities){
+      var ability = this.game.player.abilities[i];
+      this.setAbility(i, ability);
+    }
+    */
   }
 
   resizeCanvas(){
@@ -139,14 +146,21 @@ module.exports = Renderer = class Renderer{
         anim = entity.currentAnimation,
         stage = this.stage;
 
-    if(anim && sprite){
-      var frame = anim.currentFrame,
-          x = frame.x,
-          y = frame.y,
-          width = sprite.width,
+    entity.realX = entity.x - this.camera.x;
+    entity.realY = entity.y - this.camera.y;
+
+    if(sprite){
+      var width = sprite.width,
           height = sprite.height;
 
-      sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
+      if(anim){
+        var frame = anim.currentFrame || 0,
+            x = frame.x || 0,
+            y = frame.y || 0;
+
+        sprite.image.sourceRect = new createjs.Rectangle(x, y, width, height);
+      }
+
       sprite.image.x = entity.x - this.camera.x;
       sprite.image.y = entity.y - this.camera.y;
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
@@ -165,8 +179,17 @@ module.exports = Renderer = class Renderer{
           entity.y-this.camera.y);
       }
 
-      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX)
-        this.drawBoundingBox(entity);
+      if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
+        //this.drawBoundingBox(entity);
+        var dotX = entity.clientX - entity.x
+        var dotY = - (entity.clientY-entity.y)
+        var graphics = new createjs.Graphics()
+          .beginStroke("#ffff00")
+          .drawRect(dotX, dotY,
+            5, 5);
+        var shape = new createjs.Shape(graphics);
+        this.stage.addChild(shape)
+      }
     }
   }
 
@@ -274,6 +297,20 @@ module.exports = Renderer = class Renderer{
 
   addNotification(message){
     this.chat.addNotification(message);
+  }
+
+  drawAbilities(){
+    var icons = this.abilityBar.getAbilityIcons();
+    for(var i in icons){
+      icons[i].x = (this.getWidth() - ((3-i)*this.abilityBar.iconSize))/this.renderScale;
+      if(i>0) icons[i].x += this.abilityBar.offset/2;
+      icons[i].y = (this.getHeight() - (this.abilityBar.iconSize + this.abilityBar.offset/2))/this.renderScale;
+      this.stage.addChild(icons[i]);
+    }
+  }
+
+  setAbility(index, ability){
+    this.abilityBar.setAbility(index, Types.abilityToIcon(ability));
   }
 }
 

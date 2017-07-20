@@ -69,6 +69,7 @@ module.exports = Map = class Map{
   }
 
   removeEntity(id){
+    console.log(id, "killed")
     delete this.entities[id];
   }
 

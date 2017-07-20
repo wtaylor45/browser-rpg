@@ -1,7 +1,7 @@
 /**
- * @author Will Taylor
- * Created on: 4/7/17
- */
+* @author Will Taylor
+* Created on: 4/7/17
+*/
 
 var cls = require('./lib/class');
 
@@ -13,23 +13,25 @@ var Message = cls.Class.extend({});
 
 Messages.Move = Message.extend({
   /**
-   * Create a new message
-   * @param  {Object} entity The entity sending the message
-   */
+  * Create a new message
+  * @param  {Object} entity The entity sending the message
+  */
   init: function(entity){
     this.entity = entity;
   },
 
   /**
-   * Save and get the message contents to be sent
-   * @return {Object} The message contents
-   */
+  * Save and get the message contents to be sent
+  * @return {Object} The message contents
+  */
   serialize: function(){
     var message = {
       type: Types.Messages.MOVE,
       id: this.entity.id,
       x: this.entity.x,
-      y: this.entity.y
+      y: this.entity.y,
+      dir: this.entity.direction,
+      time: Date.now()
     }
     if(this.entity.genus == 'player') message.lastProcessedInput = this.entity.lastProcessedInput;
 
@@ -44,14 +46,15 @@ Messages.List = Message.extend({
 
   serialize: function(){
     return {
-            type: Types.Messages.LIST,
-            list: this.ids
-          }
+      type: Types.Messages.LIST,
+      list: this.ids
+    }
   }
 });
 
 Messages.Spawn = Message.extend({
   init: function(entity){
+    if(!entity) throw "No entity assined to Spawn message.";
     this.entity = entity;
   },
 
@@ -62,6 +65,8 @@ Messages.Spawn = Message.extend({
     for(var i in state){
       message[i] = state[i];
     }
+
+    message.time = Date.now();
 
     return message;
   }

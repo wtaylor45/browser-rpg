@@ -1,8 +1,8 @@
 {
-  "id": "firespell",
+  "id": "fireball",
   "width": 16,
   "height": 16,
-  "image": "client/assets/projectiles/fire.png",
+  "image": "client/assets/projectiles/fireball.png",
   "animations": {
     "idle_0": {
       "frames": 1,

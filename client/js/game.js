@@ -13,7 +13,6 @@ var Input = require('./input'),
     Socket = require('./socket'),
     _ = require('underscore'),
     Map = require('./map'),
-    Input = require('./input'),
     Message = require('./message'),
     sanitize = require('sanitize-html');
 
@@ -64,9 +63,40 @@ module.exports = Game = class Game{
     this.renderer.setMap(this.currentMap);
     this.updater = new Updater(this);
     Input.init();
+    document.addEventListener('visibilitychange', this.visibilityChange.bind(this));
 
     // Update every loop
-    this.tick();
+    var self = this;
+    setInterval(function(){
+      self.tick();
+    }, 1000/this.FPS);
+    this.render();
+  }
+
+  visibilityChange(){
+    if(!document.hidden){
+      this.requestAll = true;
+    }
+  }
+
+  /**
+   * The logic to run every loop
+   *
+   * @param {number} dt Delta time, time since last loop
+   */
+  tick(){
+    if(!this.isFrozen()) this.updater.update();
+    if(this.requestAll){
+      this.requestAllUpdates();
+      this.requestAll = false;
+    }
+  }
+
+  render(){
+    if(this.running){
+      this.renderer.render();
+    }
+    window.requestAnimationFrame(this.render.bind(this));
   }
 
   /**
@@ -97,8 +127,11 @@ module.exports = Game = class Game{
       var message = this.mailbox[i];
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
-          this.player.onMove(message);
-        }else{
+          if(message.time > this.player.lastMove){
+            this.player.onMove(message);
+          }
+        }
+        else{
           // Other entity
           this.receiveMove(message);
         }
@@ -107,8 +140,9 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id)
+        if(message.id != this.player.id){
           this.receiveSpawn(message);
+        }
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -133,7 +167,7 @@ module.exports = Game = class Game{
     var self = this;
 
     this.entitiesToPrune = _.reject(this.entities, function(entity){
-      return _.contains(this.alreadySeen, entity) || entity.id == self.player.id;
+      return _.contains(this.alreadySeen, entity.id) || entity.id == self.player.id;
     });
 
     this.pruneEntities();
@@ -150,14 +184,45 @@ module.exports = Game = class Game{
       return;
     }
 
-    entity.setPos(message.x, message.y);
-  }
-
-  receiveSpawn(message){
-    if(this.entities[message.id]){
+    if(message.time < entity.lastMove){
       return;
     }
 
+    entity.setPos(message.x, message.y);
+    entity.setDirection(message.dir);
+    entity.lastMove = message.time;
+  }
+
+  receiveSpawn(message){
+    if(this.entities[message.id] &&
+    message.time > this.entities[message.id].lastSpawn){
+      this.updateEntity(message);
+      return;
+    }
+
+    if(Types.isCharacter(message.species)) this.spawnCharacter(message);
+    else if(Types.isProjectile(message.species)) this.spawnProjectile(message);
+  }
+
+  updateEntity(data){
+    var entity = this.entities[data.id];
+    entity.x = data.x;
+    entity.y = data.y;
+    entity.lastMove = data.time;
+  }
+
+  spawnProjectile(message){
+    this.entities[message.id] = new Entity(message.id, message.species,
+      message.x, message.y, message.w, message.h);
+    var entity = this.entities[message.id];
+
+    var sprite = new Sprite(Types.speciesAsString(entity.species));
+
+    entity.setSprite(sprite);
+    entity.lastSpawn = message.time;
+  }
+
+  spawnCharacter(message){
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
@@ -175,6 +240,7 @@ module.exports = Game = class Game{
 
     entity.setSprite(sprite);
     entity.idle();
+    entity.lastSpawn = message.time;
   }
 
   receiveDespawn(message){
@@ -201,19 +267,6 @@ module.exports = Game = class Game{
 
   setFrozen(state){
     this.freeze = state;
-  }
-
-  /**
-   * The logic to run every loop
-   *
-   * @param {number} dt Delta time, time since last loop
-   */
-  tick(){
-    if(!this.isFrozen()) this.updater.update();
-    this.renderer.render();
-
-    if(this.running)
-      window.requestAnimationFrame(this.tick.bind(this));
   }
 
   askWhoAre(list){
@@ -248,5 +301,17 @@ module.exports = Game = class Game{
       var chat = this.player.name+": " + message
       new Message(Types.Messages.CHAT, chat).send();
     }
+  }
+
+  abilityActivated(ability){
+
+  }
+
+  changeAbility(index, ability){
+    this.renderer.setAbility(index, ability);
+  }
+
+  requestAllUpdates(){
+    new Message(Types.Messages.ALLUPDATE).send();
   }
 }

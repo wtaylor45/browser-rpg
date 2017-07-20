@@ -22,6 +22,8 @@ module.exports = Entity = class Entity{
     this.height = height;
 
     this.lastPos = [this.x, this.y];
+    this.lastMove = 0;
+    this.lastSpawn = 0;
 
     this.sprite = null;
     this.animations = null;
