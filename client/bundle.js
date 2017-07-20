@@ -5510,6 +5510,7 @@ module.exports = Character = class Character extends Entity{
     this.isDead = false;
 
     this.name = name;
+    this.currentHealth = this.maxHealth = 100;
   }
 
   animate(animation, speed, count, onEnd){
@@ -5554,6 +5555,22 @@ module.exports = Character = class Character extends Entity{
       return;
     }
     this.idle();
+  }
+
+  /**
+   * Set the current health to the given value
+   * @param  {number} health The value to set the current health to
+   */
+  updateHealth(health){
+    this.currentHealth = health;
+  }
+
+  /**
+   * Set the max health to the given value
+   * @param  {number} health the int to set max health to
+   */
+  updateMaxHealth(health){
+    this.maxHealth = health;
   }
 
   idle(){
@@ -5848,6 +5865,9 @@ module.exports = Game = class Game{
       }
       else if(message.type == Types.Messages.NOTIFICATION){
         this.receiveNotification(message.message);
+      }
+      else if(message.type == Types.Messages.DAMAGE){
+        this.entities[message.id].dealDamage(message.amount);
       }
       this.mailbox.splice(i,1);
     }
@@ -11987,7 +12007,8 @@ Types = {
     COMMAND: 10,
     NOTIFICATION: 11,
     ABILITY: 12,
-    ALLUPDATE: 13
+    ALLUPDATE: 13,
+    DAMAGE: 14
   },
 
   Entities: {

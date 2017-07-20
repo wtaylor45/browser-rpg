@@ -70,6 +70,8 @@ module.exports = Player = class Player extends Character {
         self.server.sendAllUpdate(self);
       }
     });
+
+    console.log(this.currentHealth)
   }
 
   /**

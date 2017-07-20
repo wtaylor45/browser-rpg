@@ -25,7 +25,8 @@ Types = {
     COMMAND: 10,
     NOTIFICATION: 11,
     ABILITY: 12,
-    ALLUPDATE: 13
+    ALLUPDATE: 13,
+    DAMAGE: 14
   },
 
   Entities: {

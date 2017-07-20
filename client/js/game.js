@@ -156,6 +156,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.NOTIFICATION){
         this.receiveNotification(message.message);
       }
+      else if(message.type == Types.Messages.DAMAGE){
+        this.entities[message.id].dealDamage(message.amount);
+      }
       this.mailbox.splice(i,1);
     }
   }

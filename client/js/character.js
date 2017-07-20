@@ -22,6 +22,7 @@ module.exports = Character = class Character extends Entity{
     this.isDead = false;
 
     this.name = name;
+    this.currentHealth = this.maxHealth = 100;
   }
 
   animate(animation, speed, count, onEnd){
@@ -66,6 +67,22 @@ module.exports = Character = class Character extends Entity{
       return;
     }
     this.idle();
+  }
+
+  /**
+   * Set the current health to the given value
+   * @param  {number} health The value to set the current health to
+   */
+  updateHealth(health){
+    this.currentHealth = health;
+  }
+
+  /**
+   * Set the max health to the given value
+   * @param  {number} health the int to set max health to
+   */
+  updateMaxHealth(health){
+    this.maxHealth = health;
   }
 
   idle(){
