@@ -16,15 +16,14 @@ module.exports = Character = class Character extends Entity{
 
     this.drawName = false;
 
-    this.health = 0;
-    this.maxHealth = 0;
-
     this.isDead = false;
 
     this.name = name;
 
     this.maxHealth = 100;
     this.currentHealth = 76;
+
+    this.lastDamaged = 0;
   }
 
   animate(animation, speed, count, onEnd){

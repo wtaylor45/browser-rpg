@@ -34,8 +34,6 @@ module.exports = Character = class Character extends Entity {
 
     this.maxHealth = 100;
     this.currentHealth = this.maxHealth;
-
-    this.lastDamaged = 0;
   }
 
   /**
