@@ -22,7 +22,9 @@ module.exports = Character = class Character extends Entity{
     this.isDead = false;
 
     this.name = name;
-    this.currentHealth = this.maxHealth = 100;
+
+    this.maxHealth = 100;
+    this.currentHealth = 76;
   }
 
   animate(animation, speed, count, onEnd){

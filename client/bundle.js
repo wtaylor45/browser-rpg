@@ -5510,7 +5510,9 @@ module.exports = Character = class Character extends Entity{
     this.isDead = false;
 
     this.name = name;
-    this.currentHealth = this.maxHealth = 100;
+
+    this.maxHealth = 100;
+    this.currentHealth = 76;
   }
 
   animate(animation, speed, count, onEnd){
@@ -6667,6 +6669,8 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
+      this.drawHealthBar(entity);
+
       if(entity.drawName){
         var name = entity.name || Types.speciesAsString(entity.species);
         this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-4,
@@ -6707,6 +6711,26 @@ module.exports = Renderer = class Renderer{
         entity.width-this.map.tileWidth, entity.height/2);
     var shape = new createjs.Shape(graphics);
     self.stage.addChild(shape)
+  }
+
+  drawHealthBar(entity){
+    var x = entity.x-this.camera.x;
+    var y = entity.y-this.camera.y;
+    var greenWidth = entity.currentHealth/entity.maxHealth * entity.width;
+
+    // Draw the lower red bar first
+    var graphics = new createjs.Graphics()
+      .beginFill('#ff1111')
+      .drawRect(x, y, entity.width, 3);
+    var shape = new createjs.Shape(graphics);
+    this.stage.addChild(shape);
+
+    // Draw the green current health
+    var graphics = new createjs.Graphics()
+      .beginFill('#11ff11')
+      .drawRect(x, y, greenWidth, 3);
+    var shape = new createjs.Shape(graphics);
+    this.stage.addChild(shape);
   }
 
   drawMapLow(){
