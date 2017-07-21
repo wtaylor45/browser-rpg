@@ -61,4 +61,8 @@ module.exports = Character = class Character extends Entity {
   dealDamage(damage){
     this.currentHealth = Math.floor(0, this.currentHealth-damage);
   }
+
+  heal(amount){
+    this.currentHealth = Math.ceil(this.maxHealth, this.currentHealth+amount);
+  }
 }

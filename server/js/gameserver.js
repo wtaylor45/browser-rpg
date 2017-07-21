@@ -41,6 +41,10 @@ function GameServer(){
   this.FPS = 60;
   this.delay = 1/this.FPS;
 
+  // How many miliseconds between health autogeneration
+  this.HEALTH_GEN = 10000
+  this.healthGenTimer = 0;
+
   /**
    * Performed on player login
    * @param  {Object} player The player who logged in
@@ -93,6 +97,8 @@ function GameServer(){
     this.updateEntities(dt);
     // Send each player their messages
     this.sendPlayerMessages();
+
+    this.healthGenTimer += dt;
   }
 
   /**
@@ -101,6 +107,10 @@ function GameServer(){
   this.updateEntities = function(dt){
     for(var i in this.groups){
       this.groups[i].update(dt);
+      if(this.healthGenTimer >= this.HEALTH_GEN){
+        this.groups[i].generateHealth();
+        this.healthGenTimer = 0;
+      }
     }
   }
 
