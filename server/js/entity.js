@@ -5,7 +5,8 @@
 
  var cls = require('./lib/class'),
      Map = require('./map'),
-     Types = require('../../shared/js/types.js');
+     Types = require('../../shared/js/types.js'),
+     Messages = require('./message.js');
 
 module.exports = Entity = class Entity {
   /**

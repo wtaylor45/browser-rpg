@@ -128,3 +128,35 @@ Messages.Notification = Message.extend({
     }
   }
 })
+
+Messages.Damage = Message.extend({
+  init: function(newHealth, damageDealt){
+    this.newHealth = newHealth;
+    this.damageDealt = damageDealt;
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.DAMAGE,
+      newHealth: this.newHealth,
+      damageDealt: this.damageDealt
+    }
+  }
+})
+
+Messages.Heal = Message.extend({
+  init: function(target, newHealth, healthGiven){
+    this.target = target;
+    this.newHealth = newHealth;
+    this.healthGiven = healthGiven;
+  },
+
+  serialize: function(){
+    return {
+      type: Types.Messages.HEAL,
+      target: this.target,
+      newHealth: this.newHealth,
+      healthGiven: this.healthGiven
+    }
+  }
+})

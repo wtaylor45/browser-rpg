@@ -4,7 +4,8 @@
  */
 
 var cls = require('./lib/class'),
-    Types = require('../../shared/js/types')
+    Types = require('../../shared/js/types'),
+    Messages = require('./message.js');
 
 module.exports = Character = class Character extends Entity {
   /**
@@ -33,7 +34,7 @@ module.exports = Character = class Character extends Entity {
     this.name = name;
 
     this.maxHealth = 100;
-    this.currentHealth = this.maxHealth;
+    this.currentHealth = 76;
   }
 
   /**
@@ -59,10 +60,12 @@ module.exports = Character = class Character extends Entity {
    * @param  {number} damage The amount of health to remove
    */
   dealDamage(damage){
-    this.currentHealth = Math.floor(0, this.currentHealth-damage);
+    this.currentHealth = Math.max(0, this.currentHealth-damage);
+    return new Messages.Damage(this.currentHealth, damage);
   }
 
   heal(amount){
-    this.currentHealth = Math.ceil(this.maxHealth, this.currentHealth+amount);
+    this.currentHealth = Math.min(this.maxHealth, this.currentHealth+amount);
+    return new Messages.Heal(this.id, this.currentHealth, amount);
   }
 }

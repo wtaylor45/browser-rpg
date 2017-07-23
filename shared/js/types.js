@@ -26,7 +26,8 @@ Types = {
     NOTIFICATION: 11,
     ABILITY: 12,
     ALLUPDATE: 13,
-    DAMAGE: 14
+    DAMAGE: 14,
+    HEAL: 15
   },
 
   Entities: {

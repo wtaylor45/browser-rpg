@@ -42,7 +42,7 @@ function GameServer(){
   this.delay = 1/this.FPS;
 
   // How many miliseconds between health autogeneration
-  this.HEALTH_GEN = 10000
+  this.HEALTH_GEN = 2;
   this.healthGenTimer = 0;
 
   /**
@@ -98,7 +98,7 @@ function GameServer(){
     // Send each player their messages
     this.sendPlayerMessages();
 
-    this.healthGenTimer += dt;
+    this.healthGenTimer += dt/10;
   }
 
   /**
@@ -108,9 +108,19 @@ function GameServer(){
     for(var i in this.groups){
       this.groups[i].update(dt);
       if(this.healthGenTimer >= this.HEALTH_GEN){
-        this.groups[i].generateHealth();
+        this.generateHealth(this.groups[i]);
         this.healthGenTimer = 0;
       }
+    }
+  }
+
+  this.generateHealth = function(group){
+    for(var i in group.entities){
+      var entity = group.entities[i];
+      if(!entity.currentHealth) continue;
+
+      var heal = entity.heal(1);
+      this.pushToGroup(group.id, heal.serialize());
     }
   }
 

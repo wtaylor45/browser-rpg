@@ -284,6 +284,7 @@ module.exports = Character = class Character extends Entity{
    */
   updateHealth(health){
     this.currentHealth = health;
+    console.log('Healed to', health)
   }
 
   /**
@@ -590,6 +591,9 @@ module.exports = Game = class Game{
       else if(message.type == Types.Messages.DAMAGE){
         this.entities[message.id].dealDamage(message.amount);
       }
+      else if(message.type == Types.Messages.HEAL){
+        this.entities[message.target].updateHealth(message.newHealth);
+      }
       this.mailbox.splice(i,1);
     }
   }
@@ -643,6 +647,10 @@ module.exports = Game = class Game{
     entity.x = data.x;
     entity.y = data.y;
     entity.lastMove = data.time;
+    if(Types.isCharacter(data.species)){
+      entity.currentHealth = data.currentHealth;
+      entity.maxHealth = data.maxHealth;
+    }
   }
 
   spawnProjectile(message){
@@ -660,6 +668,9 @@ module.exports = Game = class Game{
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
+    console.log(message)
+    entity.currentHealth = message.stats.currentHealth;
+    entity.maxHealth = message.stats.maxHealth;
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
@@ -12173,7 +12184,8 @@ Types = {
     NOTIFICATION: 11,
     ABILITY: 12,
     ALLUPDATE: 13,
-    DAMAGE: 14
+    DAMAGE: 14,
+    HEAL: 15
   },
 
   Entities: {
