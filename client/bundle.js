@@ -284,7 +284,6 @@ module.exports = Character = class Character extends Entity{
    */
   updateHealth(health){
     this.currentHealth = health;
-    console.log('Healed to', health)
   }
 
   /**

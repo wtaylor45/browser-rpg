@@ -198,7 +198,7 @@ module.exports = Player = class Player extends Character {
         this.server.sendNotification(this.id, "Map " + args[1] + " not found!");
         return;
       }
-      if(isNaN(parseInt(args[1], 10)) || isNaN(parseInt(args[2], 10))){
+      if(isNaN(parseInt(args[2], 10)) || isNaN(parseInt(args[3], 10))){
         this.server.sendNotification(this.id, "Coordinates must be a number!");
         return;
       }
