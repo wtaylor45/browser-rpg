@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "An attempt to create a browser-based RPG",
   "main": "server.js",
-  "dependencies": {},
+  "dependencies": {
+    "browserify": "^14.4.0"
+  },
   "devDependencies": {
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
