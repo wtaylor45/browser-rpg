@@ -4,7 +4,8 @@
  */
 
 var cls = require('./lib/class'),
-    Types = require('../../shared/js/types')
+    Types = require('../../shared/js/types'),
+    Messages = require('./message.js');
 
 module.exports = Character = class Character extends Entity {
   /**
@@ -31,6 +32,9 @@ module.exports = Character = class Character extends Entity {
     this.target = null;
 
     this.name = name;
+
+    this.maxHealth = 100;
+    this.currentHealth = 76;
   }
 
   /**
@@ -44,7 +48,24 @@ module.exports = Character = class Character extends Entity {
     if(this.map) state['map'] = this.map;
     if(this.target) state['target'] = this.target;
     if(this.name) state['name'] = this.name;
+    state['stats'] = {};
+    state['stats']['currentHealth'] = this.currentHealth;
+    state['stats']['maxHealth'] = this.maxHealth;
 
     return state;
+  }
+
+  /**
+   * Remove the given amount of health from the current health
+   * @param  {number} damage The amount of health to remove
+   */
+  dealDamage(damage){
+    this.currentHealth = Math.max(0, this.currentHealth-damage);
+    return new Messages.Damage(this.currentHealth, damage);
+  }
+
+  heal(amount){
+    this.currentHealth = Math.min(this.maxHealth, this.currentHealth+amount);
+    return new Messages.Heal(this.id, this.currentHealth, amount);
   }
 }

@@ -41,6 +41,10 @@ function GameServer(){
   this.FPS = 60;
   this.delay = 1/this.FPS;
 
+  // How many miliseconds between health autogeneration
+  this.HEALTH_GEN = 2;
+  this.healthGenTimer = 0;
+
   /**
    * Performed on player login
    * @param  {Object} player The player who logged in
@@ -89,10 +93,14 @@ function GameServer(){
    * TODO: Update entities as well
    */
   this.tick = function(dt){
+    this.healthGenTimer += dt/10;
+    
     // Update all players on the server
     this.updateEntities(dt);
     // Send each player their messages
     this.sendPlayerMessages();
+
+    if(this.healthGenTimer >= this.HEALTH_GEN) this.healthGenTimer = 0;
   }
 
   /**
@@ -101,6 +109,20 @@ function GameServer(){
   this.updateEntities = function(dt){
     for(var i in this.groups){
       this.groups[i].update(dt);
+
+      if(this.healthGenTimer >= this.HEALTH_GEN){
+        this.generateHealth(this.groups[i]);
+      }
+    }
+  }
+
+  this.generateHealth = function(group){
+    for(var i in group.entities){
+      var entity = group.entities[i];
+      if(!entity.currentHealth) continue;
+
+      var heal = entity.heal(1);
+      this.pushToGroup(group.id, heal.serialize());
     }
   }
 

@@ -7,6 +7,8 @@ module.exports = Group = class Group {
     this.players = {};
     this.entities = {};
     this.size = 0;
+
+    this.healthGenAmount = 1;
   }
 
   addEntity(entity){
@@ -24,6 +26,14 @@ module.exports = Group = class Group {
     if(entity){
       if(this.players[id]) delete this.players[id];
       delete this.entities[id];
+    }
+  }
+
+  generateHealth(){
+    for(var i in this.entities){
+      var entity = this.entities[i];
+      if(entity.currentHealth)
+        entity.heal(this.healthGenAmount);
     }
   }
 
