@@ -93,12 +93,14 @@ function GameServer(){
    * TODO: Update entities as well
    */
   this.tick = function(dt){
+    this.healthGenTimer += dt/10;
+    
     // Update all players on the server
     this.updateEntities(dt);
     // Send each player their messages
     this.sendPlayerMessages();
 
-    this.healthGenTimer += dt/10;
+    if(this.healthGenTimer >= this.HEALTH_GEN) this.healthGenTimer = 0;
   }
 
   /**
@@ -107,9 +109,9 @@ function GameServer(){
   this.updateEntities = function(dt){
     for(var i in this.groups){
       this.groups[i].update(dt);
+
       if(this.healthGenTimer >= this.HEALTH_GEN){
         this.generateHealth(this.groups[i]);
-        this.healthGenTimer = 0;
       }
     }
   }

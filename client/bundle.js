@@ -592,7 +592,8 @@ module.exports = Game = class Game{
         this.entities[message.id].dealDamage(message.amount);
       }
       else if(message.type == Types.Messages.HEAL){
-        this.entities[message.target].updateHealth(message.newHealth);
+        if(this.entities[message.target])
+          this.entities[message.target].updateHealth(message.newHealth);
       }
       this.mailbox.splice(i,1);
     }
@@ -648,8 +649,8 @@ module.exports = Game = class Game{
     entity.y = data.y;
     entity.lastMove = data.time;
     if(Types.isCharacter(data.species)){
-      entity.currentHealth = data.currentHealth;
-      entity.maxHealth = data.maxHealth;
+      entity.currentHealth = data.stats.currentHealth;
+      entity.maxHealth = data.stats.maxHealth;
     }
   }
 
@@ -668,7 +669,8 @@ module.exports = Game = class Game{
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
-    console.log(message)
+
+    // set stats
     entity.currentHealth = message.stats.currentHealth;
     entity.maxHealth = message.stats.maxHealth;
 
