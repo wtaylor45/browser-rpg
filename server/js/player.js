@@ -145,8 +145,9 @@ module.exports = Player = class Player extends Character {
       this.broadcast(new Messages.Move(this));
     }
 
-    if(this.currentCooldown > 0)
+    if(this.currentCooldown > 0){
       this.currentCooldown -= dt/10;
+    }
   }
 
   checkCollisions(){
