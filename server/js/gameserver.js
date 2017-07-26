@@ -94,7 +94,7 @@ function GameServer(){
    */
   this.tick = function(dt){
     this.healthGenTimer += dt/10;
-    
+
     // Update all players on the server
     this.updateEntities(dt);
     // Send each player their messages
@@ -353,5 +353,28 @@ function GameServer(){
 
     // Get list of this map's entities
     this.pushGroupEntityIDsTo(entity);
+  }
+
+  this.getTarget = function(entity, x, y){
+    var group = this.groups[entity.map];
+
+    for(var i in group.entities){
+      var target = group.entities[i];
+
+      if(target.id == entity.id) continue;
+      if(!Types.isCharacter(target.species)) continue;
+
+      var box = target.targetBox;
+      console.log(box,x,y)
+      if(x < box[0] || x > box[2] || y < box[1] || y > box[3]) continue;
+
+      return target.id;
+    }
+  }
+
+  this.attack = function(attacker, targetId){
+    var target = this.entities[targetId];
+    var message = target.dealDamage(attacker.currentAttackPower);
+    this.pushToGroup(target.map, message.serialize());
   }
 }

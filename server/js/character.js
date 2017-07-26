@@ -33,8 +33,17 @@ module.exports = Character = class Character extends Entity {
 
     this.name = name;
 
+    this.targetBox = [x, y, x+width, y+height];
+
+    // How much health a character can possibly have
     this.maxHealth = 100;
+    // How much health the character currently has
     this.currentHealth = 76;
+
+    // How much attack power the player can possibly have
+    this.maxAttackPower = 10;
+    // How much attack power the player currently has
+    this.currentAttackPower = 10;
   }
 
   /**
@@ -48,11 +57,29 @@ module.exports = Character = class Character extends Entity {
     if(this.map) state['map'] = this.map;
     if(this.target) state['target'] = this.target;
     if(this.name) state['name'] = this.name;
-    state['stats'] = {};
-    state['stats']['currentHealth'] = this.currentHealth;
-    state['stats']['maxHealth'] = this.maxHealth;
+
+    state['stats'] = this.getStats();
 
     return state;
+  }
+
+  /**
+   * Get all the stats that are a part of the character's state
+   * @return {Object} Object containing all stats and their max values
+   */
+  getStats(){
+    return {
+      currentHealth: this.currentHealth,
+      maxHealth: this.maxHealth,
+      currentAttackPower: this.currentAttackPower,
+      maxAttackPower: this.maxAttackPower
+    }
+  }
+
+  setPosition(x, y){
+    super.setPosition(x, y);
+
+    this.targetBox = [x, y, x+this.width, y+this.height];
   }
 
   /**
@@ -61,7 +88,7 @@ module.exports = Character = class Character extends Entity {
    */
   dealDamage(damage){
     this.currentHealth = Math.max(0, this.currentHealth-damage);
-    return new Messages.Damage(this.currentHealth, damage);
+    return new Messages.Damage(this.id, this.currentHealth, damage);
   }
 
   heal(amount){

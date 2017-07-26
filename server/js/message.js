@@ -130,7 +130,8 @@ Messages.Notification = Message.extend({
 })
 
 Messages.Damage = Message.extend({
-  init: function(newHealth, damageDealt){
+  init: function(target, newHealth, damageDealt){
+    this.target = target;
     this.newHealth = newHealth;
     this.damageDealt = damageDealt;
   },
@@ -138,6 +139,7 @@ Messages.Damage = Message.extend({
   serialize: function(){
     return {
       type: Types.Messages.DAMAGE,
+      target: this.target,
       newHealth: this.newHealth,
       damageDealt: this.damageDealt
     }

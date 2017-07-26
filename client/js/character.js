@@ -24,6 +24,8 @@ module.exports = Character = class Character extends Entity{
     this.currentHealth = 76;
 
     this.lastDamaged = 0;
+
+    this.targetBox = [x, y, x+w, y+h];
   }
 
   animate(animation, speed, count, onEnd){
@@ -104,5 +106,13 @@ module.exports = Character = class Character extends Entity{
     chatIconTimer = setTimeout(function(){
       this.chat = false;
     }.bind(this), 2000);
+  }
+
+  setStats(stats){
+    this.currentHealth = stats.currentHealth;
+    this.maxHealth = stats.maxHealth;
+
+    this.currentAttackPower = stats.currentAttackPower;
+    this.maxAttackPower = stats.maxAttackPower;
   }
 }

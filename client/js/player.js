@@ -140,6 +140,15 @@ module.exports = Player = class Player extends Character{
     if(Input.getState().hotkey1){
       this.fireAbility(0);
     }
+
+    if(Input.getState().mouse){
+      var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
+      var mouseX = mouse[0];
+      var mouseY = mouse[1];
+      
+      var message = new Message(Types.Messages.ATTACK, {x: mouseX, y: mouseY});
+      message.send();
+    }
   }
 
   fireAbility(index){

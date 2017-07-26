@@ -27,6 +27,9 @@ module.exports = Player = class Player extends Character {
     // The player movement speed
     this.speed = 10;
 
+    this.COOLDOWN = 3;
+    this.currentCooldown = 0;
+
     // The last input processed for this player by the server
     this.lastProcessedInput = 0;
 
@@ -68,6 +71,9 @@ module.exports = Player = class Player extends Character {
       }
       else if(message.type == Types.Messages.ALLUPDATE){
         self.server.sendAllUpdate(self);
+      }
+      else if(message.type = Types.Messages.ATTACK){
+        self.attack(message.data.x, message.data.y);
       }
     });
   }
@@ -138,6 +144,9 @@ module.exports = Player = class Player extends Character {
       // Broadcast our new position
       this.broadcast(new Messages.Move(this));
     }
+
+    if(this.currentCooldown > 0)
+      this.currentCooldown -= dt/10;
   }
 
   checkCollisions(){
@@ -261,5 +270,14 @@ module.exports = Player = class Player extends Character {
   handleAbility(ability, angle){
     var ability = Projectile.builder[ability](angle, this);
     this.server.spawnEntity(ability);
+  }
+
+  attack(x, y){
+    if(this.currentCooldown > 0) return;
+    var target = this.server.getTarget(this, x, y);
+    if(!target) return;
+
+    this.server.attack(this, target);
+    this.currentCooldown = this.COOLDOWN;
   }
 }

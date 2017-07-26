@@ -157,7 +157,7 @@ module.exports = Game = class Game{
         this.receiveNotification(message.message);
       }
       else if(message.type == Types.Messages.DAMAGE){
-        this.entities[message.id].dealDamage(message.amount);
+        this.entities[message.target].updateHealth(message.newHealth);
       }
       else if(message.type == Types.Messages.HEAL){
         if(this.entities[message.target])
@@ -239,8 +239,7 @@ module.exports = Game = class Game{
     var entity = this.entities[message.id];
 
     // set stats
-    entity.currentHealth = message.stats.currentHealth;
-    entity.maxHealth = message.stats.maxHealth;
+    entity.setStats(message.stats);
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
@@ -328,5 +327,12 @@ module.exports = Game = class Game{
 
   requestAllUpdates(){
     new Message(Types.Messages.ALLUPDATE).send();
+  }
+
+  screenToGameCoords(coords){
+    var x = coords.x,
+        y = coords.y;
+
+    return [x+this.renderer.camera.x, y+this.renderer.camera.y]
   }
 }
