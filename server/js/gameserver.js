@@ -365,7 +365,6 @@ function GameServer(){
       if(!Types.isCharacter(target.species)) continue;
 
       var box = target.targetBox;
-      console.log(box,x,y)
       if(x < box[0] || x > box[2] || y < box[1] || y > box[3]) continue;
 
       return target.id;

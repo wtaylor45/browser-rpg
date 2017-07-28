@@ -182,7 +182,6 @@ module.exports = Renderer = class Renderer{
       }
 
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
-        //this.drawBoundingBox(entity);
         var dotX = entity.clientX - entity.x
         var dotY = - (entity.clientY-entity.y)
         var graphics = new createjs.Graphics()

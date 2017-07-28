@@ -30,6 +30,8 @@ module.exports = Entity = class Entity {
     this.spawned = false;
     this.map = null;
     this.direction = Types.Directions.DOWN;
+
+    this.targetBox = [x, y, x+width, y+height];
   }
 
   /**
@@ -92,6 +94,8 @@ module.exports = Entity = class Entity {
   setPosition(x, y){
     this.x = x;
     this.y = y;
+
+    this.targetBox = [x, y, x+this.width, y+this.height];
   }
 
   update(dt){

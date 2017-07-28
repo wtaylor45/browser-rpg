@@ -76,12 +76,6 @@ module.exports = Character = class Character extends Entity {
     }
   }
 
-  setPosition(x, y){
-    super.setPosition(x, y);
-
-    this.targetBox = [x, y, x+this.width, y+this.height];
-  }
-
   /**
    * Remove the given amount of health from the current health
    * @param  {number} damage The amount of health to remove
