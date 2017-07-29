@@ -95,7 +95,8 @@ module.exports = Entity = class Entity {
     this.x = x;
     this.y = y;
 
-    this.targetBox = [x, y, x+this.width, y+this.height];
+    this.targetBox = [Math.floor(x), Math.floor(y),
+      Math.floor(x+this.width), Math.floor(y+this.height)];
   }
 
   update(dt){

@@ -115,6 +115,8 @@ module.exports = Player = class Player extends Character {
     if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
     if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
     if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
+
+    this.setPosition(this.x, this.y);
   }
 
   handleCollision(collision){
