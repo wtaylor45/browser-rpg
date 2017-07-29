@@ -21,7 +21,7 @@ module.exports = Renderer = class Renderer{
     this.stage.scaleX = this.stage.scaleY = this.renderScale;
 
     this.font = "Macondo";
-    this.nameFont = "Cinzel Decorative"
+    this.nameFont = "Open Sans";
 
     this.createCamera();
 
@@ -171,8 +171,8 @@ module.exports = Renderer = class Renderer{
       if(entity.lastDamaged >= 0) this.drawHealthBar(entity);
 
       var name = entity.name || Types.speciesAsString(entity.species);
-      this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-4,
-      '7px '+this.nameFont, true, '#fff', '#000', 1);
+      this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-3,
+      '6px '+this.nameFont, true, '#fff', '#000', 1);
 
       if(entity.chat){
         this.drawImage(new createjs.Bitmap('client/assets/img/chat.png'),
