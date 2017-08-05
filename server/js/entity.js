@@ -95,8 +95,12 @@ module.exports = Entity = class Entity {
     this.x = x;
     this.y = y;
 
-    this.targetBox = [Math.floor(x), Math.floor(y),
-      Math.floor(x+this.width), Math.floor(y+this.height)];
+    this.targetBox = [
+      Math.floor(x),
+      Math.floor(y),
+      Math.floor(x+this.width),
+      Math.floor(y+this.height)
+    ];
   }
 
   update(dt){
@@ -108,4 +112,24 @@ module.exports = Entity = class Entity {
 
     return Math.sqrt(x*x + y*y);
   }
+
+  facePoint(x, y){
+    if(this.y > y){
+        this.direction = Types.Directions.UP;
+        return;
+    }
+    if(this.y < y){
+        this.direction = Types.Directions.DOWN;
+        return;
+    }
+    else if(this.x > x){
+        this.direction = Types.Directions.LEFT;
+        return;
+    }
+    else if(this.x < x){
+        this.direction = Types.Directions.RIGHT;
+        return;
+    }
+  }
+
 }

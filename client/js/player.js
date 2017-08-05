@@ -74,6 +74,7 @@ module.exports = Player = class Player extends Character{
 
   onMove(message){
     this.setPos(message.x, message.y);
+    this.setDirection(message.dir);
     // Preform reconciliation
     var k = 0;
     while (k < this.pending_inputs.length){
@@ -145,7 +146,7 @@ module.exports = Player = class Player extends Character{
       var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
       var mouseX = mouse[0];
       var mouseY = mouse[1];
-      
+
       var message = new Message(Types.Messages.ATTACK, {x: mouseX, y: mouseY});
       message.send();
     }
