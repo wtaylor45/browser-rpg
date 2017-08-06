@@ -367,12 +367,11 @@ function GameServer(){
       var box = target.targetBox;
       if(x < box[0] || x > box[2] || y < box[1] || y > box[3]) continue;
 
-      return target.id;
+      return target;
     }
   }
 
-  this.attack = function(attacker, targetId){
-    var target = this.entities[targetId];
+  this.attack = function(attacker, target){
     var message = target.dealDamage(attacker.currentAttackPower);
     this.pushToGroup(target.map, message.serialize());
   }

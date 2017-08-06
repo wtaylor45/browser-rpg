@@ -281,7 +281,7 @@ module.exports = Player = class Player extends Character {
     if(!target) return;
 
     this.server.attack(this, target);
-    this.facePoint(x, y);
+    this.facePoint(target.anchorX, target.anchorY);
     this.broadcast(new Messages.Move(this));
     this.currentCooldown = this.COOLDOWN;
   }

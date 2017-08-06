@@ -31,6 +31,9 @@ module.exports = Entity = class Entity {
     this.map = null;
     this.direction = Types.Directions.DOWN;
 
+    this.anchorX = this.x + this.width/2;
+    this.anchorY = this.y + this.height/2;
+
     this.targetBox = [x, y, x+width, y+height];
   }
 
@@ -95,11 +98,14 @@ module.exports = Entity = class Entity {
     this.x = x;
     this.y = y;
 
+    this.anchorX = this.x + this.width/2;
+    this.anchorY = this.y + this.height/2;
+
     this.targetBox = [
-      Math.floor(x),
-      Math.floor(y),
-      Math.floor(x+this.width),
-      Math.floor(y+this.height)
+      x,
+      y,
+      x+this.width,
+      y+this.height
     ];
   }
 
@@ -114,21 +120,24 @@ module.exports = Entity = class Entity {
   }
 
   facePoint(x, y){
-    if(this.y > y){
+    var diffX = Math.abs(this.anchorX - x);
+    var diffY = Math.abs(this.anchorY - y);
+
+    if(diffY >= diffX){
+      if(this.anchorY >= y){
         this.direction = Types.Directions.UP;
-        return;
-    }
-    if(this.y < y){
+      }
+      else if(this.anchorY < y){
         this.direction = Types.Directions.DOWN;
-        return;
+      }
     }
-    else if(this.x > x){
+    else if(diffX > diffY){
+      if(this.anchorX >= x){
         this.direction = Types.Directions.LEFT;
-        return;
-    }
-    else if(this.x < x){
+      }
+      else if(this.anchorX < x){
         this.direction = Types.Directions.RIGHT;
-        return;
+      }
     }
   }
 
