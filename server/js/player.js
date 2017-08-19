@@ -161,12 +161,6 @@ module.exports = Player = class Player extends Character {
     }
   }
 
-  respawn(){
-    this.currentHealth = this.maxHealth;
-    this.map = this.spawnPoint.map;
-    this.setPosition(this.spawnPoint.x, this.spawnPoint.y);
-  }
-
   /**
    * Broadcast a message to the other players on the server
    * @param  {Object} message The message to broadcast

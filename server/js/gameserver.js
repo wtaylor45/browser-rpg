@@ -132,8 +132,6 @@ function GameServer(){
   }
 
   this.onEntityDespawn = function(entity){
-    this.groups[entity.map].removeEntity(entity);
-
     var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
@@ -332,15 +330,15 @@ function GameServer(){
   }
 
   this.respawnEntity = function(entity){
-    this.addToGroup(entity.map, entity);
+    this.moveEntityToMap(entity, map)
 
     var message = new Messages.Spawn(entity);
     this.pushToGroup(entity.map, message.serialize());
   }
 
   this.moveEntityToMap = function(entity, map, entrance){
-    var pos = this.maps[map].getEntrancePosition(entrance);
-
+    var pos = entrance ? this.maps[map].getEntrancePosition(entrance)
+      : [entity.spawnPoint.x, entity.spawnPoint.y]
     var message = new Messages.Transition(map, pos);
     this.addMessageToOutbox(entity.id, message.serialize());
 
@@ -377,8 +375,7 @@ function GameServer(){
 
   this.checkAlive = function(entity){
     if(entity.currentHealth <= 0){
-      entity.despawn();
-      entity.respawn();
+      entity.resetStats();
       this.respawnEntity(entity);
     }
   }

@@ -76,6 +76,11 @@ module.exports = Character = class Character extends Entity {
     }
   }
 
+  resetStats(){
+    this.currentHealth = this.maxHealth;
+    this.currentAttackPower = this.maxAttackPower;
+  }
+
   /**
    * Remove the given amount of health from the current health
    * @param  {number} damage The amount of health to remove
