@@ -151,9 +151,7 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id){
-          this.receiveSpawn(message);
-        }
+        this.receiveSpawn(message);
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -215,6 +213,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
+      console.log('Player updated')
       return;
     }
 

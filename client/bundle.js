@@ -598,9 +598,7 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id){
-          this.receiveSpawn(message);
-        }
+        this.receiveSpawn(message);
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -662,6 +660,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
+      console.log('Player updated')
       return;
     }
 
@@ -1497,7 +1496,7 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(Date.now()-entity.lastDamaged <= 3000){
+      if(Date.now()-entity.lastDamaged <= 6000){
         this.drawHealthBar(entity);
       }
       var name = entity.name || Types.speciesAsString(entity.species);

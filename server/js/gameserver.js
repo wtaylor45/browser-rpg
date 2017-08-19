@@ -327,8 +327,15 @@ function GameServer(){
   this.spawnEntity = function(entity){
     entity.onMove(this.onEntityMove.bind(this));
     entity.onDespawn(this.onEntityDespawn.bind(this));
-    this.groups[entity.map].addEntity(entity);
+    this.addToGroup(entity.map, entity);
     this.tellOthersSpawned(entity);
+  }
+
+  this.respawnEntity = function(entity){
+    this.addToGroup(entity.map, entity);
+
+    var message = new Messages.Spawn(entity);
+    this.pushToGroup(entity.map, message.serialize());
   }
 
   this.moveEntityToMap = function(entity, map, entrance){
@@ -372,7 +379,7 @@ function GameServer(){
     if(entity.currentHealth <= 0){
       entity.despawn();
       entity.respawn();
-      this.spawnEntity(entity);
+      this.respawnEntity(entity);
     }
   }
 }
