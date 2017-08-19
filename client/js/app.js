@@ -56,7 +56,6 @@ module.exports = App = class App{
    */
   start(){
     if(this.ready && this.game.player){
-      console.log("Started")
       this.game.start();
     }
   }

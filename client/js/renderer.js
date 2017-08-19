@@ -214,7 +214,7 @@ module.exports = Renderer = class Renderer{
     var x = (entity.x+entity.width/4)-this.camera.x;
     var y = entity.y-this.camera.y-7;
     var greenWidth = entity.currentHealth/entity.maxHealth * entity.width/2;
-    console.log(entity.maxHealth)
+
     // Draw the lower red bar first
     var graphics = new createjs.Graphics()
       .beginFill('#ff1111')

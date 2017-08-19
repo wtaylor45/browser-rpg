@@ -213,7 +213,6 @@ module.exports = Game = class Game{
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
-      console.log('Player updated')
       return;
     }
 
