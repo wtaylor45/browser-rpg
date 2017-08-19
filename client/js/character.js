@@ -77,6 +77,9 @@ module.exports = Character = class Character extends Entity{
    * @param  {number} health The value to set the current health to
    */
   updateHealth(health){
+    if(this.currentHealth > health){
+      this.lastDamaged = Date.now();
+    }
     this.currentHealth = health;
   }
 

@@ -168,8 +168,9 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity.lastDamaged >= 0) this.drawHealthBar(entity);
-
+      if(Date.now()-entity.lastDamaged <= 3000){
+        this.drawHealthBar(entity);
+      }
       var name = entity.name || Types.speciesAsString(entity.species);
       this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-3,
       '6px '+this.nameFont, true, '#fff', '#000', 1);
@@ -213,7 +214,7 @@ module.exports = Renderer = class Renderer{
     var x = (entity.x+entity.width/4)-this.camera.x;
     var y = entity.y-this.camera.y-7;
     var greenWidth = entity.currentHealth/entity.maxHealth * entity.width/2;
-
+    console.log(entity.maxHealth)
     // Draw the lower red bar first
     var graphics = new createjs.Graphics()
       .beginFill('#ff1111')

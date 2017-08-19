@@ -53,12 +53,12 @@ function GameServer(){
     // Set up their outgoing messages
     self.outgoingMessages[player.id] = [];
 
+    var message = new Messages.Login(player);
+    player.connection.emit(Types.Messages.LOGIN, message.serialize());
+
     self.addEntity(player);
 
-    self.pushGroupEntityIDsTo(player);
-
     // What to do when this player broadcasts a message
-    // TODO: Change to only broadcast to certain group
     player.onBroadcast(function(message){
       self.pushToGroup(player.map, message.serialize());
     });
@@ -161,16 +161,6 @@ function GameServer(){
     console.log('Client', client.id, 'connected.');
 
     this.players[client.id] = new Player(client, this, username);
-    var player = this.players[client.id];
-    var message = {
-      id: client.id,
-      name: username,
-      width: player.width,
-      height: player.height,
-      x: player.x,
-      y: player.y
-    }
-    client.emit('connected', message);
   }
 
   /**
@@ -213,6 +203,7 @@ function GameServer(){
     if(Types.isMob(entity.species)) this.mobs[entity.id] = entity;
     map = entity.map || 'septoria';
     this.addToGroup(map, entity);
+    this.pushGroupEntityIDsTo(entity);
   }
 
   this.removeEntity = function(entity){
@@ -373,6 +364,15 @@ function GameServer(){
 
   this.attack = function(attacker, target){
     var message = target.dealDamage(attacker.currentAttackPower);
+    this.checkAlive(target);
     this.pushToGroup(target.map, message.serialize());
+  }
+
+  this.checkAlive = function(entity){
+    if(entity.currentHealth <= 0){
+      entity.despawn();
+      entity.respawn();
+      this.spawnEntity(entity);
+    }
   }
 }

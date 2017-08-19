@@ -65,6 +65,19 @@ module.exports = Player = class Player extends Character{
     }else{
       this.handleCollision(collision);
     }
+
+    if(this.lastPos[1] < this.y){
+      this.setDirection(Types.Directions.UP)
+    }
+    else if(this.lastPos[1] > this.y){
+      this.setDirection(Types.Directions.DOWN)
+    }
+    else if(this.lastPos[0] < this.x){
+      this.setDirection(Types.Directions.LEFT)
+    }
+    else if(this.lastPos[0] > this.x){
+      this.setDirection(Types.Directions.RIGHT)
+    }
   }
 
   handleCollision(collision){
@@ -159,5 +172,15 @@ module.exports = Player = class Player extends Character{
 
     var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
     message.send();
+  }
+
+  setStats(stats){
+    // Health
+    this.maxHealth = stats.maxHealth;
+    this.currentHealth = stats.currentHealth;
+
+    // Attack
+    this.maxAttackPower = stats.maxAttackPower;
+    this.currentAttackPower = stats.currentAttackPower;
   }
 }

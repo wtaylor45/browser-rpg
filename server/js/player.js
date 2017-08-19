@@ -27,6 +27,9 @@ module.exports = Player = class Player extends Character {
     // The player movement speed
     this.speed = 10;
 
+    // The player's current health
+    this.currentHealth = 5;
+
     this.COOLDOWN = 3;
     this.currentCooldown = 0;
 
@@ -35,6 +38,13 @@ module.exports = Player = class Player extends Character {
 
     // List of NPCs that are aggressive to the player
     this.enemies = {};
+
+    // The location at which the player will spawn when they die
+    this.spawnPoint = {
+      map: "septoria",
+      x: 200,
+      y: 200
+    }
 
     // Inputs that need to be processed
     this.queuedInputs = [];
@@ -141,7 +151,6 @@ module.exports = Player = class Player extends Character {
     // Check if there are any inputs to apply
     if(this.queuedInputs.length > 0){
       this.applyQueuedInputs();
-      this.checkCollisions();
 
       // Broadcast our new position
       this.broadcast(new Messages.Move(this));
@@ -152,9 +161,10 @@ module.exports = Player = class Player extends Character {
     }
   }
 
-  checkCollisions(){
-    var self = this;
-
+  respawn(){
+    this.currentHealth = this.maxHealth;
+    this.map = this.spawnPoint.map;
+    this.setPosition(this.spawnPoint.x, this.spawnPoint.y);
   }
 
   /**

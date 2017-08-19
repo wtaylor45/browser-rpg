@@ -11,6 +11,19 @@ module.exports = Messages;
 
 var Message = cls.Class.extend({});
 
+Messages.Login = Message.extend({
+  init: function(entity){
+    this.entity = entity;
+  },
+
+  serialize: function(){
+    var message = this.entity.getState();
+    message.id = this.entity.id;
+    message.type = Types.Messages.LOGIN;
+    return message;
+  }
+})
+
 Messages.Move = Message.extend({
   /**
   * Create a new message

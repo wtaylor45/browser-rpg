@@ -70,9 +70,9 @@ module.exports = Animation = class Animation{
  */
 
  var Game = require('./game'),
-     Player = require('./player'),
      Socket = require('./socket'),
-     Message = require('./message');
+     Message = require('./message'),
+     Types = require('../../shared/js/types');
 
  var game;
 
@@ -81,10 +81,13 @@ module.exports = App = class App{
    * Create the app that contains the game
    */
   constructor(){
+    self = this;
     this.game = false;
     this.ready = false;
 
-    Socket.on('connected', this.onConnected.bind(this));
+    Socket.on(Types.Messages.LOGIN, function(message){
+      self.onConnected(message);
+    });
 
     var username = document.getElementById('username');
     var login = document.getElementById('login-form');
@@ -119,6 +122,7 @@ module.exports = App = class App{
    */
   start(){
     if(this.ready && this.game.player){
+      console.log("Started")
       this.game.start();
     }
   }
@@ -130,14 +134,13 @@ module.exports = App = class App{
     this.setGame(new Game());
 
     if(this.game){
-      this.game.setPlayer(new Player(message.id, message.name, 0,
-         message.x, message.y, message.width, message.height));
+      this.game.createPlayer(message);
       this.start();
     }
   }
 }
 
-},{"./game":6,"./message":9,"./player":10,"./socket":12}],3:[function(require,module,exports){
+},{"../../shared/js/types":82,"./game":6,"./message":9,"./socket":12}],3:[function(require,module,exports){
 
 
 module.exports = Camera = class Camera{
@@ -285,6 +288,9 @@ module.exports = Character = class Character extends Entity{
    * @param  {number} health The value to set the current health to
    */
   updateHealth(health){
+    if(this.currentHealth > health){
+      this.lastDamaged = Date.now();
+    }
     this.currentHealth = health;
   }
 
@@ -449,6 +455,7 @@ module.exports = Entity = class Entity{
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Player = require('./player'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
@@ -545,7 +552,17 @@ module.exports = Game = class Game{
    *
    * @param {Object} player The player object that belongs to this client
    */
-  setPlayer(player){
+  createPlayer(message){
+    var player = new Player(
+      message.id,
+      message.name,
+      "",
+      message.x,
+      message.y,
+      message.w,
+      message.h
+    );
+    player.setStats(message)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
@@ -778,7 +795,7 @@ module.exports = Game = class Game{
   }
 }
 
-},{"../../shared/js/types":82,"./input":7,"./map":8,"./message":9,"./renderer":11,"./socket":12,"./updater":16,"sanitize-html":76,"underscore":79}],7:[function(require,module,exports){
+},{"../../shared/js/types":82,"./input":7,"./map":8,"./message":9,"./player":10,"./renderer":11,"./socket":12,"./updater":16,"sanitize-html":76,"underscore":79}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -1188,6 +1205,19 @@ module.exports = Player = class Player extends Character{
     }else{
       this.handleCollision(collision);
     }
+
+    if(this.lastPos[1] < this.y){
+      this.setDirection(Types.Directions.UP)
+    }
+    else if(this.lastPos[1] > this.y){
+      this.setDirection(Types.Directions.DOWN)
+    }
+    else if(this.lastPos[0] < this.x){
+      this.setDirection(Types.Directions.LEFT)
+    }
+    else if(this.lastPos[0] > this.x){
+      this.setDirection(Types.Directions.RIGHT)
+    }
   }
 
   handleCollision(collision){
@@ -1282,6 +1312,16 @@ module.exports = Player = class Player extends Character{
 
     var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
     message.send();
+  }
+
+  setStats(stats){
+    // Health
+    this.maxHealth = stats.maxHealth;
+    this.currentHealth = stats.currentHealth;
+
+    // Attack
+    this.maxAttackPower = stats.maxAttackPower;
+    this.currentAttackPower = stats.currentAttackPower;
   }
 }
 
@@ -1456,8 +1496,9 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity.lastDamaged >= 0) this.drawHealthBar(entity);
-
+      if(Date.now()-entity.lastDamaged <= 3000){
+        this.drawHealthBar(entity);
+      }
       var name = entity.name || Types.speciesAsString(entity.species);
       this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-3,
       '6px '+this.nameFont, true, '#fff', '#000', 1);
@@ -1501,7 +1542,7 @@ module.exports = Renderer = class Renderer{
     var x = (entity.x+entity.width/4)-this.camera.x;
     var y = entity.y-this.camera.y-7;
     var greenWidth = entity.currentHealth/entity.maxHealth * entity.width/2;
-
+    console.log(entity.maxHealth)
     // Draw the lower red bar first
     var graphics = new createjs.Graphics()
       .beginFill('#ff1111')

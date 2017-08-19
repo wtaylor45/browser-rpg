@@ -8,6 +8,7 @@
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Player = require('./player'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
@@ -104,7 +105,17 @@ module.exports = Game = class Game{
    *
    * @param {Object} player The player object that belongs to this client
    */
-  setPlayer(player){
+  createPlayer(message){
+    var player = new Player(
+      message.id,
+      message.name,
+      "",
+      message.x,
+      message.y,
+      message.w,
+      message.h
+    );
+    player.setStats(message)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
