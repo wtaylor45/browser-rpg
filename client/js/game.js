@@ -115,7 +115,7 @@ module.exports = Game = class Game{
       message.w,
       message.h
     );
-    player.setStats(message)
+    player.setStats(message.stats)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);

@@ -562,7 +562,7 @@ module.exports = Game = class Game{
       message.w,
       message.h
     );
-    player.setStats(message)
+    player.setStats(message.stats)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
@@ -1315,6 +1315,7 @@ module.exports = Player = class Player extends Character{
   }
 
   setStats(stats){
+    console.log(stats);
     // Health
     this.maxHealth = stats.maxHealth;
     this.currentHealth = stats.currentHealth;

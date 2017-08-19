@@ -175,6 +175,7 @@ module.exports = Player = class Player extends Character{
   }
 
   setStats(stats){
+    console.log(stats);
     // Health
     this.maxHealth = stats.maxHealth;
     this.currentHealth = stats.currentHealth;

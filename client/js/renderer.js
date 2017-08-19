@@ -168,7 +168,7 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(Date.now()-entity.lastDamaged <= 3000){
+      if(Date.now()-entity.lastDamaged <= 6000){
         this.drawHealthBar(entity);
       }
       var name = entity.name || Types.speciesAsString(entity.species);
