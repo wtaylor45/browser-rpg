@@ -4,9 +4,9 @@
  */
 
  var Game = require('./game'),
-     Player = require('./player'),
      Socket = require('./socket'),
-     Message = require('./message');
+     Message = require('./message'),
+     Types = require('../../shared/js/types');
 
  var game;
 
@@ -15,10 +15,13 @@ module.exports = App = class App{
    * Create the app that contains the game
    */
   constructor(){
+    self = this;
     this.game = false;
     this.ready = false;
 
-    Socket.on('connected', this.onConnected.bind(this));
+    Socket.on(Types.Messages.LOGIN, function(message){
+      self.onConnected(message);
+    });
 
     var username = document.getElementById('username');
     var login = document.getElementById('login-form');
@@ -64,8 +67,7 @@ module.exports = App = class App{
     this.setGame(new Game());
 
     if(this.game){
-      this.game.setPlayer(new Player(message.id, message.name, 0,
-         message.x, message.y, message.width, message.height));
+      this.game.createPlayer(message);
       this.start();
     }
   }

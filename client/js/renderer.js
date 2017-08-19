@@ -21,6 +21,7 @@ module.exports = Renderer = class Renderer{
     this.stage.scaleX = this.stage.scaleY = this.renderScale;
 
     this.font = "Macondo";
+    this.nameFont = "Open Sans";
 
     this.createCamera();
 
@@ -167,13 +168,12 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity.lastDamaged >= 0) this.drawHealthBar(entity);
-
-      if(entity.drawName){
-        var name = entity.name || Types.speciesAsString(entity.species);
-        this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-4,
-          '7px Open Sans', true, '#fff', '#000', 1);
+      if(Date.now()-entity.lastDamaged <= 6000){
+        this.drawHealthBar(entity);
       }
+      var name = entity.name || Types.speciesAsString(entity.species);
+      this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-3,
+      '6px '+this.nameFont, true, '#fff', '#000', 1);
 
       if(entity.chat){
         this.drawImage(new createjs.Bitmap('client/assets/img/chat.png'),
@@ -182,7 +182,6 @@ module.exports = Renderer = class Renderer{
       }
 
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
-        //this.drawBoundingBox(entity);
         var dotX = entity.clientX - entity.x
         var dotY = - (entity.clientY-entity.y)
         var graphics = new createjs.Graphics()
@@ -213,7 +212,7 @@ module.exports = Renderer = class Renderer{
 
   drawHealthBar(entity){
     var x = (entity.x+entity.width/4)-this.camera.x;
-    var y = entity.y-this.camera.y;
+    var y = entity.y-this.camera.y-7;
     var greenWidth = entity.currentHealth/entity.maxHealth * entity.width/2;
 
     // Draw the lower red bar first

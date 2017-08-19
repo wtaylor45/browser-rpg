@@ -11,6 +11,19 @@ module.exports = Messages;
 
 var Message = cls.Class.extend({});
 
+Messages.Login = Message.extend({
+  init: function(entity){
+    this.entity = entity;
+  },
+
+  serialize: function(){
+    var message = this.entity.getState();
+    message.id = this.entity.id;
+    message.type = Types.Messages.LOGIN;
+    return message;
+  }
+})
+
 Messages.Move = Message.extend({
   /**
   * Create a new message
@@ -130,7 +143,8 @@ Messages.Notification = Message.extend({
 })
 
 Messages.Damage = Message.extend({
-  init: function(newHealth, damageDealt){
+  init: function(target, newHealth, damageDealt){
+    this.target = target;
     this.newHealth = newHealth;
     this.damageDealt = damageDealt;
   },
@@ -138,6 +152,7 @@ Messages.Damage = Message.extend({
   serialize: function(){
     return {
       type: Types.Messages.DAMAGE,
+      target: this.target,
       newHealth: this.newHealth,
       damageDealt: this.damageDealt
     }
