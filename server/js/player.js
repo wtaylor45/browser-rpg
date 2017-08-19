@@ -27,11 +27,24 @@ module.exports = Player = class Player extends Character {
     // The player movement speed
     this.speed = 10;
 
+    // The player's current health
+    this.currentHealth = 5;
+
+    this.COOLDOWN = 3;
+    this.currentCooldown = 0;
+
     // The last input processed for this player by the server
     this.lastProcessedInput = 0;
 
     // List of NPCs that are aggressive to the player
     this.enemies = {};
+
+    // The location at which the player will spawn when they die
+    this.spawnPoint = {
+      map: "septoria",
+      x: 200,
+      y: 200
+    }
 
     // Inputs that need to be processed
     this.queuedInputs = [];
@@ -68,6 +81,9 @@ module.exports = Player = class Player extends Character {
       }
       else if(message.type == Types.Messages.ALLUPDATE){
         self.server.sendAllUpdate(self);
+      }
+      else if(message.type = Types.Messages.ATTACK){
+        self.attack(message.data.x, message.data.y);
       }
     });
   }
@@ -109,6 +125,8 @@ module.exports = Player = class Player extends Character {
     if(this.x < this.lastPos[0]) this.direction = Types.Directions.LEFT;
     if(this.y > this.lastPos[1]) this.direction = Types.Directions.DOWN;
     if(this.y < this.lastPos[1]) this.direction = Types.Directions.UP;
+
+    this.setPosition(this.x, this.y);
   }
 
   handleCollision(collision){
@@ -133,16 +151,14 @@ module.exports = Player = class Player extends Character {
     // Check if there are any inputs to apply
     if(this.queuedInputs.length > 0){
       this.applyQueuedInputs();
-      this.checkCollisions();
 
       // Broadcast our new position
       this.broadcast(new Messages.Move(this));
     }
-  }
 
-  checkCollisions(){
-    var self = this;
-
+    if(this.currentCooldown > 0){
+      this.currentCooldown -= dt/10;
+    }
   }
 
   /**
@@ -261,5 +277,16 @@ module.exports = Player = class Player extends Character {
   handleAbility(ability, angle){
     var ability = Projectile.builder[ability](angle, this);
     this.server.spawnEntity(ability);
+  }
+
+  attack(x, y){
+    if(this.currentCooldown > 0) return;
+    var target = this.server.getTarget(this, x, y);
+    if(!target) return;
+
+    this.server.attack(this, target);
+    this.facePoint(target.anchorX, target.anchorY);
+    this.broadcast(new Messages.Move(this));
+    this.currentCooldown = this.COOLDOWN;
   }
 }

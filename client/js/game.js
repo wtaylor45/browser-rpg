@@ -8,6 +8,7 @@
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Player = require('./player'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
@@ -104,7 +105,17 @@ module.exports = Game = class Game{
    *
    * @param {Object} player The player object that belongs to this client
    */
-  setPlayer(player){
+  createPlayer(message){
+    var player = new Player(
+      message.id,
+      message.name,
+      "",
+      message.x,
+      message.y,
+      message.w,
+      message.h
+    );
+    player.setStats(message.stats)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
@@ -140,9 +151,7 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id){
-          this.receiveSpawn(message);
-        }
+        this.receiveSpawn(message);
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -157,7 +166,7 @@ module.exports = Game = class Game{
         this.receiveNotification(message.message);
       }
       else if(message.type == Types.Messages.DAMAGE){
-        this.entities[message.id].dealDamage(message.amount);
+        this.entities[message.target].updateHealth(message.newHealth);
       }
       else if(message.type == Types.Messages.HEAL){
         if(this.entities[message.target])
@@ -204,6 +213,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
+      console.log('Player updated')
       return;
     }
 
@@ -239,8 +249,7 @@ module.exports = Game = class Game{
     var entity = this.entities[message.id];
 
     // set stats
-    entity.currentHealth = message.stats.currentHealth;
-    entity.maxHealth = message.stats.maxHealth;
+    entity.setStats(message.stats);
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
@@ -328,5 +337,12 @@ module.exports = Game = class Game{
 
   requestAllUpdates(){
     new Message(Types.Messages.ALLUPDATE).send();
+  }
+
+  screenToGameCoords(coords){
+    var x = coords.x,
+        y = coords.y;
+
+    return [x+this.renderer.camera.x, y+this.renderer.camera.y]
   }
 }

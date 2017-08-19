@@ -11,6 +11,8 @@ var STATE = null;
 var DOWN = true;
 var UP = false;
 
+var MOUSE = {x: 0, y: 0}
+
 /**
  * Update the state of the given key to the given value (UP/DOWN)
  * @param  {number} keyCode The keycode of the key that triggered the event
@@ -58,6 +60,22 @@ Input.getMovementVector = function(){
   return vector;
 }
 
+Input.getMouseCoords = function(){
+  return MOUSE;
+}
+
+Input.onClick = function(evt){
+  event.preventDefault();
+  var rect = document.getElementById('canvas').getBoundingClientRect();
+  var x = Math.floor((evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width)
+  var y = Math.floor((evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height)
+
+  MOUSE.x = x/2;
+  MOUSE.y = y/2;
+
+  state.mouse = DOWN;
+}
+
 /**
  * The default way that the input state starts
  * @return {[type]} [description]
@@ -69,7 +87,8 @@ Input.baseState = function(){
     left: false,
     right: false,
     enter: false,
-    hotkey1: false
+    hotkey1: false,
+    mouse: false
   }
 }
 
@@ -103,6 +122,16 @@ Input.init = function(){
   document.onkeyup = function(event){
     if(Input.listen)
       Input.onKeyEvent(event.keyCode, UP);
+  }
+
+  document.onmousedown = function(event){
+    if(Input.listen)
+      Input.onClick(event);
+  }
+
+  document.onmouseup = function(event){
+    if(Input.listen)
+      Input.getState().mouse = UP;
   }
 }
 

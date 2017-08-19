@@ -65,6 +65,19 @@ module.exports = Player = class Player extends Character{
     }else{
       this.handleCollision(collision);
     }
+
+    if(this.lastPos[1] < this.y){
+      this.setDirection(Types.Directions.UP)
+    }
+    else if(this.lastPos[1] > this.y){
+      this.setDirection(Types.Directions.DOWN)
+    }
+    else if(this.lastPos[0] < this.x){
+      this.setDirection(Types.Directions.LEFT)
+    }
+    else if(this.lastPos[0] > this.x){
+      this.setDirection(Types.Directions.RIGHT)
+    }
   }
 
   handleCollision(collision){
@@ -74,6 +87,7 @@ module.exports = Player = class Player extends Character{
 
   onMove(message){
     this.setPos(message.x, message.y);
+    this.setDirection(message.dir);
     // Preform reconciliation
     var k = 0;
     while (k < this.pending_inputs.length){
@@ -140,6 +154,15 @@ module.exports = Player = class Player extends Character{
     if(Input.getState().hotkey1){
       this.fireAbility(0);
     }
+
+    if(Input.getState().mouse){
+      var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
+      var mouseX = mouse[0];
+      var mouseY = mouse[1];
+
+      var message = new Message(Types.Messages.ATTACK, {x: mouseX, y: mouseY});
+      message.send();
+    }
   }
 
   fireAbility(index){
@@ -149,5 +172,16 @@ module.exports = Player = class Player extends Character{
 
     var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
     message.send();
+  }
+
+  setStats(stats){
+    console.log(stats);
+    // Health
+    this.maxHealth = stats.maxHealth;
+    this.currentHealth = stats.currentHealth;
+
+    // Attack
+    this.maxAttackPower = stats.maxAttackPower;
+    this.currentAttackPower = stats.currentAttackPower;
   }
 }

@@ -70,9 +70,9 @@ module.exports = Animation = class Animation{
  */
 
  var Game = require('./game'),
-     Player = require('./player'),
      Socket = require('./socket'),
-     Message = require('./message');
+     Message = require('./message'),
+     Types = require('../../shared/js/types');
 
  var game;
 
@@ -81,10 +81,13 @@ module.exports = App = class App{
    * Create the app that contains the game
    */
   constructor(){
+    self = this;
     this.game = false;
     this.ready = false;
 
-    Socket.on('connected', this.onConnected.bind(this));
+    Socket.on(Types.Messages.LOGIN, function(message){
+      self.onConnected(message);
+    });
 
     var username = document.getElementById('username');
     var login = document.getElementById('login-form');
@@ -119,6 +122,7 @@ module.exports = App = class App{
    */
   start(){
     if(this.ready && this.game.player){
+      console.log("Started")
       this.game.start();
     }
   }
@@ -130,14 +134,13 @@ module.exports = App = class App{
     this.setGame(new Game());
 
     if(this.game){
-      this.game.setPlayer(new Player(message.id, message.name, 0,
-         message.x, message.y, message.width, message.height));
+      this.game.createPlayer(message);
       this.start();
     }
   }
 }
 
-},{"./game":6,"./message":9,"./player":10,"./socket":12}],3:[function(require,module,exports){
+},{"../../shared/js/types":82,"./game":6,"./message":9,"./socket":12}],3:[function(require,module,exports){
 
 
 module.exports = Camera = class Camera{
@@ -232,6 +235,8 @@ module.exports = Character = class Character extends Entity{
     this.currentHealth = 76;
 
     this.lastDamaged = 0;
+
+    this.targetBox = [x, y, x+w, y+h];
   }
 
   animate(animation, speed, count, onEnd){
@@ -283,6 +288,9 @@ module.exports = Character = class Character extends Entity{
    * @param  {number} health The value to set the current health to
    */
   updateHealth(health){
+    if(this.currentHealth > health){
+      this.lastDamaged = Date.now();
+    }
     this.currentHealth = health;
   }
 
@@ -312,6 +320,14 @@ module.exports = Character = class Character extends Entity{
     chatIconTimer = setTimeout(function(){
       this.chat = false;
     }.bind(this), 2000);
+  }
+
+  setStats(stats){
+    this.currentHealth = stats.currentHealth;
+    this.maxHealth = stats.maxHealth;
+
+    this.currentAttackPower = stats.currentAttackPower;
+    this.maxAttackPower = stats.maxAttackPower;
   }
 }
 
@@ -439,6 +455,7 @@ module.exports = Entity = class Entity{
 
 var Input = require('./input'),
     Renderer = require('./renderer'),
+    Player = require('./player'),
     Updater = require('./updater'),
     Types = require('../../shared/js/types'),
     Socket = require('./socket'),
@@ -535,7 +552,17 @@ module.exports = Game = class Game{
    *
    * @param {Object} player The player object that belongs to this client
    */
-  setPlayer(player){
+  createPlayer(message){
+    var player = new Player(
+      message.id,
+      message.name,
+      "",
+      message.x,
+      message.y,
+      message.w,
+      message.h
+    );
+    player.setStats(message.stats)
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
@@ -571,9 +598,7 @@ module.exports = Game = class Game{
         this.receiveEntityList(message.list);
       }
       else if(message.type == Types.Messages.SPAWN){
-        if(message.id != this.player.id){
-          this.receiveSpawn(message);
-        }
+        this.receiveSpawn(message);
       }
       else if(message.type == Types.Messages.DESPAWN){
         this.receiveDespawn(message);
@@ -588,7 +613,7 @@ module.exports = Game = class Game{
         this.receiveNotification(message.message);
       }
       else if(message.type == Types.Messages.DAMAGE){
-        this.entities[message.id].dealDamage(message.amount);
+        this.entities[message.target].updateHealth(message.newHealth);
       }
       else if(message.type == Types.Messages.HEAL){
         if(this.entities[message.target])
@@ -635,6 +660,7 @@ module.exports = Game = class Game{
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
+      console.log('Player updated')
       return;
     }
 
@@ -670,8 +696,7 @@ module.exports = Game = class Game{
     var entity = this.entities[message.id];
 
     // set stats
-    entity.currentHealth = message.stats.currentHealth;
-    entity.maxHealth = message.stats.maxHealth;
+    entity.setStats(message.stats);
 
     entity.setDirection(message.direction);
     var sprite = new Sprite(Types.speciesAsString(entity.species));
@@ -760,9 +785,16 @@ module.exports = Game = class Game{
   requestAllUpdates(){
     new Message(Types.Messages.ALLUPDATE).send();
   }
+
+  screenToGameCoords(coords){
+    var x = coords.x,
+        y = coords.y;
+
+    return [x+this.renderer.camera.x, y+this.renderer.camera.y]
+  }
 }
 
-},{"../../shared/js/types":82,"./input":7,"./map":8,"./message":9,"./renderer":11,"./socket":12,"./updater":16,"sanitize-html":76,"underscore":79}],7:[function(require,module,exports){
+},{"../../shared/js/types":82,"./input":7,"./map":8,"./message":9,"./player":10,"./renderer":11,"./socket":12,"./updater":16,"sanitize-html":76,"underscore":79}],7:[function(require,module,exports){
 /**
  * @author Will Taylor
  * Created on: 4/7/17
@@ -775,6 +807,8 @@ module.exports = Input = {};
 var STATE = null;
 var DOWN = true;
 var UP = false;
+
+var MOUSE = {x: 0, y: 0}
 
 /**
  * Update the state of the given key to the given value (UP/DOWN)
@@ -823,6 +857,22 @@ Input.getMovementVector = function(){
   return vector;
 }
 
+Input.getMouseCoords = function(){
+  return MOUSE;
+}
+
+Input.onClick = function(evt){
+  event.preventDefault();
+  var rect = document.getElementById('canvas').getBoundingClientRect();
+  var x = Math.floor((evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width)
+  var y = Math.floor((evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height)
+
+  MOUSE.x = x/2;
+  MOUSE.y = y/2;
+
+  state.mouse = DOWN;
+}
+
 /**
  * The default way that the input state starts
  * @return {[type]} [description]
@@ -834,7 +884,8 @@ Input.baseState = function(){
     left: false,
     right: false,
     enter: false,
-    hotkey1: false
+    hotkey1: false,
+    mouse: false
   }
 }
 
@@ -868,6 +919,16 @@ Input.init = function(){
   document.onkeyup = function(event){
     if(Input.listen)
       Input.onKeyEvent(event.keyCode, UP);
+  }
+
+  document.onmousedown = function(event){
+    if(Input.listen)
+      Input.onClick(event);
+  }
+
+  document.onmouseup = function(event){
+    if(Input.listen)
+      Input.getState().mouse = UP;
   }
 }
 
@@ -1143,6 +1204,19 @@ module.exports = Player = class Player extends Character{
     }else{
       this.handleCollision(collision);
     }
+
+    if(this.lastPos[1] < this.y){
+      this.setDirection(Types.Directions.UP)
+    }
+    else if(this.lastPos[1] > this.y){
+      this.setDirection(Types.Directions.DOWN)
+    }
+    else if(this.lastPos[0] < this.x){
+      this.setDirection(Types.Directions.LEFT)
+    }
+    else if(this.lastPos[0] > this.x){
+      this.setDirection(Types.Directions.RIGHT)
+    }
   }
 
   handleCollision(collision){
@@ -1152,6 +1226,7 @@ module.exports = Player = class Player extends Character{
 
   onMove(message){
     this.setPos(message.x, message.y);
+    this.setDirection(message.dir);
     // Preform reconciliation
     var k = 0;
     while (k < this.pending_inputs.length){
@@ -1218,6 +1293,15 @@ module.exports = Player = class Player extends Character{
     if(Input.getState().hotkey1){
       this.fireAbility(0);
     }
+
+    if(Input.getState().mouse){
+      var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
+      var mouseX = mouse[0];
+      var mouseY = mouse[1];
+
+      var message = new Message(Types.Messages.ATTACK, {x: mouseX, y: mouseY});
+      message.send();
+    }
   }
 
   fireAbility(index){
@@ -1227,6 +1311,17 @@ module.exports = Player = class Player extends Character{
 
     var message = new Message(Types.Messages.ABILITY, [ability, this.angle]);
     message.send();
+  }
+
+  setStats(stats){
+    console.log(stats);
+    // Health
+    this.maxHealth = stats.maxHealth;
+    this.currentHealth = stats.currentHealth;
+
+    // Attack
+    this.maxAttackPower = stats.maxAttackPower;
+    this.currentAttackPower = stats.currentAttackPower;
   }
 }
 
@@ -1254,6 +1349,7 @@ module.exports = Renderer = class Renderer{
     this.stage.scaleX = this.stage.scaleY = this.renderScale;
 
     this.font = "Macondo";
+    this.nameFont = "Open Sans";
 
     this.createCamera();
 
@@ -1400,13 +1496,12 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
 
-      if(entity.lastDamaged >= 0) this.drawHealthBar(entity);
-
-      if(entity.drawName){
-        var name = entity.name || Types.speciesAsString(entity.species);
-        this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-4,
-          '7px Open Sans', true, '#fff', '#000', 1);
+      if(Date.now()-entity.lastDamaged <= 6000){
+        this.drawHealthBar(entity);
       }
+      var name = entity.name || Types.speciesAsString(entity.species);
+      this.drawText(name, entity.x+entity.width/2-this.camera.x, entity.y-this.camera.y-3,
+      '6px '+this.nameFont, true, '#fff', '#000', 1);
 
       if(entity.chat){
         this.drawImage(new createjs.Bitmap('client/assets/img/chat.png'),
@@ -1415,7 +1510,6 @@ module.exports = Renderer = class Renderer{
       }
 
       if(entity == this.game.player && this.options.DRAW_BOUNDING_BOX){
-        //this.drawBoundingBox(entity);
         var dotX = entity.clientX - entity.x
         var dotY = - (entity.clientY-entity.y)
         var graphics = new createjs.Graphics()
@@ -1446,9 +1540,9 @@ module.exports = Renderer = class Renderer{
 
   drawHealthBar(entity){
     var x = (entity.x+entity.width/4)-this.camera.x;
-    var y = entity.y-this.camera.y;
+    var y = entity.y-this.camera.y-7;
     var greenWidth = entity.currentHealth/entity.maxHealth * entity.width/2;
-
+    console.log(entity.maxHealth)
     // Draw the lower red bar first
     var graphics = new createjs.Graphics()
       .beginFill('#ff1111')
