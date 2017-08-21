@@ -48,7 +48,7 @@ module.exports = App = class App{
   }
 
   signIn(username){
-    Socket.emit('signin', username);
+    Socket.emit(Types.Messages.LOGIN, username);
   }
 
   /**

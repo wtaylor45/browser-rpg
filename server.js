@@ -8,6 +8,7 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var GameServer = require('./server/js/gameserver.js');
+var Types = require('./shared/js/types')
 var io = require('socket.io')(http);
 var uuidV1 = require('uuid/v1');
 
@@ -38,7 +39,7 @@ io.sockets.on('connection', function(socket){
   socket.id = uuidV1();
   global.SOCKET_LIST[socket.id] = socket;
 
-  socket.on('signin', function(username){
+  socket.on(Types.Messages.LOGIN, function(username){
     gameserver.onConnection(socket, username);
   })
 });

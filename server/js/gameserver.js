@@ -46,25 +46,6 @@ function GameServer(){
   this.healthGenTimer = 0;
 
   /**
-   * Performed on player login
-   * @param  {Object} player The player who logged in
-   */
-  this.onLogin = function(player){
-    // Set up their outgoing messages
-    self.outgoingMessages[player.id] = [];
-
-    var message = new Messages.Login(player);
-    player.connection.emit(Types.Messages.LOGIN, message.serialize());
-
-    self.addEntity(player);
-
-    // What to do when this player broadcasts a message
-    player.onBroadcast(function(message){
-      self.pushToGroup(player.map, message.serialize());
-    });
-  }
-
-  /**
    * Initialize the server, start the loop
    */
   this.init = function(){
@@ -126,14 +107,31 @@ function GameServer(){
     }
   }
 
+  /**
+   * Creates and sends a message to the entity's group that the entity has moved
+   * @param  {Object} entity The entity that has moved
+   */
   this.onEntityMove = function(entity){
     var message = new Messages.Move(entity);
     this.pushToGroup(entity.map, message.serialize());
   }
 
+  /**
+   * Create and send a spawn message to the entity's group
+   * @param  {Object} entity The entity that has spawned
+   */
+  this.onEntitySpawn = function(entity){
+    this.pushGroupEntityIDsTo(entity);
+
+    var message = new Messages.Spawn(entity);
+    this.pushToGroup(entity.map, message.serialize(), entity.id);
+  }
+
   this.onEntityDespawn = function(entity){
     var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
+
+    this.removeFromGroup()
   }
 
   /**
@@ -154,11 +152,41 @@ function GameServer(){
    * @param  {Object} client The client that has connected
    */
   this.onConnection = function(client, username){
-    // TODO: Handle the connection
     if(!this.started) this.init();
-    console.log('Client', client.id, 'connected.');
+    console.log('User', username, 'connected.');
 
-    this.players[client.id] = new Player(client, this, username);
+    // Add the player to the global player's list
+    this.players[client.id] = this.createPlayer(client, username);
+  }
+
+  /**
+   * Create a new player
+   * @param  {Object} connection The client's connection who owns the player
+   * @param  {String} name       The username of the player
+   * @return {Object}            The player created
+   */
+  this.createPlayer = function(connection, name){
+    var player = new Player(connection, this, name);
+    player.onMove(this.onEntityMove.bind(this));
+    player.onSpawn(this.onEntitySpawn.bind(this));
+    player.onDespawn(this.onEntityDespawn.bind(this));
+
+    // Set up their outgoing messages
+    self.outgoingMessages[player.id] = [];
+
+
+    self.addEntityToServer(player);
+
+    // What to do when this player broadcasts a message
+    player.onBroadcast(function(message){
+      self.pushToGroup(player.map, message.serialize());
+    });
+
+    // Send the login message to the client with the player created
+    var message = new Messages.Login(player);
+    player.connection.emit(Types.Messages.LOGIN, message.serialize());
+
+    return player;
   }
 
   /**
@@ -196,12 +224,17 @@ function GameServer(){
       return this.players[id].connection;
   }
 
-  this.addEntity = function(entity){
+  /**
+   * Adds a new entity to the server
+   * @param  {Object} entity The entity to be added
+   */
+  this.addEntityToServer = function(entity){
+    // Add the entity to the global entity list
     this.entities[entity.id] = entity;
-    if(Types.isMob(entity.species)) this.mobs[entity.id] = entity;
-    map = entity.map || 'septoria';
-    this.addToGroup(map, entity);
-    this.pushGroupEntityIDsTo(entity);
+    // Set the map the entity will spawn in
+    this.addToGroup(entity.map || 'septoria', entity);
+    // Spawn the entity
+    entity.spawn();
   }
 
   this.removeEntity = function(entity){
@@ -227,14 +260,13 @@ function GameServer(){
   }
 
   this.addToGroup = function(groupId, entity){
-    this.groups[groupId].addEntity(entity);
+    this.groups[groupId].addEntityToGroup(entity);
     entity.map = groupId;
-    this.tellOthersSpawned(entity);
   }
 
   this.removeFromGroup = function(entity){
     this.groups[entity.map].removeEntity(entity.id);
-    this.tellOthersDespawned(entity);
+    entity.map = "";
   }
 
   this.pushGroupEntityIDsTo = function(player){
@@ -245,18 +277,6 @@ function GameServer(){
     var message = new Messages.List(entities);
 
     this.addMessageToOutbox(player.id, message.serialize());
-  }
-
-  this.tellOthersSpawned = function(entity){
-    if(!entity) return;
-
-    var message = new Messages.Spawn(entity);
-    this.pushToGroup(entity.map, message.serialize(), entity.id);
-  }
-
-  this.tellOthersDespawned = function(entity){
-    var message = new Messages.Despawn(entity.id);
-    this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
   this.sendBatchSpawns = function(player, list){
@@ -320,13 +340,6 @@ function GameServer(){
       }
     }
     console.log(name, 'not found');
-  }
-
-  this.spawnEntity = function(entity){
-    entity.onMove(this.onEntityMove.bind(this));
-    entity.onDespawn(this.onEntityDespawn.bind(this));
-    this.addToGroup(entity.map, entity);
-    this.tellOthersSpawned(entity);
   }
 
   this.respawnEntity = function(entity){

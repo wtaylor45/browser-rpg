@@ -11,7 +11,7 @@ module.exports = Group = class Group {
     this.healthGenAmount = 1;
   }
 
-  addEntity(entity){
+  addEntityToGroup(entity){
     var type = entity.species;
 
     if(Types.isPlayer(type)) this.players[entity.id] = entity;
@@ -27,6 +27,8 @@ module.exports = Group = class Group {
       if(this.players[id]) delete this.players[id];
       delete this.entities[id];
     }
+
+    this.size--;
   }
 
   generateHealth(){
