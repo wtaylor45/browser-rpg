@@ -50,7 +50,8 @@ module.exports = Entity = class Entity {
       x: this.x,
       y: this.y,
       w: this.width,
-      h: this.height
+      h: this.height,
+      map: this.map
     }
   }
 
@@ -65,7 +66,9 @@ module.exports = Entity = class Entity {
   }
 
   spawn(){
-    return new Message.Spawn(this);
+    if(this.spawnCallback){
+      this.spawnCallback(this);
+    }
   }
 
   despawn(){
@@ -78,10 +81,19 @@ module.exports = Entity = class Entity {
     this.moveCallback = func;
   }
 
+  onSpawn(func){
+    this.spawnCallback = func;
+  }
+
   onDespawn(callback){
     this.despawnCallback = callback;
   }
 
+  /**
+   * Moves the entity to the given coordinates on calls the move callback
+   * @param  {Number} x The x coordinate to move to
+   * @param  {Number} y The y coordinate to move to
+   */
   moveTo(x, y){
     this.setPosition(x, y);
     if(this.moveCallback){

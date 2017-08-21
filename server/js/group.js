@@ -27,6 +27,8 @@ module.exports = Group = class Group {
       if(this.players[id]) delete this.players[id];
       delete this.entities[id];
     }
+
+    this.size--;
   }
 
   generateHealth(){

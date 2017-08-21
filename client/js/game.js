@@ -49,21 +49,26 @@ module.exports = Game = class Game{
   }
 
   /**
-   * Start the game and its loop
+   * Start the game and its loops
    */
   start(){
     // Make sure there is a player
     if(!this.player) return false;
-
+    console.log(this.player)
     this.started = true;
     this.running = true;
     this.setFrozen(false);
 
+    // Create the renderer
     this.renderer = new Renderer(this, "canvas");
-    this.currentMap = new Map('septoria');
+    // Create the map
+    this.currentMap = new Map(this.player.map);
     this.renderer.setMap(this.currentMap);
+    // Create the updater
     this.updater = new Updater(this);
+    // Initialize the input handler
     Input.init();
+    // Add listener to check if window is visible
     document.addEventListener('visibilitychange', this.visibilityChange.bind(this));
 
     // Update every loop
@@ -116,6 +121,7 @@ module.exports = Game = class Game{
       message.h
     );
     player.setStats(message.stats)
+    player.map = message.map;
     this.player = player;
     this.entities[player.id] = player;
     this.player.setGame(this);
@@ -176,18 +182,30 @@ module.exports = Game = class Game{
     }
   }
 
+  /**
+   * Receive and prune a list of entities in the player's group,
+   * ask for more information if relevant
+   * @param  {Object} list List of IDs
+   */
   receiveEntityList(list){
+    // List of all entity IDs already known
     var entityIds = _.pluck(this.entities, 'id');
+    // List of all entity IDs in the message already seen
     var alreadySeen = _.intersection(this.entityIds, list);
+    // List of all entity IDs in the message that have not been seen
     var notSeen = _.difference(list, alreadySeen);
     var self = this;
 
+    // Create a list of entities that have been seen, but do not appear in the
+    // latest list
     this.entitiesToPrune = _.reject(this.entities, function(entity){
       return _.contains(this.alreadySeen, entity.id) || entity.id == self.player.id;
     });
 
+    // Remove the entities that are no longer in the group
     this.pruneEntities();
 
+    // Ask for information about each entity that has not been seen
     if(_.size(notSeen) > 0){
       this.askWhoAre(notSeen);
     }
@@ -209,48 +227,59 @@ module.exports = Game = class Game{
     entity.lastMove = message.time;
   }
 
+  /**
+   * Receive and handle the SPAWN message from the server
+   * @param  {Object} message The SPAWN message sent by the server
+   */
   receiveSpawn(message){
+    // If the entity has been seen before
     if(this.entities[message.id] &&
     message.time > this.entities[message.id].lastSpawn){
       this.updateEntity(message);
       return;
     }
 
+    // What type of entity to create
     if(Types.isCharacter(message.species)) this.spawnCharacter(message);
-    else if(Types.isProjectile(message.species)) this.spawnProjectile(message);
   }
 
+  /**
+   * Updates an entity using the SPAWN message received
+   * @param  {Object} data The SPAWN message containing this entity's updated data
+   */
   updateEntity(data){
+    // Grab the entity from the global list
     var entity = this.entities[data.id];
+
+    // Update each of the entity's state parameters
     entity.x = data.x;
     entity.y = data.y;
     entity.lastMove = data.time;
+
+    // Check if the entity is a Character
+    // Change the character's stats
     if(Types.isCharacter(data.species)){
-      entity.currentHealth = data.stats.currentHealth;
-      entity.maxHealth = data.stats.maxHealth;
+      entity.setStats(data.stats);
     }
   }
 
-  spawnProjectile(message){
-    this.entities[message.id] = new Entity(message.id, message.species,
-      message.x, message.y, message.w, message.h);
-    var entity = this.entities[message.id];
-
-    var sprite = new Sprite(Types.speciesAsString(entity.species));
-
-    entity.setSprite(sprite);
-    entity.lastSpawn = message.time;
-  }
-
+  /**
+   * Spawn a new character that has not been seen before
+   * @param  {Object} message The SPAWN message containing the character's state
+   */
   spawnCharacter(message){
+    // Create the character, adding it to the global list
     this.entities[message.id] = new Character(message.id, message.name,
       message.species, message.x, message.y, message.w, message.h);
     var entity = this.entities[message.id];
 
-    // set stats
+    // Set the character's stats
     entity.setStats(message.stats);
 
+    // Set the direction it is facing
     entity.setDirection(message.direction);
+
+    // Handle the entity's graphics
     var sprite = new Sprite(Types.speciesAsString(entity.species));
 
     sprite.image.on("mouseover", function(){
@@ -262,7 +291,11 @@ module.exports = Game = class Game{
     });
 
     entity.setSprite(sprite);
+
+    // Set the entity's animation
     entity.idle();
+
+    // Stamp the update
     entity.lastSpawn = message.time;
   }
 
@@ -292,6 +325,10 @@ module.exports = Game = class Game{
     this.freeze = state;
   }
 
+  /**
+   * Ask for the states of each entity in the list of entity IDs
+   * @param  {Object} list List of entity IDs
+   */
   askWhoAre(list){
     var message = new Message(Types.Messages.WHO, list);
     message.send();

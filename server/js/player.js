@@ -59,9 +59,6 @@ module.exports = Player = class Player extends Character {
       server.disconnect(this.id);
     });
 
-    // Tell the server the player has logged on
-    server.onLogin(this);
-
     // Listen for and handle messages from this player's client
     this.connection.on('message', function(message){
       if(message.type == Types.Messages.MOVE){

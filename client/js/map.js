@@ -9,6 +9,7 @@ var maps = {
 module.exports = Map = class Map{
   constructor(name){
     this.name = name;
+    console.log(name)
     this.json = maps[name]['json'];
     this.isLoaded = false;
 
