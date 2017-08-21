@@ -343,7 +343,7 @@ function GameServer(){
    * @param  {Object} message     The message to send to the player
    */
   this.addMessageToOutbox = function(playerId, message){
-    this.outgoingMessages[id].push(message);
+    this.outgoingMessages[playerId].push(message);
   }
 
   this.createMaps = function(){
