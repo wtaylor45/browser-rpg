@@ -259,7 +259,7 @@ module.exports = Game = class Game{
     // Check if the entity is a Character
     // Change the character's stats
     if(Types.isCharacter(data.species)){
-      entity.setStats(message.stats);
+      entity.setStats(data.stats);
     }
   }
 

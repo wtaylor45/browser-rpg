@@ -291,7 +291,7 @@ function GameServer(){
     if(entity.map)
       this.removeFromGroup(entity);
 
-    this.addEntityToGroup(entity, group);
+    this.addEntityToGroup(entity, groupId);
   }
 
   /**
