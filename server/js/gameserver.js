@@ -71,7 +71,6 @@ function GameServer(){
 
   /**
    * Logic that happens once every loop
-   * TODO: Update entities as well
    */
   this.tick = function(dt){
     this.healthGenTimer += dt/10;
@@ -85,19 +84,23 @@ function GameServer(){
   }
 
   /**
-   * Update every player on the server
+   * Update every entity on the server
    */
   this.updateEntities = function(dt){
     for(var i in this.groups){
       this.groups[i].update(dt);
 
       if(this.healthGenTimer >= this.HEALTH_GEN){
-        this.generateHealth(this.groups[i]);
+        this.generateHealthForGroup(this.groups[i]);
       }
     }
   }
 
-  this.generateHealth = function(group){
+  /**
+   * Add 1 health to every character in the given group.
+   * @param  {Object} group The group to generate the health for
+   */
+  this.generateHealthForGroup = function(group){
     for(var i in group.entities){
       var entity = group.entities[i];
       if(!entity.currentHealth) continue;
@@ -108,7 +111,7 @@ function GameServer(){
   }
 
   /**
-   * Creates and sends a message to the entity's group that the entity has moved
+   * Creates and sends a message to the entity's group that the entity has moved.
    * @param  {Object} entity The entity that has moved
    */
   this.onEntityMove = function(entity){
@@ -117,7 +120,7 @@ function GameServer(){
   }
 
   /**
-   * Create and send a spawn message to the entity's group
+   * Create and send a spawn message to the entity's group.
    * @param  {Object} entity The entity that has spawned
    */
   this.onEntitySpawn = function(entity){
@@ -127,11 +130,13 @@ function GameServer(){
     this.pushToGroup(entity.map, message.serialize(), entity.id);
   }
 
+  /**
+   * Create and send a DESPAWN message to the entity's group.
+   * @param  {Object} entity The entity that has been despawned
+   */
   this.onEntityDespawn = function(entity){
     var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
-
-    this.removeFromGroup()
   }
 
   /**
@@ -195,23 +200,11 @@ function GameServer(){
    * @param  {Object} client The client that has disconnected
    */
   this.disconnect = function(id){
-    // TODO: Logout if the player is logged in
-
     var player = this.players[id];
 
     delete global.SOCKET_LIST[id];
-    this.removeEntity(player);
+    this.removeEntityFromServer(player);
     delete this.outgoingMessages[id];
-    console.log('Player', id, 'disconnected.');
-  }
-
-  /**
-   * Make sure input was valid
-   * @param  {Object} input The input to check
-   * @return {boolean}      The validity of the input
-   */
-  this.validateInput = function(input){
-    return (Math.abs(input.press_time) <= 1/60)
   }
 
   /**
@@ -232,12 +225,16 @@ function GameServer(){
     // Add the entity to the global entity list
     this.entities[entity.id] = entity;
     // Set the map the entity will spawn in
-    this.addToGroup(entity.map || 'septoria', entity);
+    this.addEntityToGroup(entity, entity.map || 'septoria');
     // Spawn the entity
     entity.spawn();
   }
 
-  this.removeEntity = function(entity){
+  /**
+   * Remove the entity from the server entirely.
+   * @param  {Object} entity The entity to be removed from the server
+   */
+  this.removeEntityFromServer = function(entity){
     var entity = this.entities[entity.id];
     if(!entity) throw "Entity "+entity.id+" not found";
 
@@ -246,6 +243,12 @@ function GameServer(){
     delete this.entities[entity.id];
   }
 
+  /**
+   * Push a given message to a group, optionally ignoring an entitys.
+   * @param  {String} groupId          The name of the group to push the message to
+   * @param  {Object} message          The message to be sent to the group
+   * @param  {String} entityToIgnoreId The entity to ignore when sending messages
+   */
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
     var group = this.groups[groupId];
     if(!group) throw groupId, "not found!";
@@ -259,26 +262,59 @@ function GameServer(){
     }
   }
 
-  this.addToGroup = function(groupId, entity){
-    this.groups[groupId].addEntityToGroup(entity);
+  /**
+   * Add a given entity to a given group.
+   * @param  {Object} entity The entity to be added
+   * @param  {String} groupId  The ID of the group to be added to
+   */
+  this.addEntityToGroup = function(entity, groupId){
+    this.groups[groupId].addEntity(entity);
     entity.map = groupId;
   }
 
+  /**
+   * Remove a give entity from their group.
+   * @param  {Object} entity The entity to be removed from their group
+   */
   this.removeFromGroup = function(entity){
     this.groups[entity.map].removeEntity(entity.id);
     entity.map = "";
   }
 
+  /**
+   * Switch an entity from their current group to a given new group
+   * @param  {Object} entity The entity to be switched to a new group
+   * @param  {String} groupId  The ID of the group to be added to
+   * @return {[type]}        [description]
+   */
+  this.switchEntityGroupTo = function(entity, groupId){
+    if(entity.map)
+      this.removeFromGroup(entity);
+
+    this.addEntityToGroup(entity, group);
+  }
+
+  /**
+   * Send the list of entity IDs in the given player's group to the player.
+   * @param  {Object} player Player receiving the IDs
+   */
   this.pushGroupEntityIDsTo = function(player){
     if(!player.map) return;
 
     var group = this.groups[player.map].entities;
+    // Get the IDs of each entity from the list of entities
     var entities = _.pluck(group, "id");
+    // Create a new LIST message to send the IDs
     var message = new Messages.List(entities);
-
     this.addMessageToOutbox(player.id, message.serialize());
   }
 
+  /**
+   * Send a SPAWN message for each entity in the given list to the given player.
+   * @param  {} player [description]
+   * @param  {[type]} list   [description]
+   * @return {[type]}        [description]
+   */
   this.sendBatchSpawns = function(player, list){
     var self = this;
     var group = this.groups[player.map].entities;
@@ -301,7 +337,12 @@ function GameServer(){
     });
   }
 
-  this.addMessageToOutbox = function(id, message){
+  /**
+   * Add a message to a given player's outbox.
+   * @param  {String} playerId    The ID of the player to send the message to
+   * @param  {Object} message     The message to send to the player
+   */
+  this.addMessageToOutbox = function(playerId, message){
     this.outgoingMessages[id].push(message);
   }
 
@@ -339,11 +380,10 @@ function GameServer(){
         if(player.name == name) return player;
       }
     }
-    console.log(name, 'not found');
   }
 
   this.respawnEntity = function(entity){
-    this.moveEntityToMap(entity, map)
+    this.moveEntityToMap(entity, entity.map)
 
     var message = new Messages.Spawn(entity);
     this.pushToGroup(entity.map, message.serialize());
@@ -355,8 +395,10 @@ function GameServer(){
     var message = new Messages.Transition(map, pos);
     this.addMessageToOutbox(entity.id, message.serialize());
 
-    this.removeFromGroup(entity);
-    this.addToGroup(map, entity);
+    this.switchEntityGroupTo(entity, map);
+
+    entity.despawn();
+    entity.spawn();
 
     entity.moveTo(pos[0], pos[1]);
 

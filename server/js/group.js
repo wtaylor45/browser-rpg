@@ -11,7 +11,7 @@ module.exports = Group = class Group {
     this.healthGenAmount = 1;
   }
 
-  addEntityToGroup(entity){
+  addEntity(entity){
     var type = entity.species;
 
     if(Types.isPlayer(type)) this.players[entity.id] = entity;

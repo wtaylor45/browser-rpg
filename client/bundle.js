@@ -557,7 +557,6 @@ module.exports = Game = class Game{
    * @param {Object} player The player object that belongs to this client
    */
   createPlayer(message){
-    console.log(message)
     var player = new Player(
       message.id,
       message.name,
