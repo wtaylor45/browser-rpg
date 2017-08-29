@@ -175,17 +175,15 @@ function GameServer(){
     player.onMove(this.onEntityMove.bind(this));
     player.onSpawn(this.onEntitySpawn.bind(this));
     player.onDespawn(this.onEntityDespawn.bind(this));
-
-    // Set up their outgoing messages
-    self.outgoingMessages[player.id] = [];
-
-
-    self.addEntityToServer(player);
-
     // What to do when this player broadcasts a message
     player.onBroadcast(function(message){
       self.pushToGroup(player.map, message.serialize());
     });
+
+    // Set up their outgoing messages
+    self.outgoingMessages[player.id] = [];
+
+    self.addEntityToServer(player);
 
     // Send the login message to the client with the player created
     var message = new Messages.Login(player);
@@ -222,6 +220,8 @@ function GameServer(){
    * @param  {Object} entity The entity to be added
    */
   this.addEntityToServer = function(entity){
+    // Set up their outgoing messages
+    self.outgoingMessages[player.id] = [];
     // Add the entity to the global entity list
     this.entities[entity.id] = entity;
     // Set the map the entity will spawn in
