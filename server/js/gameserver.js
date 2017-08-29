@@ -197,7 +197,7 @@ function GameServer(){
    * logged in.
    * @param  {Object} client The client that has disconnected
    */
-  this.disconnect = function(id){
+  this.onDisconnect = function(id){
     var player = this.players[id];
 
     delete global.SOCKET_LIST[id];

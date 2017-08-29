@@ -56,7 +56,7 @@ module.exports = Player = class Player extends Character {
 
     // When the player disconnects
     this.connection.on('disconnect', function(){
-      server.disconnect(this.id);
+      server.onDisconnect(this.id);
     });
 
     // Listen for and handle messages from this player's client
