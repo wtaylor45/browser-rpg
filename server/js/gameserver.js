@@ -139,7 +139,7 @@ function GameServer(){
    * @param  {Object} character The character receiveing the damage.
    */
   this.onCharacterHeal = function(character, healthGiven){
-    var message = new Messages.Damage(character, healthGiven);
+    var message = new Messages.Heal(character, healthGiven);
     this.pushToGroup(character.map, message.serialize());
   }
 
@@ -148,7 +148,6 @@ function GameServer(){
    * @param  {Object} character The character that has died.
    */
   this.onCharacterDeath = function(character){
-    character.resetStats();
     this.respawnEntity(character);
   }
 
@@ -270,6 +269,7 @@ function GameServer(){
    * @param  {String} entityToIgnoreId The entity to ignore when sending messages
    */
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
+    console.log("Sending a message...", message.type);
     var group = this.groups[groupId];
     if(!group) return; // This player is likely not in a group
     if(!message) throw "No message defined in pushToGroup()";
@@ -403,10 +403,12 @@ function GameServer(){
   }
 
   this.respawnEntity = function(entity){
-    this.moveEntityToMap(entity, entity.map)
+    if(entity.spawnPoint.map != entity.map){
+      this.moveEntityToMap(entity, entity.map)
+      return;
+    }
 
-    var message = new Messages.Spawn(entity);
-    this.pushToGroup(entity.map, message.serialize());
+    entity.moveTo(entity.spawnPoint.x, entity.spawnPoint.y);
   }
 
   this.moveEntityToMap = function(entity, map, entrance){
@@ -415,12 +417,10 @@ function GameServer(){
     var message = new Messages.Transition(map, pos);
     this.addMessageToOutbox(entity.id, message.serialize());
 
-    this.switchEntityGroupTo(entity, map);
-
     entity.despawn();
-    entity.spawn();
-
+    this.switchEntityGroupTo(entity, map);
     entity.moveTo(pos[0], pos[1]);
+    entity.spawn();
 
     // Get list of this map's entities
     this.pushGroupEntityIDsTo(entity);

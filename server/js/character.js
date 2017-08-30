@@ -113,6 +113,8 @@ module.exports = Character = class Character extends Entity {
   }
 
   die(){
+    this.resetStats();
+    
     if(this.deathCallback){
       this.deathCallback(this);
     }
