@@ -500,7 +500,6 @@ module.exports = Game = class Game{
   start(){
     // Make sure there is a player
     if(!this.player) return false;
-    console.log(this.player)
     this.started = true;
     this.running = true;
     this.setFrozen(false);

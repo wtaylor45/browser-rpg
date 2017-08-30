@@ -199,7 +199,7 @@ function GameServer(){
    */
   this.onDisconnect = function(id){
     var player = this.players[id];
-
+    console.log("User", player.name, "disconnected.")
     delete global.SOCKET_LIST[id];
     this.removeEntityFromServer(player);
     delete this.outgoingMessages[id];
@@ -221,7 +221,8 @@ function GameServer(){
    */
   this.addEntityToServer = function(entity){
     // Set up their outgoing messages
-    self.outgoingMessages[player.id] = [];
+    if(Types.isPlayer(entity.species))
+      self.outgoingMessages[entity.id] = [];
     // Add the entity to the global entity list
     this.entities[entity.id] = entity;
     // Set the map the entity will spawn in
@@ -238,8 +239,8 @@ function GameServer(){
     var entity = this.entities[entity.id];
     if(!entity) throw "Entity "+entity.id+" not found";
 
-    this.removeFromGroup(entity);
     entity.despawn();
+    this.removeFromGroup(entity);
     delete this.entities[entity.id];
   }
 
@@ -251,8 +252,8 @@ function GameServer(){
    */
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
     var group = this.groups[groupId];
-    if(!group) throw groupId, "not found!";
-    if(!message) throw "Message was not defined!";
+    if(!group) return; // This player is likely not in a group
+    if(!message) throw "No message defined in pushToGroup()";
     var players = group.players;
 
     for(var i in players){
