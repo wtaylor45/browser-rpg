@@ -88,10 +88,10 @@ module.exports = Character = class Character extends Entity {
     this.currentHealth = Math.max(0, this.currentHealth-damage);
 
     if(this.damageCallback){
-      this.damageCallback(this, amount);
+      this.damageCallback(this, damage);
     }
 
-    if(this.currentHealth = 0){
+    if(this.currentHealth == 0){
       this.die();
     }
   }
@@ -127,6 +127,8 @@ module.exports = Character = class Character extends Entity {
 
     this.target = target;
     target.damage(this.currentAttackPower);
+    this.facePoint(target.anchorX, target.anchorY);
+    this.currentCooldown = this.COOLDOWN;
   }
 
   onAttack(callback){

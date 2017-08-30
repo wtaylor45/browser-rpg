@@ -148,8 +148,8 @@ function GameServer(){
    * @param  {Object} character The character that has died.
    */
   this.onCharacterDeath = function(character){
-    entity.resetStats();
-    this.respawnEntity(entity);
+    character.resetStats();
+    this.respawnEntity(character);
   }
 
   /**

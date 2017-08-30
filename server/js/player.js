@@ -277,12 +277,4 @@ module.exports = Player = class Player extends Character {
     var ability = Projectile.builder[ability](angle, this);
     this.server.spawnEntity(ability);
   }
-
-  attack(x, y){
-    if(this.currentCooldown > 0) return;
-    this.onAttack();
-    this.facePoint(target.anchorX, target.anchorY);
-    this.broadcast(new Messages.Move(this));
-    this.currentCooldown = this.COOLDOWN;
-  }
 }
