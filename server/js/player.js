@@ -80,7 +80,9 @@ module.exports = Player = class Player extends Character {
         self.server.sendAllUpdate(self);
       }
       else if(message.type = Types.Messages.ATTACK){
-        self.attack(message.data.x, message.data.y);
+        var target = self.server.getTarget(self, message.data.x, message.data.y);
+        if(!target) return;
+        self.attack(target);
       }
     });
   }
@@ -278,10 +280,7 @@ module.exports = Player = class Player extends Character {
 
   attack(x, y){
     if(this.currentCooldown > 0) return;
-    var target = this.server.getTarget(this, x, y);
-    if(!target) return;
-
-    this.server.attack(this, target);
+    this.onAttack();
     this.facePoint(target.anchorX, target.anchorY);
     this.broadcast(new Messages.Move(this));
     this.currentCooldown = this.COOLDOWN;

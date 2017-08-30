@@ -4,8 +4,7 @@
  */
 
 var cls = require('./lib/class'),
-    Types = require('../../shared/js/types'),
-    Messages = require('./message.js');
+    Types = require('../../shared/js/types');
 
 module.exports = Character = class Character extends Entity {
   /**
@@ -85,13 +84,52 @@ module.exports = Character = class Character extends Entity {
    * Remove the given amount of health from the current health
    * @param  {number} damage The amount of health to remove
    */
-  dealDamage(damage){
+  damage(damage){
     this.currentHealth = Math.max(0, this.currentHealth-damage);
-    return new Messages.Damage(this.id, this.currentHealth, damage);
+
+    if(this.damageCallback){
+      this.damageCallback(this, amount);
+    }
+
+    if(this.currentHealth = 0){
+      this.die();
+    }
+  }
+
+  onDamage(callback){
+    this.damageCallback = callback;
   }
 
   heal(amount){
     this.currentHealth = Math.min(this.maxHealth, this.currentHealth+amount);
-    return new Messages.Heal(this.id, this.currentHealth, amount);
+
+    if(this.healCallback){
+      this.healCallback(this, amount);
+    }
+  }
+
+  onHeal(callback){
+    this.healCallback = callback;
+  }
+
+  die(){
+    if(this.deathCallback){
+      this.deathCallback(this);
+    }
+  }
+
+  onDeath(callback){
+    this.deathCallback = callback;
+  }
+
+  attack(target){
+    if(this.currentCooldown > 0) return;
+
+    this.target = target;
+    target.damage(this.currentAttackPower);
+  }
+
+  onAttack(callback){
+    this.attackCallback = callback;
   }
 }
