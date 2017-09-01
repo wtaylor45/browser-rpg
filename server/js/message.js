@@ -162,7 +162,7 @@ Messages.Damage = Message.extend({
 Messages.Heal = Message.extend({
   init: function(target, healthGiven){
     this.target = target.id;
-    this.newHealth = target.newHealth;
+    this.newHealth = target.currentHealth;
     this.healthGiven = healthGiven;
   },
 
