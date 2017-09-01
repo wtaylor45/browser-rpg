@@ -127,7 +127,7 @@ module.exports = Character = class Character extends Entity {
   attack(target){
     if(this.currentCooldown > 0) return;
 
-    this.target = target;
+    this.target = target.id;
     target.damage(this.currentAttackPower);
     this.facePoint(target.anchorX, target.anchorY);
     this.currentCooldown = this.COOLDOWN;

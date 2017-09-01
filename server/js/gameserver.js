@@ -269,7 +269,6 @@ function GameServer(){
    * @param  {String} entityToIgnoreId The entity to ignore when sending messages
    */
   this.pushToGroup = function(groupId, message, entityToIgnoreId){
-    console.log("Sending a message...", message.type);
     var group = this.groups[groupId];
     if(!group) return; // This player is likely not in a group
     if(!message) throw "No message defined in pushToGroup()";
@@ -426,6 +425,12 @@ function GameServer(){
     this.pushGroupEntityIDsTo(entity);
   }
 
+  /**
+   * Gets the entity at the given coordinates.
+   * @param {Object}  entity  The entity that is looking for a target.  
+   * @param {Number}  x       The x coordinate of the action.
+   * @param {Number}  y       The y coordinate of the action.
+   */
   this.getTarget = function(entity, x, y){
     var group = this.groups[entity.map];
 
