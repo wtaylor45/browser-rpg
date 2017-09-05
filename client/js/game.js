@@ -174,7 +174,6 @@ module.exports = Game = class Game{
         this.entities[message.target].updateHealth(message.newHealth);
       }
       else if(message.type == Types.Messages.HEAL){
-        console.log(message)
         if(this.entities[message.target])
           this.entities[message.target].updateHealth(message.newHealth);
       }
