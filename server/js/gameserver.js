@@ -91,22 +91,8 @@ function GameServer(){
       this.groups[i].update(dt);
 
       if(this.healthGenTimer >= this.HEALTH_GEN){
-        this.generateHealthForGroup(this.groups[i]);
+        this.groups[i].generateHealth();
       }
-    }
-  }
-
-  /**
-   * Add 1 health to every character in the given group.
-   * @param  {Object} group The group to generate the health for
-   */
-  this.generateHealthForGroup = function(group){
-    for(var i in group.entities){
-      var entity = group.entities[i];
-      if(!entity.currentHealth) continue;
-
-      var heal = entity.heal(1);
-      this.pushToGroup(group.id, heal.serialize());
     }
   }
 
@@ -137,6 +123,32 @@ function GameServer(){
   this.onEntityDespawn = function(entity){
     var message = new Messages.Despawn(entity.id);
     this.pushToGroup(entity.map, message.serialize(), entity.id);
+  }
+
+  /**
+   * Create and send a damage message to the character and their group.
+   * @param  {Object} character The character receiveing the damage.
+   */
+  this.onCharacterDamage = function(character, damageDealt){
+    var message = new Messages.Damage(character, damageDealt);
+    this.pushToGroup(character.map, message.serialize());
+  }
+
+  /**
+   * Create and send a damage message to the character and their group.
+   * @param  {Object} character The character receiveing the damage.
+   */
+  this.onCharacterHeal = function(character, healthGiven){
+    var message = new Messages.Heal(character, healthGiven);
+    this.pushToGroup(character.map, message.serialize());
+  }
+
+  /**
+   * Handles the respawning and moving of the character that has died.
+   * @param  {Object} character The character that has died.
+   */
+  this.onCharacterDeath = function(character){
+    this.respawnEntity(character);
   }
 
   /**
@@ -172,9 +184,15 @@ function GameServer(){
    */
   this.createPlayer = function(connection, name){
     var player = new Player(connection, this, name);
+
+    // Set player callbacks
     player.onMove(this.onEntityMove.bind(this));
     player.onSpawn(this.onEntitySpawn.bind(this));
     player.onDespawn(this.onEntityDespawn.bind(this));
+    player.onDamage(this.onCharacterDamage.bind(this));
+    player.onHeal(this.onCharacterHeal.bind(this));
+    player.onDeath(this.onCharacterDeath.bind(this));
+
     // What to do when this player broadcasts a message
     player.onBroadcast(function(message){
       self.pushToGroup(player.map, message.serialize());
@@ -199,7 +217,7 @@ function GameServer(){
    */
   this.onDisconnect = function(id){
     var player = this.players[id];
-    console.log("User", player.name, "disconnected.")
+    console.log("User", player.name, "disconnected.");
     delete global.SOCKET_LIST[id];
     this.removeEntityFromServer(player);
     delete this.outgoingMessages[id];
@@ -384,10 +402,12 @@ function GameServer(){
   }
 
   this.respawnEntity = function(entity){
-    this.moveEntityToMap(entity, entity.map)
+    if(entity.spawnPoint.map != entity.map){
+      this.moveEntityToMap(entity, entity.map)
+      return;
+    }
 
-    var message = new Messages.Spawn(entity);
-    this.pushToGroup(entity.map, message.serialize());
+    entity.moveTo(entity.spawnPoint.x, entity.spawnPoint.y);
   }
 
   this.moveEntityToMap = function(entity, map, entrance){
@@ -396,17 +416,21 @@ function GameServer(){
     var message = new Messages.Transition(map, pos);
     this.addMessageToOutbox(entity.id, message.serialize());
 
-    this.switchEntityGroupTo(entity, map);
-
     entity.despawn();
-    entity.spawn();
-
+    this.switchEntityGroupTo(entity, map);
     entity.moveTo(pos[0], pos[1]);
+    entity.spawn();
 
     // Get list of this map's entities
     this.pushGroupEntityIDsTo(entity);
   }
 
+  /**
+   * Gets the entity at the given coordinates.
+   * @param {Object}  entity  The entity that is looking for a target.  
+   * @param {Number}  x       The x coordinate of the action.
+   * @param {Number}  y       The y coordinate of the action.
+   */
   this.getTarget = function(entity, x, y){
     var group = this.groups[entity.map];
 
@@ -420,19 +444,6 @@ function GameServer(){
       if(x < box[0] || x > box[2] || y < box[1] || y > box[3]) continue;
 
       return target;
-    }
-  }
-
-  this.attack = function(attacker, target){
-    var message = target.dealDamage(attacker.currentAttackPower);
-    this.checkAlive(target);
-    this.pushToGroup(target.map, message.serialize());
-  }
-
-  this.checkAlive = function(entity){
-    if(entity.currentHealth <= 0){
-      entity.resetStats();
-      this.respawnEntity(entity);
     }
   }
 }

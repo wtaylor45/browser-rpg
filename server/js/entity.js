@@ -66,12 +66,16 @@ module.exports = Entity = class Entity {
   }
 
   spawn(){
+    this.spawned = true;
+
     if(this.spawnCallback){
       this.spawnCallback(this);
     }
   }
 
   despawn(){
+    this.spawned = false;
+
     if(this.despawnCallback){
       this.despawnCallback(this);
     }
