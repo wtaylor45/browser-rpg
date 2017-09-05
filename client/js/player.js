@@ -150,11 +150,7 @@ module.exports = Player = class Player extends Character{
     if(chat){
       this.game.enableChat();
     }
-
-    if(Input.getState().hotkey1){
-      this.fireAbility(0);
-    }
-
+    
     if(Input.getState().mouse){
       var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
       var mouseX = mouse[0];
