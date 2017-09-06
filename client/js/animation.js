@@ -10,6 +10,7 @@ module.exports = Animation = class Animation{
     this.frames = length;
     this.currentFrame = null;
     this.currentTime = 0;
+    this.lastTime = 0;
     this.reset();
   }
 
@@ -40,14 +41,14 @@ module.exports = Animation = class Animation{
   }
 
   isAnimationTick(){
-    return this.currentTime > this.speed;
+    return this.currentTime-this.lastTime > this.speed;
   }
 
-  update(dt){
-    this.currentTime += dt;
+  update(){
+    this.currentTime = Date.now();
 
     if(this.isAnimationTick()){
-      this.currentTime = 0;
+      this.lastTime = this.currentTime;
       this.tick();
     }
   }

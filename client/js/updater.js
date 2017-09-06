@@ -26,7 +26,6 @@ module.exports = Updater = class Updater{
     var self = this;
     _.each(this.game.entities, function(entity){
       if(entity instanceof Character) self.updateCharacter(entity, dt);
-      self.updateAnimation(entity, dt);
     });
   }
 

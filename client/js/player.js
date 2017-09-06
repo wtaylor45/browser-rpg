@@ -48,7 +48,7 @@ module.exports = Player = class Player extends Character{
     if(!this.canMove) return;
 
     var map = this.game.currentMap;
-    this.x += vector.x*input.pressTime*this.speed;
+    this.x += input.vector.x*input.pressTime*this.speed;
     var collision = map.isColliding(map.nearestTilePositions(this));
     if(collision){
       if(collision == Types.Collisions.WALL){
@@ -58,7 +58,7 @@ module.exports = Player = class Player extends Character{
       }
     }
 
-    this.y += vector.y*input.pressTime*this.speed;
+    this.y += input.vector.y*input.pressTime*this.speed;
     var collision = map.isColliding(map.nearestTilePositions(this));
     if(collision == Types.Collisions.WALL){
       this.y = this.lastPos[1];
@@ -66,18 +66,7 @@ module.exports = Player = class Player extends Character{
       this.handleCollision(collision);
     }
 
-    if(this.lastPos[1] < this.y){
-      this.setDirection(Types.Directions.UP)
-    }
-    else if(this.lastPos[1] > this.y){
-      this.setDirection(Types.Directions.DOWN)
-    }
-    else if(this.lastPos[0] < this.x){
-      this.setDirection(Types.Directions.LEFT)
-    }
-    else if(this.lastPos[0] > this.x){
-      this.setDirection(Types.Directions.RIGHT)
-    }
+    this.setDirectionFromVector(input.vector);
   }
 
   handleCollision(collision){
@@ -108,8 +97,14 @@ module.exports = Player = class Player extends Character{
     this.lastMove = message.time;
   }
 
-  setAbility(index, ability){
-    this.abilities[index] = ability;
+  setDirectionFromVector(vector){
+    var direction = this.direction;
+    if(vector.x < 0) direction = Types.Directions.LEFT;
+    else if(vector.x > 0) direction = Types.Directions.RIGHT;
+    if(vector.y < 0) direction = Types.Directions.UP;
+    else if(vector.y > 0) direction = Types.Directions.DOWN;
+
+    this.setDirection(direction);
   }
 
   /**
@@ -140,7 +135,7 @@ module.exports = Player = class Player extends Character{
       message.send();
 
       this.applyInput(input);
-
+      
       // Save input to validated later
       this.pending_inputs.push(input);
     }
@@ -150,11 +145,7 @@ module.exports = Player = class Player extends Character{
     if(chat){
       this.game.enableChat();
     }
-
-    if(Input.getState().hotkey1){
-      this.fireAbility(0);
-    }
-
+    
     if(Input.getState().mouse){
       var mouse = this.game.screenToGameCoords(Input.getMouseCoords());
       var mouseX = mouse[0];

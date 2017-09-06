@@ -155,6 +155,7 @@ module.exports = Renderer = class Renderer{
           height = sprite.height;
 
       if(anim){
+        anim.update();
         var frame = anim.currentFrame || 0,
             x = frame.x || 0,
             y = frame.y || 0;

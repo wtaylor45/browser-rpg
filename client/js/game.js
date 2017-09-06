@@ -143,9 +143,7 @@ module.exports = Game = class Game{
       var message = this.mailbox[i];
       if(message.type == Types.Messages.MOVE){
         if(message.id == this.player.id){
-          if(message.time > this.player.lastMove){
-            this.player.onMove(message);
-          }
+          this.player.onMove(message);
         }
         else{
           // Other entity
@@ -221,8 +219,7 @@ module.exports = Game = class Game{
       return;
     }
 
-    entity.setPos(message.x, message.y);
-    entity.setDirection(message.dir);
+    entity.addToPositionBuffer(message.x, message.y);
     entity.lastMove = message.time;
   }
 
