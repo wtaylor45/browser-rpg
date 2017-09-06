@@ -219,8 +219,7 @@ module.exports = Game = class Game{
       return;
     }
 
-    entity.setPos(message.x, message.y);
-    entity.setDirection(message.dir);
+    entity.addToPositionBuffer(message.x, message.y);
     entity.lastMove = message.time;
   }
 
