@@ -157,4 +157,15 @@ module.exports = Entity = class Entity {
     }
   }
 
+  getVectorToPoint(x, y){
+    var vector = [0,0];
+
+    if(y > this.y) vector[1] = 1;
+    else if(y < this.y) vector[1] = -1;
+    if(x > this.x) vector[0] = 1;
+    else if (x < this.x) vector[0] = -1;
+
+    return vector;
+  }
+
 }

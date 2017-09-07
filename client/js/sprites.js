@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     paths = [
       require("../sprites/player.json"),
-      require("../sprites/ogre.json"),
-      require("../sprites/fire-spell.json")
+      require("../sprites/man.json")
     ]
 
 module.exports = Sprites = {

@@ -28,6 +28,18 @@ module.exports = Map = class Map{
 
     this.doors = this.loadDoors();
     this.entrances = this.loadEntrances();
+    this.npcs = this.loadNpcs();
+
+    this.loaded();
+  }
+
+  onLoad(callback){
+    this.loadcallback = callback;
+  }
+
+  loaded(){
+    if(this.loadcallback)
+      this.loadcallback(this);
   }
 
   loadDoors(){
@@ -63,14 +75,16 @@ module.exports = Map = class Map{
     return entrances;
   }
 
-  addEntity(entity){
-    this.entities[entity.id] = entity;
-    entity.map = this.name;
-  }
+  loadNpcs(){
+    var npcs = [];
 
-  removeEntity(id){
-    console.log(id, "killed")
-    delete this.entities[id];
+    var objects = this.getLayerByName('npcs').objects;
+    for(var i in objects){
+      var npc = objects[i];
+      npcs.push({species: Types.Entities.MAN, x: npc.x, y: npc.y});
+    }
+
+    return npcs;
   }
 
   getLayerByName(name){

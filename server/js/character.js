@@ -17,9 +17,9 @@ module.exports = Character = class Character extends Entity {
    * @param  {number} width   The width of the character
    * @param  {number} height  The height of the character
    */
-  constructor(id, name, genus, species, x, y, width, height){
+  constructor(id, name, species, x, y, width, height){
     // Call the Entity class constructor
-    super(id, genus, species, x, y, width, height);
+    super(id, Types.getGenus(species), species, x, y, width, height);
 
     // What direction is this character facing
     this.direction = Types.Directions.DOWN;
@@ -33,6 +33,8 @@ module.exports = Character = class Character extends Entity {
     this.name = name;
 
     this.targetBox = [x, y, x+width, y+height];
+
+    this.speed = 7;
 
     // How much health a character can possibly have
     this.maxHealth = 100;

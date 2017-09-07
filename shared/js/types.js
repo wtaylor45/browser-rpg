@@ -32,7 +32,7 @@ Types = {
 
   Entities: {
     PLAYER: 0,
-    FIREBALL: 1
+    MAN: 1
   },
 
   Directions: {
@@ -61,7 +61,8 @@ Types = {
 
 var speciesList = {
   player: [Types.Entities.PLAYER, "player"],
-  fireball: [Types.Entities.FIREBALL, "projectile"],
+  man: [Types.Entities.MAN, "npc"],
+  fireball: [Types.Entities.FIREBALL, "projectile"]
 }
 
 var iconList = {
@@ -70,7 +71,8 @@ var iconList = {
 
 Types.getGenus = function(species){
   var species = Types.speciesAsString(species);
-  return speciesList[species][1];
+  if(speciesList[species])
+    return speciesList[species][1];
 }
 
 Types.speciesAsString = function(species){
@@ -86,11 +88,15 @@ Types.isPlayer = function(species){
 }
 
 Types.isCharacter = function(species){
-  return Types.isPlayer(species);
+  return Types.isPlayer(species) || Types.isNpc(species);
 }
 
 Types.isMob = function(species){
   return Types.getGenus(species) == "mob";
+}
+
+Types.isNpc = function(species){
+  return Types.getGenus(species) == "npc";
 }
 
 Types.isProjectile = function(species){

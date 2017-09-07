@@ -14,7 +14,8 @@ var Player = require('./player.js');
 var Messages = require('./message');
 var Map = require('./map');
 var sanitizeHtml = require('sanitize-html');
-var Group = require('./group')
+var Group = require('./group');
+var Npc = require('./npc')
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -186,12 +187,7 @@ function GameServer(){
     var player = new Player(connection, this, name);
 
     // Set player callbacks
-    player.onMove(this.onEntityMove.bind(this));
-    player.onSpawn(this.onEntitySpawn.bind(this));
-    player.onDespawn(this.onEntityDespawn.bind(this));
-    player.onDamage(this.onCharacterDamage.bind(this));
-    player.onHeal(this.onCharacterHeal.bind(this));
-    player.onDeath(this.onCharacterDeath.bind(this));
+    this.setCharacerCallbacks(player);
 
     // What to do when this player broadcasts a message
     player.onBroadcast(function(message){
@@ -208,6 +204,15 @@ function GameServer(){
     player.connection.emit(Types.Messages.LOGIN, message.serialize());
 
     return player;
+  }
+
+  this.setCharacerCallbacks = function(character){
+    character.onMove(this.onEntityMove.bind(this));
+    character.onSpawn(this.onEntitySpawn.bind(this));
+    character.onDespawn(this.onEntityDespawn.bind(this));
+    character.onDamage(this.onCharacterDamage.bind(this));
+    character.onHeal(this.onCharacterHeal.bind(this));
+    character.onDeath(this.onCharacterDeath.bind(this));
   }
 
   /**
@@ -372,6 +377,19 @@ function GameServer(){
     for(var i in Map.mapData){
       this.maps[i] = new Map(i);
       this.groups[i] = new Group(i);
+      this.createNpcs(this.maps[i]);     
+    }
+  }
+
+  this.createNpcs = function(map){
+    var npcs = map.npcs;
+    for(var i in npcs){
+      var data = npcs[i];
+
+      var npc = new Npc('1'+data.x+data.y, data.species, data.x, data.y)
+      this.setCharacerCallbacks(npc);
+
+      this.addEntityToGroup(npc, map.name);
     }
   }
 

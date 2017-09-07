@@ -236,6 +236,7 @@ module.exports = Game = class Game{
     }
 
     // What type of entity to create
+    console.log(Types.isCharacter(message.species));
     if(Types.isCharacter(message.species)) this.spawnCharacter(message);
   }
 

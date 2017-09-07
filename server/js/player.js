@@ -13,7 +13,7 @@ var cls = require('./lib/class'),
 module.exports = Player = class Player extends Character {
   constructor(connection, server, name){
     // Create this player using the Character super class
-    super(connection.id, name, "player", Types.Entities.PLAYER, 210, 205,32,48);
+    super(connection.id, name, Types.Entities.PLAYER, 210, 205,32,48);
 
     var self = this;
 

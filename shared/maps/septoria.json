@@ -65,7 +65,6 @@
         }, 
         {
          "draworder":"topdown",
-         "height":50,
          "name":"doors",
          "objects":[
                 {
@@ -92,13 +91,11 @@
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
-         "width":50,
          "x":0,
          "y":0
         }, 
         {
          "draworder":"topdown",
-         "height":50,
          "name":"entrances",
          "objects":[
                 {
@@ -123,13 +120,34 @@
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
-         "width":50,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "name":"npcs",
+         "objects":[
+                {
+                 "height":16,
+                 "id":36,
+                 "name":"man",
+                 "rotation":0,
+                 "type":"NPC",
+                 "visible":true,
+                 "width":16,
+                 "x":336,
+                 "y":224
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
          "x":0,
          "y":0
         }],
- "nextobjectid":32,
+ "nextobjectid":37,
  "orientation":"orthogonal",
  "renderorder":"left-down",
+ "tiledversion":"1.0.3",
  "tileheight":16,
  "tilesets":[
         {
@@ -150,7 +168,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "height":0,
                      "name":"",
                      "objects":[],
                      "opacity":1,
@@ -164,7 +181,6 @@
                         },
                      "type":"objectgroup",
                      "visible":true,
-                     "width":0,
                      "x":0,
                      "y":0
                     }
@@ -231,6 +247,7 @@
          "tilewidth":16
         }],
  "tilewidth":16,
+ "type":"map",
  "version":1,
  "width":50
 }
