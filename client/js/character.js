@@ -137,6 +137,9 @@ module.exports = Character = class Character extends Entity{
 
     this.currentAttackPower = stats.currentAttackPower;
     this.maxAttackPower = stats.maxAttackPower;
+
+    this.currentSpeed = stats.currentSpeed;
+    this.maxSpeed = stats.maxSpeed;
   }
 
   addToPositionBuffer(x, y){

@@ -222,6 +222,22 @@ module.exports = Map = class Map{
 
     return false;
   }
+
+  layerToAStarGrid(layerName){
+    var layer = this.getLayerByName(layerName);
+    var grid = [];
+
+    for(var i=0;i<layer.height;i++){
+      var row = [];
+      for(var j=0;j<layer.width;j++){
+        var value = layer.data[layer.height*i+j] > 0 ? 0 : 1;
+        row.push(value);
+      }
+      grid.push(row);
+    }
+
+    return grid;
+  }
 }
 
 Map.mapData = {

@@ -34,7 +34,7 @@ module.exports = Character = class Character extends Entity {
 
     this.targetBox = [x, y, x+width, y+height];
 
-    this.speed = 7;
+    this.maxSpeed = this.currentSpeed = 10;
 
     // How much health a character can possibly have
     this.maxHealth = 100;
@@ -61,6 +61,8 @@ module.exports = Character = class Character extends Entity {
 
     state['stats'] = this.getStats();
 
+    console.log(state['stats'])
+
     return state;
   }
 
@@ -70,6 +72,8 @@ module.exports = Character = class Character extends Entity {
    */
   getStats(){
     return {
+      currentSpeed: this.currentSpeed,
+      maxSpeed: this.maxSpeed,
       currentHealth: this.currentHealth,
       maxHealth: this.maxHealth,
       currentAttackPower: this.currentAttackPower,
@@ -78,6 +82,7 @@ module.exports = Character = class Character extends Entity {
   }
 
   resetStats(){
+    this.currentSpeed = this.maxSpeed;
     this.currentHealth = this.maxHealth;
     this.currentAttackPower = this.maxAttackPower;
   }

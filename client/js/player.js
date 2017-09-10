@@ -21,7 +21,7 @@ module.exports = Player = class Player extends Character{
     super(id, name, Types.Entities.PLAYER, x, y, width, height);
 
     // Player movement variables
-    this.speed = 10;
+    this.currentSpeed = this.maxSpeed = 10;
 
     // Variables for client-side prediction
     this.pending_inputs = []
@@ -48,7 +48,7 @@ module.exports = Player = class Player extends Character{
     if(!this.canMove) return;
 
     var map = this.game.currentMap;
-    this.x += input.vector.x*input.pressTime*this.speed;
+    this.x += input.vector.x*input.pressTime*this.currentSpeed;
     var collision = map.isColliding(map.nearestTilePositions(this));
     if(collision){
       if(collision == Types.Collisions.WALL){
@@ -58,7 +58,7 @@ module.exports = Player = class Player extends Character{
       }
     }
 
-    this.y += input.vector.y*input.pressTime*this.speed;
+    this.y += input.vector.y*input.pressTime*this.currentSpeed;
     var collision = map.isColliding(map.nearestTilePositions(this));
     if(collision == Types.Collisions.WALL){
       this.y = this.lastPos[1];

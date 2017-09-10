@@ -15,7 +15,8 @@ var Messages = require('./message');
 var Map = require('./map');
 var sanitizeHtml = require('sanitize-html');
 var Group = require('./group');
-var Npc = require('./npc')
+var Npc = require('./npc');
+var Pathfinder = require('./pathfinder');
 
 // Export the GameServer module
 module.exports = GameServer;
@@ -388,6 +389,7 @@ function GameServer(){
 
       var npc = new Npc('1'+data.x+data.y, data.species, data.x, data.y)
       this.setCharacerCallbacks(npc);
+      npc.pathfinder = new Pathfinder(map, npc);
 
       this.addEntityToGroup(npc, map.name);
     }

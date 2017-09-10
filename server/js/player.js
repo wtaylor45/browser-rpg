@@ -24,9 +24,6 @@ module.exports = Player = class Player extends Character {
     // Is the player in game yet
     this.inGame = false;
 
-    // The player movement speed
-    this.speed = 10;
-
     // The player's current health
     this.currentHealth = 5;
 
@@ -97,7 +94,7 @@ module.exports = Player = class Player extends Character {
       var input = this.queuedInputs.shift();
       var vector = input.vector;
 
-      this.x += vector.x*input.pressTime*this.speed;
+      this.x += vector.x*input.pressTime*this.currentSpeed;
       var collision = map.isColliding(map.nearestTilePositions(this));
       if(collision >= 0){
         if(collision == Types.Collisions.WALL){
@@ -107,7 +104,7 @@ module.exports = Player = class Player extends Character {
         }
       }
 
-      this.y += vector.y*input.pressTime*this.speed;
+      this.y += vector.y*input.pressTime*this.currentSpeed;
       var collision = map.isColliding(map.nearestTilePositions(this));
       if(collision >= 0){
         if(collision == Types.Collisions.WALL){
