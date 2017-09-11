@@ -15,11 +15,10 @@ module.exports = Pathfinder = class Pathfinder {
 
         var dirX = start[0] > end[0] ? -1 : 1;
         var dirY = start[1] > end[1] ? -1 : 1;
-        var bufferX = Math.round(this.character.width/this.map.tileWidth);
-        var bufferY = Math.round(this.character.height/this.map.tileHeight);
+
         var currentX = gridX;
         var currentY = gridY;
-        var path = [];  
+        var path = [];
         console.log(endX, endY)
         while(currentX != end[0] || currentY != end[1]){
             var nextTile = [];
@@ -28,7 +27,7 @@ module.exports = Pathfinder = class Pathfinder {
 
             if(currentX != end[0]){
                 nextX = currentX+dirX;
-                if(this.grid[nextX] && this.grid[nextX+bufferX]){
+                if(true){
                     if(this.grid[nextX][currentY] && this.grid[nextX+bufferX][currentY]){
                         nextTile[0] = nextX;
                     }

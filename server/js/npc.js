@@ -1,6 +1,6 @@
 module.exports = Npc = class Npc extends Character {
-    constructor(id, species, x, y, width, height){
-        super(id, species, species, x, y, 32, 48);
+    constructor(id, species, x, y, width, height, name){
+        super(id, name, species, x, y, 32, 48);
 
         this.wanderer = true;
         this.moving = false;
@@ -24,7 +24,7 @@ module.exports = Npc = class Npc extends Character {
             this.moving = false;
             return;
         }
-        
+
         var vector = this.getVectorToPoint(this.path[0][0], this.path[0][1]);
 
         var x = this.x+vector[0]*this.currentSpeed*dt;
@@ -48,6 +48,6 @@ module.exports = Npc = class Npc extends Character {
             this.wanderX = this.x;
         }
 
-        this.path = this.pathfinder.findPath(this.wanderX, this.wanderY);
+        this.path = [];
     }
 }

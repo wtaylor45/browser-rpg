@@ -15,7 +15,7 @@ var Messages = require('./message');
 var Map = require('./map');
 var sanitizeHtml = require('sanitize-html');
 var Group = require('./group');
-var Npc = require('./npc');
+var Npcs = require('./npcs');
 var Pathfinder = require('./pathfinder');
 
 // Export the GameServer module
@@ -378,7 +378,7 @@ function GameServer(){
     for(var i in Map.mapData){
       this.maps[i] = new Map(i);
       this.groups[i] = new Group(i);
-      this.createNpcs(this.maps[i]);     
+      this.createNpcs(this.maps[i]);
     }
   }
 
@@ -387,7 +387,7 @@ function GameServer(){
     for(var i in npcs){
       var data = npcs[i];
 
-      var npc = new Npc('1'+data.x+data.y, data.species, data.x, data.y)
+      var npc = new Npcs[Types.speciesAsString(data.species)](data.x, data.y);
       this.setCharacerCallbacks(npc);
       npc.pathfinder = new Pathfinder(map, npc);
 
@@ -447,7 +447,7 @@ function GameServer(){
 
   /**
    * Gets the entity at the given coordinates.
-   * @param {Object}  entity  The entity that is looking for a target.  
+   * @param {Object}  entity  The entity that is looking for a target.
    * @param {Number}  x       The x coordinate of the action.
    * @param {Number}  y       The y coordinate of the action.
    */
