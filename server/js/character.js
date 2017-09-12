@@ -33,6 +33,7 @@ module.exports = Character = class Character extends Entity {
     this.name = name;
 
     this.targetBox = [x, y, x+width, y+height];
+    this.hitbox = [x, y+height/2, x+width, y+height];
 
     this.maxSpeed = this.currentSpeed = 10;
 
@@ -121,7 +122,7 @@ module.exports = Character = class Character extends Entity {
 
   die(){
     this.resetStats();
-    
+
     if(this.deathCallback){
       this.deathCallback(this);
     }

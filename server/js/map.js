@@ -156,13 +156,13 @@ module.exports = Map = class Map{
     return -1;
   }
 
-  nearestTilePositions(entity){
+  nearestTilePositions(hitbox){
     var index = 0;
 
-    var leftX = entity.x;
-    var topY = entity.y+entity.height/2;
-    var rightX = entity.x + entity.width;
-    var bottomY = entity.y + entity.height;
+    var leftX = hitbox[0];
+    var topY = hitbox[1];
+    var rightX = hitbox[2];
+    var bottomY = hitbox[3];
 
     var corners = [];
     corners[0] = [leftX, topY];

@@ -1,4 +1,4 @@
-var AStar = require('./lib/astar')
+var AStar = require('./lib/astar');
 
 module.exports = Pathfinder = class Pathfinder {
     constructor(map, character){
@@ -19,15 +19,17 @@ module.exports = Pathfinder = class Pathfinder {
         var currentX = gridX;
         var currentY = gridY;
         var path = [];
-        console.log(endX, endY)
+
         while(currentX != end[0] || currentY != end[1]){
             var nextTile = [];
             var nextX = this.currentX;
             var nextY = this.currentY;
 
+            var currentHitbox = this.simulateHitbox(currentX, currentY);
+
             if(currentX != end[0]){
                 nextX = currentX+dirX;
-                if(true){
+                if(this.map.isColliding(this.map.nearestTilePositions(this.character.hitbox))){
                     if(this.grid[nextX][currentY] && this.grid[nextX+bufferX][currentY]){
                         nextTile[0] = nextX;
                     }
@@ -36,7 +38,7 @@ module.exports = Pathfinder = class Pathfinder {
 
             if(currentY != end[1]){
                 nextY = currentY+dirY;
-                if(this.grid[nextX] && this.grid[nextX+bufferX]){
+                if(this.map.isColliding(this.map.nearestTilePositions(this.character.hitbox))){
                     if(this.grid[nextX][nextY] && this.grid[nextX][nextY+bufferY]){
                         nextTile[1] = nextY;
                     }
@@ -56,6 +58,17 @@ module.exports = Pathfinder = class Pathfinder {
         }
 
         return this.pathToWorldCoords(path);
+    }
+
+    simulateHitbox(x, y){
+      var hitbox = [];
+
+      hitbox.push(x);
+      hitbox.push(y+this.character.height/2);
+      hitbox.push(x+this.character.width);
+      hitbox.push(y+this.character.height);
+
+      return hitbox;
     }
 
     pathToWorldCoords(path){
