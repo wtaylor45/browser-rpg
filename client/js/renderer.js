@@ -168,7 +168,7 @@ module.exports = Renderer = class Renderer{
       sprite.image.scaleX = Math.min(sprite.width/entity.width, entity.width/sprite.width);
       sprite.image.scaleY = Math.min(sprite.height/entity.height, entity.height/sprite.height);
       stage.addChild(sprite.image);
-      
+
       if(Date.now()-entity.lastDamaged <= 6000){
         this.drawHealthBar(entity);
       }
@@ -241,7 +241,7 @@ module.exports = Renderer = class Renderer{
   }
 
   drawMapHigh(){
-    if(this.map && this.camera){
+    if(this.map && this.camera && this.map.highImage){
       var image = this.map.highImage;
       image.sourceRect = new createjs.Rectangle(this.camera.x, this.camera.y,
         this.camera.viewportWidth, this.camera.viewportHeight);

@@ -16,10 +16,14 @@ module.exports = Map = class Map{
   loadMap(map){
     this.json = map;
     if(!this.json) return;
+    this.widthInTiles = map.width;
+    this.heightInTiles = map.height;
     var collisionLayer = this.getLayerWithProperty('collision');
     var collisionTiles = this.getTilesetWithProp('properties');
     this.collisionData = collisionLayer ? collisionLayer.data : [];
     this.collisionId = collisionTiles ? this.getTileIdWithProperty('collision', collisionTiles) : -1;
+    var grid = this.layerToAStarGrid('collision');
+    this.pathfindingGrid = this.astarAnnotateGrid(grid);
     this.doorId = collisionTiles ? this.getTileIdWithProperty('door', collisionTiles) : -1;
     this.tileWidth = map.tilewidth;
     this.tileHeight = map.tileheight;
@@ -31,6 +35,49 @@ module.exports = Map = class Map{
     this.npcs = this.loadNpcs();
 
     this.loaded();
+  }
+
+  astarAnnotateGrid(grid){
+    var annotatedGrid = [];
+    for(var i in Types.Sizes){
+      var sizeType = Types.Sizes[i];
+      for(var r=0;r<this.heightInTiles;r++){
+        if(!annotatedGrid[r]) annotatedGrid[r] = [];
+        for(var c=0;c<this.widthInTiles;c++){
+          annotatedGrid[r][c] = this.astarAnnotateCell(grid, annotatedGrid, r, c, sizeType);
+        }
+      }
+    }
+
+    return annotatedGrid;
+  }
+
+  astarAnnotateCell(grid, annotated, row, col, sizeType){
+    var current = annotated[row][col];
+    if(!current) current = 0;
+    if(grid[row][col] > 0) return 0;
+    var dim = Types.getDimensions(sizeType);
+    var width = dim[0]-1;
+    var height = dim[1]-1;
+
+    // Check east-west walls
+    for(var i=0;i<height;i++){
+      // Check south-east
+      if(grid[row+i] == null || grid[row+i][col+width] == null) return current;
+      if(grid[row+i][col] > 0 || grid[row+i][col+width] > 0){
+        return current;
+      }
+    }
+
+    for(var i=0;i<=width;i++){
+      // Check south
+      if(grid[row+height] == null || grid[row+height][col+i] == null) return current;
+      if(grid[row+height][col+i] > 0){
+        return current;
+      }
+    }
+
+    return sizeType+current;
   }
 
   onLoad(callback){
@@ -203,6 +250,7 @@ module.exports = Map = class Map{
       if(!layer.properties) continue;
       if(layer.properties[name]) return layer;
     }
+    console.log(this.name+': Could nout find property', name)
   }
 
   getTilesetWithProp(prop){
@@ -230,7 +278,7 @@ module.exports = Map = class Map{
     for(var i=0;i<layer.height;i++){
       var row = [];
       for(var j=0;j<layer.width;j++){
-        var value = layer.data[layer.height*i+j] > 0 ? 0 : 1;
+        var value = layer.data[layer.height*i+j] > 0 ? 1 : 0;
         row.push(value);
       }
       grid.push(row);
@@ -242,5 +290,6 @@ module.exports = Map = class Map{
 
 Map.mapData = {
   septoria: require('../../shared/maps/septoria.json'),
-  map0: require('../../shared/maps/map0.json')
+  map0: require('../../shared/maps/map0.json'),
+  test: require('../../shared/maps/test.json')
 }

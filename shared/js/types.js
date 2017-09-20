@@ -53,9 +53,13 @@ Types = {
     PLEB: 3
   },
 
-
   Abilities: {
     FIREBALL: 'fireball'
+  },
+
+  Sizes: {
+    NONE: 0,
+    TWOBYTWO: 1
   }
 }
 
@@ -67,6 +71,19 @@ var speciesList = {
 
 var iconList = {
   fireball: 'fireball-red-1.png'
+}
+
+var dimensions = {
+  none: [Types.Sizes.NONE, [0,0]],
+  twobytwo: [Types.Sizes.TWOBYTWO, [2,2]]
+}
+
+Types.getDimensions = function(sizeType){
+  for(var i in dimensions){
+    if(dimensions[i][0] == sizeType){
+      return dimensions[i][1];
+    }
+  }
 }
 
 Types.getGenus = function(species){

@@ -250,7 +250,7 @@ function GameServer(){
     // Add the entity to the global entity list
     this.entities[entity.id] = entity;
     // Set the map the entity will spawn in
-    this.addEntityToGroup(entity, entity.map || 'septoria');
+    this.addEntityToGroup(entity, entity.map || entity.spawnPoint.map);
     // Spawn the entity
     entity.spawn();
   }

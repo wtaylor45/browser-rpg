@@ -9,6 +9,7 @@ module.exports = Npc = class Npc extends Character {
     update(dt){
         if(this.wanderer && !this.moving){
             if(Math.random()*1000 < 5){
+                console.log('Find path');
                 this.moving = true;
                 this.chooseWanderPoint();
             }
@@ -48,6 +49,7 @@ module.exports = Npc = class Npc extends Character {
             this.wanderX = this.x;
         }
 
-        this.path = [];
+        this.path = this.pathfinder.findPath(32, 120);
+        this.moving = false;
     }
 }

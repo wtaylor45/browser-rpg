@@ -38,9 +38,9 @@ module.exports = Player = class Player extends Character {
 
     // The location at which the player will spawn when they die
     this.spawnPoint = {
-      map: "septoria",
-      x: 200,
-      y: 200
+      map: "test",
+      x: 0,
+      y: 0
     }
 
     // Inputs that need to be processed
