@@ -33,7 +33,7 @@ module.exports = Character = class Character extends Entity {
     this.name = name;
 
     this.targetBox = [x, y, x+width, y+height];
-    this.hitbox = [x, y+height/2, x+width, y+height];
+    this.hitbox = [0, Math.floor(height/2), width, height];
 
     this.maxSpeed = this.currentSpeed = 10;
 

@@ -149,7 +149,7 @@ module.exports = Map = class Map{
     var tileX = Math.floor(x/this.tileWidth);
     var tileY = Math.floor(y/this.tileHeight);
 
-    return tileX + tileY * (this.height/this.tileHeight);
+    return tileX + tileY * (this.heightInTiles);
   }
 
   isDoor(id){
@@ -159,7 +159,7 @@ module.exports = Map = class Map{
 
   isColliding(coords){
     var self = this;
-
+    console.log(coords[0], coords[1])
     var collision = this.checkCollisions(coords[0], coords[1]);
     if(collision >= 0) return collision;
     collision = this.checkCollisions(coords[0], coords[2]);
@@ -197,19 +197,19 @@ module.exports = Map = class Map{
         }
         return Types.Collisions.WALL;
       }
-      y1 += this.tileWidth;
+      y1 += this.tileHeight;
     }
 
     return -1;
   }
 
-  nearestTilePositions(hitbox){
-    var index = 0;
+  nearestTilePositions(entity){
+    var hitbox = entity.hitbox;
 
-    var leftX = hitbox[0];
-    var topY = hitbox[1];
-    var rightX = hitbox[2];
-    var bottomY = hitbox[3];
+    var leftX = Math.floor(entity.x+hitbox[0]);
+    var topY = Math.floor(entity.y+hitbox[1]);
+    var rightX = Math.floor(entity.x+hitbox[2]);
+    var bottomY = Math.floor(entity.y+hitbox[3]);
 
     var corners = [];
     corners[0] = [leftX, topY];

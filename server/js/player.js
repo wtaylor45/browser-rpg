@@ -95,9 +95,10 @@ module.exports = Player = class Player extends Character {
       var vector = input.vector;
 
       this.x += vector.x*input.pressTime*this.currentSpeed;
-      var collision = map.isColliding(map.nearestTilePositions(this.hitbox));
+      var collision = map.isColliding(map.nearestTilePositions(this));
       if(collision >= 0){
         if(collision == Types.Collisions.WALL){
+          console.log('collide');          
           this.x = this.lastPos[0];
         }else{
           this.handleCollision(collision);
@@ -105,7 +106,7 @@ module.exports = Player = class Player extends Character {
       }
 
       this.y += vector.y*input.pressTime*this.currentSpeed;
-      var collision = map.isColliding(map.nearestTilePositions(this.hitbox));
+      var collision = map.isColliding(map.nearestTilePositions(this));
       if(collision >= 0){
         if(collision == Types.Collisions.WALL){
           this.y = this.lastPos[1];

@@ -12,12 +12,12 @@ module.exports = Pathfinder = class Pathfinder {
       var gridCol = Math.floor(this.character.x/this.map.tileWidth);
       var gridRow = Math.floor(this.character.y/this.map.tileHeight);
       var start = this.graph.grid[gridRow][gridCol];
-      console.log("Start:",gridRow,"("+this.character.y+")", gridCol,"("+this.character.x+")");
+      //console.log("Start:",gridRow,"("+this.character.y+")", gridCol,"("+this.character.x+")");
       // Set up the goal tile
       var endCol = Math.floor(endX/this.map.tileWidth);
       var endRow = Math.floor(endY/this.map.tileHeight);
       var goal = this.graph.grid[endRow][endCol];
-      console.log("Goal:",endRow,"("+endRow*this.map.tileHeight+")", endCol,"("+endCol*this.map.tileWidth+")",)
+      //console.log("Goal:",endRow,"("+endRow*this.map.tileHeight+")", endCol,"("+endCol*this.map.tileWidth+")")
       // Get the character's size type
       var sizeType = this.character.sizeType;
 
