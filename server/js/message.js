@@ -18,6 +18,7 @@ Messages.Login = Message.extend({
 
   serialize: function(){
     var message = this.entity.getState();
+    message.hitbox = this.entity.hitbox;
     message.id = this.entity.id;
     message.type = Types.Messages.LOGIN;
     return message;

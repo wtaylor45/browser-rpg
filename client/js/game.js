@@ -119,7 +119,8 @@ module.exports = Game = class Game{
       message.w,
       message.h
     );
-    player.setStats(message.stats)
+    player.setStats(message.stats);
+    player.hitbox = message.hitbox;
     player.map = message.map;
     this.player = player;
     this.entities[player.id] = player;

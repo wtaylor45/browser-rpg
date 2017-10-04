@@ -119,12 +119,16 @@ module.exports = Map = class Map{
   }
 
   nearestTilePositions(entity){
-    var index = 0;
+    var hitbox = entity.hitbox;
 
-    var leftX = entity.x;
-    var topY = entity.y+entity.height/2;
-    var rightX = entity.x + entity.width;
-    var bottomY = entity.y + entity.height;
+    // Use the hitbox to find the corners, 
+    // get the nearest tile positions of each coord
+    var leftX = Math.floor(entity.x+hitbox[0]);
+    var topY = Math.floor(entity.y+hitbox[1]);
+    var rightX = Math.floor(entity.x+hitbox[2])-this.tileWidth;
+    var rightX = Math.ceil(rightX / this.tileWidth)*this.tileWidth;
+    var bottomY = Math.floor(entity.y+hitbox[3])-this.tileHeight;
+    var bottomY = Math.ceil(bottomY / this.tileHeight)*this.tileHeight;
 
     var corners = [];
     corners[0] = [leftX, topY];

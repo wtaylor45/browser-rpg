@@ -159,7 +159,6 @@ module.exports = Map = class Map{
 
   isColliding(coords){
     var self = this;
-    console.log(coords[0], coords[1])
     var collision = this.checkCollisions(coords[0], coords[1]);
     if(collision >= 0) return collision;
     collision = this.checkCollisions(coords[0], coords[2]);
@@ -181,6 +180,7 @@ module.exports = Map = class Map{
     while(x1 < x2){
       var index = this.worldPosToTileIndex(x1, y1);
       if(this.collisionData[index] > 0){
+        console.log(pos1, pos2)
         if(this.isDoor(this.collisionData[index])){
           return Types.Collisions.DOOR;
         }
@@ -191,7 +191,8 @@ module.exports = Map = class Map{
 
     while(y1 <= y2){
       var index = this.worldPosToTileIndex(x1, y1);
-      if(this.collisionData[index] == this.collisionId){
+      if(this.collisionData[index] > 0){
+        console.log(pos1, pos2)
         if(this.isDoor(this.collisionData[index])){
           return Types.Collisions.DOOR;
         }
@@ -206,10 +207,14 @@ module.exports = Map = class Map{
   nearestTilePositions(entity){
     var hitbox = entity.hitbox;
 
+    // Use the hitbox to find the corners, 
+    // get the nearest tile positions of each coord
     var leftX = Math.floor(entity.x+hitbox[0]);
     var topY = Math.floor(entity.y+hitbox[1]);
-    var rightX = Math.floor(entity.x+hitbox[2]);
-    var bottomY = Math.floor(entity.y+hitbox[3]);
+    var rightX = Math.floor(entity.x+hitbox[2])-this.tileWidth;
+    var rightX = Math.ceil(rightX / this.tileWidth)*this.tileWidth;
+    var bottomY = Math.floor(entity.y+hitbox[3])-this.tileHeight;
+    var bottomY = Math.ceil(bottomY / this.tileHeight)*this.tileHeight;
 
     var corners = [];
     corners[0] = [leftX, topY];
